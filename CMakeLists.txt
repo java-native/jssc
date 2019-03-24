@@ -12,8 +12,14 @@ if(APPLE)
     endif(IOKit)
 endif(APPLE)
 
+if(WIN32)
+	SET(JSSC_PLATFORM "windows")
+else()
+	SET(JSSC_PLATFORM "_nix_based")
+endif()
+
 add_library(jssc SHARED
-    src/cpp/_nix_based/jssc.cpp
+    src/cpp/${JSSC_PLATFORM}/jssc.cpp
 )
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
