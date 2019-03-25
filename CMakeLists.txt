@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 project(jssc VERSION 2.8.0 DESCRIPTION "Java Simple Serial Connector")
 
+find_package(Java)
 find_package(JNI)
 
 # Kitware-recommended technique for defaulting to 'Release' mode

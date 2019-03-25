@@ -50,8 +50,7 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
     //since 2.1.0 -> string concat fix
     char portFullName[MAX_PORT_NAME_STR_LEN];
 
-    if (strlen(prefix) + strlen(port) + 1 > sizeof(portFullName))
-    {
+    if(strlen(prefix) + strlen(port) + 1 > sizeof(portFullName)){
         return (jlong)((HANDLE)jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND);
     }
 
@@ -271,8 +270,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     jbyteArray returnArray = env->NewByteArray(byteCount);
 
     lpBuffer = malloc(byteCount * sizeof(jbyte *));
-    if (lpBuffer == NULL)
-    {
+    if(lpBuffer == NULL){
         // return an empty array
         return returnArray;
     }
