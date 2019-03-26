@@ -36,9 +36,6 @@ set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER src/jssc_SerialNativeInterface.h)
 
 # Call strip on non-debug builds
-if(NOT CMAKE_BUILD_TYPE MATCHES "Deb")
-	if(NOT STRIP)
-		set(STRIP strip)
-	endif()
-	add_custom_command(TARGET jssc POST_BUILD COMMAND "${STRIP}" $<TARGET_FILE:jssc>)
+if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
+	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" $<TARGET_FILE:jssc>)
 endif()
