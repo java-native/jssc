@@ -34,3 +34,11 @@ target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_IN
 
 set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER src/jssc_SerialNativeInterface.h)
+
+# Call strip on non-debug builds
+if(NOT CMAKE_BUILD_TYPE MATCHES "Deb")
+	if(NOT STRIP)
+		set(STRIP strip)
+	endif()
+	add_custom_command(TARGET jssc POST_BUILD COMMAND "${STRIP}" $<TARGET_FILE:jssc>)
+endif()
