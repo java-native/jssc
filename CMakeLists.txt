@@ -20,10 +20,19 @@ if(APPLE)
 	endif()
 endif()
 
+# Statically link gcc/c++
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
+endif()
+
 if(WIN32)
 	set(JSSC_PLATFORM "windows")
+	# Disable optimization for Release builds (XP/Server 2003)
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0")
 else()
 	set(JSSC_PLATFORM "_nix_based")
+	# Sane level of optimization for Release builds
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
 
 add_library(jssc SHARED
@@ -34,6 +43,7 @@ target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_IN
 
 set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER src/jssc_SerialNativeInterface.h)
+set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
