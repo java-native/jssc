@@ -269,7 +269,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     jbyte *lpBuffer = NULL;
     jbyteArray returnArray = env->NewByteArray(byteCount);
 
-    lpBuffer = malloc(byteCount * sizeof(jbyte *));
+    lpBuffer = (jbyte *)malloc(byteCount * sizeof(jbyte *));
     if(lpBuffer == NULL){
         // return an empty array
         return returnArray;
