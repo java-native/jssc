@@ -4,18 +4,18 @@ project(jssc VERSION 2.8.0 DESCRIPTION "Java Simple Serial Connector")
 find_package(JNI)
 
 if(APPLE)
-    # Locate IOKit framework for serial/ioss.h
-    find_library(IOKit IOKit)
-    if(IOKit)
-        find_path(IOKit_INCLUDE_DIR NAMES IOKitLib.h HINTS ${IOKit_INC_SEARCH_PATH} ${IOKit_PKGC_INCLUDE_DIRS} PATH_SUFFIXES IOKit)
-        list(APPEND JSSC_ADDITIONAL_INCLUDES ${IOKit_INCLUDE_DIR})
-    endif(IOKit)
-endif(APPLE)
+	# Locate IOKit framework for serial/ioss.h
+	find_library(IOKit IOKit)
+	if(IOKit)
+		find_path(IOKit_INCLUDE_DIR NAMES IOKitLib.h HINTS ${IOKit_INC_SEARCH_PATH} ${IOKit_PKGC_INCLUDE_DIRS} PATH_SUFFIXES IOKit)
+		list(APPEND JSSC_ADDITIONAL_INCLUDES ${IOKit_INCLUDE_DIR})
+	endif()
+endif()
 
 if(WIN32)
-	SET(JSSC_PLATFORM "windows")
+	set(JSSC_PLATFORM "windows")
 else()
-	SET(JSSC_PLATFORM "_nix_based")
+	set(JSSC_PLATFORM "_nix_based")
 endif()
 
 add_library(jssc SHARED
