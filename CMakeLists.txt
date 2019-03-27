@@ -21,7 +21,7 @@ if(APPLE)
 endif()
 
 # Statically link gcc/c++
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
 endif()
 
@@ -47,5 +47,8 @@ set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
-	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" $<TARGET_FILE:jssc>)
+	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		set(STRIP_ARGS -x)
+	endif()
+	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" ${STRIP_ARGS} $<TARGET_FILE:jssc>)
 endif()
