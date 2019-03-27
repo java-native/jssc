@@ -22,7 +22,21 @@ endif()
 
 # Statically link gcc/c++
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
+	if(WIN32)
+		# Assume mingw, use "-static"
+		set(CMAKE_CXX_STANDARD_LIBRARIES "-static ${CMAKE_CXX_STANDARD_LIBRARIES}")
+	else()
+		set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
+	endif()
+	execute_process(COMMAND uname OUTPUT_VARIABLE OS_TYPE OUTPUT_STRIP_TRAILING_WHITESPACE)
+	if(OS_TYPE STREQUAL "Darwin")
+		# Try to locate JNI again for edge-case (e.g. cross-compiling)
+		if(NOT JNI_FOUND)
+			execute_process(COMMAND /usr/libexec/java_home OUTPUT_VARIABLE JAVA_HOME OUTPUT_STRIP_TRAILING_WHITESPACE)
+			SET(ENV{JAVA_HOME} ${JAVA_HOME})
+			find_package(JNI)
+		endif()
+	endif()
 endif()
 
 if(WIN32)
