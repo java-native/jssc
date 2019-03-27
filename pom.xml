@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.github.java-native</groupId>
+  <artifactId>java-simple-serial-connector</artifactId>
+  <version>2.8.1-SNAPSHOT</version>
+
+  <properties>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.release>6</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <javah.skip>false</javah.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.scijava</groupId>
+      <artifactId>native-lib-loader</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+
+  <build>
+    <!-- bogus and does not sync with maven conventions -->
+    <sourceDirectory>src/java</sourceDirectory>
+
+    <plugins>
+      <!--
+         create header file
+         CMAKE can only do this from jar archives.
+       -->
+      <plugin>
+        <groupId>com.github.maven-nar</groupId>
+        <artifactId>nar-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <extensions>true</extensions>
+
+        <executions>
+          <execution>
+            <id>default-nar-javah</id>
+            <goals>
+              <goal>nar-javah</goal>
+            </goals>
+            <phase>compile</phase>
+            <configuration>
+              <skip>${javah.skip}</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- execute cmake -->
+      <plugin>
+        <groupId>com.googlecode.cmake-maven-project</groupId>
+        <artifactId>cmake-maven-plugin</artifactId>
+        <version>3.7.2-b1</version>
+        <executions>
+          <execution>
+            <id>cmake-generate</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourcePath>${project.basedir}</sourcePath>
+              <targetPath>${project.build.directory}/cmake</targetPath>
+              <generator>Unix Makefiles</generator>
+              <classifier>linux-x86_64</classifier>
+              <environmentVariables>
+                <key>value</key>
+              </environmentVariables>
+              <options>
+                <!--
+                  Optional: One or more options found at https://cmake.org/cmake/help/v3.7/manual/cmake.1.html
+                  For example:
+                -->
+                <option>-DBUILD_THIRDPARTY:bool=on</option>
+              </options>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>cmake-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <projectDirectory>${project.build.directory}/cmake</projectDirectory>
+              <classifier>linux-x86_64</classifier>
+              <environmentVariables>
+                <key>value</key>
+              </environmentVariables>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M3</version>
+
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <profiles>
+    <!--
+      javah is gone since java9, do not invoke it.
+    -->
+    <profile>
+      <id>java-9</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <javah.skip>true</javah.skip>
+      </properties>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                <compilerArgs>
+                  <arg>-h</arg>
+                  <arg>${project.build.directory}/nar/javah-include</arg>
+                </compilerArgs>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

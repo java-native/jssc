@@ -1,5 +1,10 @@
-cmake_minimum_required(VERSION 3.9)
-project(jssc VERSION 2.8.0 DESCRIPTION "Java Simple Serial Connector")
+cmake_minimum_required(VERSION 3.2)
+project(jssc
+  VERSION 2.8.1
+  LANGUAGES CXX)
+
+# not supported in early cmake versions.
+# DESCRIPTION "Java Simple Serial Connector"
 
 find_package(Java)
 find_package(JNI)
@@ -56,6 +61,14 @@ else()
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
 
+
+# append the generated header file (which should not be generated in to a source folder).
+list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
+
+# output to maven conventions to target/generated-sources/<generator>
+# The other part will be in conventions to native-lib-loader.
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/linux_64)
+
 add_library(jssc SHARED
     src/cpp/${JSSC_PLATFORM}/jssc.cpp
 )
@@ -63,8 +76,9 @@ add_library(jssc SHARED
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
 
 set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(jssc PROPERTIES PUBLIC_HEADER src/jssc_SerialNativeInterface.h)
+set_target_properties(jssc PROPERTIES PUBLIC_HEADER target/nar/javah-include/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
