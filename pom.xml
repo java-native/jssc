@@ -149,6 +149,41 @@
         </pluginManagement>
       </build>
     </profile>
+
+    <!-- configure cmake profiles -->
+
+    <!-- cmake windows-amd64 profile -->
+    <profile>
+      <id>cmake-win64</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <cmake.root.dir>%programfiles%\CMake</cmake.root.dir>
+        <!-- child.dir is actually not a dir. -->
+        <cmake.child.dir>bin\cmake.exe</cmake.child.dir>
+      </properties>
+    </profile>
+
+    <!-- cmake mac (any arch) profile -->
+    <profile>
+      <id>cmake-macos</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <!-- any arch -->
+        </os>
+      </activation>
+      <properties>
+        <!-- final dir is: ${cmake.root.dir}/${cmake.child.dir} -->
+        <cmake.root.dir>/usr/local</cmake.root.dir>
+      </properties>
+
+    </profile>
+
   </profiles>
 
 </project>
