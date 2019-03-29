@@ -67,6 +67,7 @@ list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
 
 # output to maven conventions to target/generated-sources/<generator>
 # The other part will be in conventions to native-lib-loader.
+# FIXME: get platorm name from maven(?) or by using if/else/endif
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/linux_64)
 
 add_library(jssc SHARED
