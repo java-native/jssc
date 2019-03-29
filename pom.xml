@@ -162,7 +162,8 @@
         </os>
       </activation>
       <properties>
-        <cmake.root.dir>%programfiles%\CMake</cmake.root.dir>
+        <!--suppress UnresolvedMavenProperty -->
+        <cmake.root.dir>${env.programfiles}\CMake</cmake.root.dir>
         <!-- child.dir is actually not a dir. -->
         <cmake.child.dir>bin\cmake.exe</cmake.child.dir>
       </properties>
