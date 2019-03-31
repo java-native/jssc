@@ -15,7 +15,6 @@ public class SerialNativeInterfaceTest {
         String version = SerialNativeInterface.getNativeLibraryVersion();
 
         assertThat(version, is("2.8.1"));
-
     }
 
 }
