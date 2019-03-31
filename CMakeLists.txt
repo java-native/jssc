@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.7)
 project(jssc
-  VERSION 2.8.1
+  # FIXME: add back if we can get the cmake min version > 3.
+  # VERSION 2.7.1
   LANGUAGES CXX)
 
 # not supported in early cmake versions.
@@ -76,7 +77,8 @@ add_library(jssc SHARED
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
 
-set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
+# FIXME: add back if we can get the cmake min version > 3.
+# set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER target/nar/javah-include/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

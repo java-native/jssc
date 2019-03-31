@@ -14,8 +14,13 @@
     <maven.compiler.release>6</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <!-- used to skip javah execution for java9+, see profile below. -->
     <javah.skip>false</javah.skip>
     <cmake.download.binaries>false</cmake.download.binaries>
+    <!-- cmake maven plugin -->
+    <cmake.classifier>linux-x86_64</cmake.classifier>
+    <!-- native lib loader (dependency) -->
+    <native.lib.directory>linux_64</native.lib.directory>
   </properties>
 
   <dependencies>
@@ -70,6 +75,7 @@
 
         <configuration>
           <downloadBinaries>${cmake.download.binaries}</downloadBinaries>
+          <classifier>${cmake.classifier}</classifier>
         </configuration>
 
         <executions>
@@ -82,10 +88,6 @@
               <sourcePath>${project.basedir}</sourcePath>
               <targetPath>${project.build.directory}/cmake</targetPath>
               <generator>Unix Makefiles</generator>
-              <classifier>linux-x86_64</classifier>
-              <environmentVariables>
-                <key>value</key>
-              </environmentVariables>
               <options>
                 <!--
                   Optional: One or more options found at https://cmake.org/cmake/help/v3.7/manual/cmake.1.html
@@ -103,10 +105,6 @@
             </goals>
             <configuration>
               <projectDirectory>${project.build.directory}/cmake</projectDirectory>
-              <classifier>linux-x86_64</classifier>
-              <environmentVariables>
-                <key>value</key>
-              </environmentVariables>
             </configuration>
           </execution>
         </executions>
@@ -116,6 +114,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M3</version>
+
+        <configuration>
+          <forkMode>once</forkMode>
+          <argLine>-Djava.library.path=${project.build.directory}/classes/META-INF/lib/${native.lib.directory}</argLine>
+        </configuration>
 
       </plugin>
 
@@ -164,6 +167,8 @@
       </activation>
       <properties>
         <cmake.download.binaries>true</cmake.download.binaries>
+        <cmake.classifier>windows-x86_64</cmake.classifier>
+        <native.lib.directory>windows_64</native.lib.directory>
         <cmake.root.dir />
         <cmake.child.dir />
       </properties>
@@ -181,6 +186,8 @@
       <properties>
         <!-- final dir is: ${cmake.root.dir}/${cmake.child.dir} -->
         <cmake.root.dir>/usr/local</cmake.root.dir>
+        <cmake.classifier>mac-x86_64</cmake.classifier>
+        <native.lib.directory>osx_64</native.lib.directory>
       </properties>
 
     </profile>
