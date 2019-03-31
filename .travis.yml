@@ -10,6 +10,11 @@ addons:
   apt:
     packages:
     - cmake
+    - make
+    - gcc
+    - g++
+    - libc6-dev
+
 
 script: mvn --fail-never --batch-mode test
 
