@@ -11,7 +11,7 @@ addons:
     packages:
     - cmake
 
-script: mvn -B test
+script: mvn --fail-never --batch-mode test
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
