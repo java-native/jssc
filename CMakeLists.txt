@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.7)
 project(jssc
   # FIXME: add back if we can get the cmake min version > 3.
   # VERSION 2.7.1
-  LANGUAGES CXX)
+  # FIXME: Dropped Languages for cmake <3.0 for now.
+  #LANGUAGES CXX
+  )
 
 # not supported in early cmake versions.
 # DESCRIPTION "Java Simple Serial Connector"
