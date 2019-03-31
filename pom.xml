@@ -15,6 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <javah.skip>false</javah.skip>
+    <cmake.download.binaries>false</cmake.download.binaries>
   </properties>
 
   <dependencies>
@@ -68,7 +69,7 @@
         <version>3.7.2-b1</version>
 
         <configuration>
-          <downloadBinaries>false</downloadBinaries>
+          <downloadBinaries>${cmake.download.binaries}</downloadBinaries>
         </configuration>
 
         <executions>
@@ -162,10 +163,9 @@
         </os>
       </activation>
       <properties>
-        <!--suppress UnresolvedMavenProperty -->
-        <cmake.root.dir>${env.programfiles}\CMake</cmake.root.dir>
-        <!-- child.dir is actually not a dir. -->
-        <cmake.child.dir>bin\cmake.exe</cmake.child.dir>
+        <cmake.download.binaries>true</cmake.download.binaries>
+        <cmake.root.dir />
+        <cmake.child.dir />
       </properties>
     </profile>
 
