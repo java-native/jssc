@@ -1,0 +1,19 @@
+language: java
+
+cache:
+  directories:
+    - '$HOME/.m2'
+    - '$HOME/.jabba/jdk'
+
+
+addons:
+  apt:
+    packages:
+    - cmake
+
+script: mvn -B test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+
