@@ -115,11 +115,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M3</version>
 
-        <configuration>
-          <forkMode>once</forkMode>
-          <argLine>-Djava.library.path=${project.build.directory}/classes/META-INF/lib/${native.lib.directory}</argLine>
-        </configuration>
-
       </plugin>
 
     </plugins>

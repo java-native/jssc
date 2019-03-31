@@ -3,6 +3,7 @@ package jssc;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 public class SerialNativeInterfaceTest {
@@ -12,9 +13,15 @@ public class SerialNativeInterfaceTest {
     public void testInitNativeInterface() {
         SerialNativeInterface serial = new SerialNativeInterface();
 
-        String version = SerialNativeInterface.getNativeLibraryVersion();
-
-        assertThat(version, is("2.8.1"));
+        long handle = -1;
+        try {
+            handle = serial.openPort("ttyS0",false);
+            assertThat(handle, is(not(-1L)));
+        } finally {
+            if (handle != -1) {
+                serial.closePort(handle);
+            }
+        }
     }
 
 }
