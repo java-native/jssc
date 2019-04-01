@@ -87,7 +87,7 @@
             <configuration>
               <sourcePath>${project.basedir}</sourcePath>
               <targetPath>${project.build.directory}/cmake</targetPath>
-              <!--FIXME Makefules should be optional see cmake-maven-project/cmake-maven-project#7 -->
+              <!--FIXME "Makefiles" should be optional see cmake-maven-project/cmake-maven-project#7 -->
               <generator>Unix Makefiles</generator>
               <!--TODO Use -DCMAKE_TOOLCHAIN_FILE file for cross-compile
               <options>
