@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.7)
+cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0042 NEW)
 project(jssc VERSION 2.7.1 LANGUAGES CXX)
