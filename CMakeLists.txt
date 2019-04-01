@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.7)
 cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0042 NEW)
 project(jssc VERSION 2.7.1 LANGUAGES CXX)
 
 find_package(Java)
@@ -63,8 +64,14 @@ list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
 
 # output to maven conventions to target/generated-sources/<generator>
 # The other part will be in conventions to native-lib-loader.
-# FIXME: get platorm name from maven(?) or by using if/else/endif
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/linux_64)
+# linux, macos, etc
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	set(OS_BITS 64)
+else()
+	set(OS_BITS 32)
+endif()
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/${OS_NAME}_${OS_BITS})
 
 add_library(jssc SHARED
     src/cpp/${JSSC_PLATFORM}/jssc.cpp
