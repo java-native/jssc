@@ -1,13 +1,7 @@
-cmake_minimum_required(VERSION 2.7)
-project(jssc
-  # FIXME: add back if we can get the cmake min version > 3.
-  # VERSION 2.7.1
-  # FIXME: Dropped Languages for cmake <3.0 for now.
-  #LANGUAGES CXX
-  )
-
-# not supported in early cmake versions.
-# DESCRIPTION "Java Simple Serial Connector"
+cmake_minimum_required(VERSION 3.0)
+cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0042 NEW)
+project(jssc VERSION 2.7.1 LANGUAGES CXX)
 
 find_package(Java)
 find_package(JNI)
@@ -70,8 +64,23 @@ list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
 
 # output to maven conventions to target/generated-sources/<generator>
 # The other part will be in conventions to native-lib-loader.
-# FIXME: get platorm name from maven(?) or by using if/else/endif
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/linux_64)
+
+# linux, macos, etc
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+if(APPLE)
+	# scijava expects "osx", not "darwin"
+	set(OS_NAME "osx")
+endif()
+
+# 32-bit or 64-bit
+if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	set(OS_BITS 64)
+else()
+	set(OS_BITS 32)
+endif()
+
+# library (e.g. linux_64.so) TODO: Handle arm, hardfloat, etc
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/${OS_NAME}_${OS_BITS})
 
 add_library(jssc SHARED
     src/cpp/${JSSC_PLATFORM}/jssc.cpp
@@ -79,8 +88,7 @@ add_library(jssc SHARED
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
 
-# FIXME: add back if we can get the cmake min version > 3.
-# set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER target/nar/javah-include/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

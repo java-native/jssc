@@ -14,7 +14,7 @@
     <maven.compiler.release>6</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- used to skip javah execution for java9+, see profile below. -->
+    <!-- skip javah execution for java9+, see profile below. -->
     <javah.skip>false</javah.skip>
     <cmake.download.binaries>false</cmake.download.binaries>
     <!-- cmake maven plugin -->
@@ -87,14 +87,13 @@
             <configuration>
               <sourcePath>${project.basedir}</sourcePath>
               <targetPath>${project.build.directory}/cmake</targetPath>
+              <!--FIXME "Makefiles" should be optional see cmake-maven-project/cmake-maven-project#7 -->
               <generator>Unix Makefiles</generator>
+              <!--TODO Use -DCMAKE_TOOLCHAIN_FILE file for cross-compile
               <options>
-                <!--
-                  Optional: One or more options found at https://cmake.org/cmake/help/v3.7/manual/cmake.1.html
-                  For example:
-                -->
-                <option>-DBUILD_THIRDPARTY:bool=on</option>
+                <option>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake</option>
               </options>
+              -->
             </configuration>
           </execution>
 
@@ -169,13 +168,12 @@
       </properties>
     </profile>
 
-    <!-- cmake mac (any arch) profile -->
+    <!-- cmake mac profile -->
     <profile>
       <id>cmake-macos</id>
       <activation>
         <os>
           <family>mac</family>
-          <!-- any arch -->
         </os>
       </activation>
       <properties>
