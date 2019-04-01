@@ -68,8 +68,8 @@ list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
 # linux, macos, etc
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
 if(APPLE)
-	# scijava expects "darwin", not "osx"
-	set(OS_NAME "darwin")
+	# scijava expects "osx", not "darwin"
+	set(OS_NAME "osx")
 endif()
 
 # 32-bit or 64-bit
