@@ -64,13 +64,22 @@ list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
 
 # output to maven conventions to target/generated-sources/<generator>
 # The other part will be in conventions to native-lib-loader.
+
 # linux, macos, etc
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+if(APPLE)
+	# scijava expects "darwin", not "osx"
+	set(OS_NAME "darwin")
+endif()
+
+# 32-bit or 64-bit
 if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
 	set(OS_BITS 64)
 else()
 	set(OS_BITS 32)
 endif()
+
+# library (e.g. linux_64.so) TODO: Handle arm, hardfloat, etc
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/${OS_NAME}_${OS_BITS})
 
 add_library(jssc SHARED
