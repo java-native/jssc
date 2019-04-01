@@ -19,8 +19,15 @@
     <cmake.download.binaries>false</cmake.download.binaries>
     <!-- cmake maven plugin -->
     <cmake.classifier>linux-x86_64</cmake.classifier>
-	<!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
-	<cmake.generator>Unix Makefiles</cmake.generator>
+    <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
+    <cmake.generator>Unix Makefiles</cmake.generator>
+    <!-- Additional command-line options, last prevents warnings on unused options -->
+    <!--FIXME empty option tag throw NPE see cmake-maven-project/cmake-maven-project#24 -->
+    <cmake.option.first>-DFIRST=empty</cmake.option.first>
+    <cmake.option.second>-DSECOND=empty</cmake.option.second>
+    <cmake.option.third>-DTHIRD=empty</cmake.option.third>
+    <cmake.option.fourth>-DFOURTH=empty</cmake.option.fourth>
+    <cmake.option.last>--no-warn-unused-cli</cmake.option.last>
     <!-- native lib loader (dependency) -->
     <native.lib.directory>linux_64</native.lib.directory>
   </properties>
@@ -91,11 +98,13 @@
               <targetPath>${project.build.directory}/cmake</targetPath>
               <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
               <generator>${cmake.generator}</generator>
-              <!--TODO Use -DCMAKE_TOOLCHAIN_FILE file for cross-compile
               <options>
-                <option>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake</option>
+                <option>${cmake.option.first}</option>
+                <option>${cmake.option.second}</option>
+                <option>${cmake.option.third}</option>
+                <option>${cmake.option.fourth}</option>
+                <option>${cmake.option.last}</option>
               </options>
-              -->
             </configuration>
           </execution>
 
@@ -162,11 +171,60 @@
         </os>
       </activation>
       <properties>
+        <native.lib.directory>windows_64</native.lib.directory>
         <cmake.root.dir>${env.PROGRAMFILES}/CMake</cmake.root.dir>
         <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
         <cmake.generator>Visual Studio 14 2015</cmake.generator>
         <cmake.classifier>windows-x86_64</cmake.classifier>
+        <cmake.option.first>--config Release</cmake.option.first>
+        <cmake.option.second>-DCMAKE_GENERATOR_PLATFORM=x64</cmake.option.second>
+        <cmake.option.third>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.third>
+      </properties>
+    </profile>
+
+    <!-- cmake windows-x86 profile -->
+    <profile>
+      <id>cmake-win32</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+          <arch>x86</arch>
+        </os>
+      </activation>
+      <properties>
+        <native.lib.directory>windows_32</native.lib.directory>
+        <cmake.root.dir>${env.PROGRAMFILES}/CMake</cmake.root.dir>
+        <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
+        <cmake.generator>Visual Studio 14 2015</cmake.generator>
+        <cmake.classifier>windows-x86_32</cmake.classifier>
+        <cmake.option.first>--config Release</cmake.option.first>
+        <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
+      </properties>
+    </profile>
+
+    <!-- mingw32 profile -->
+    <!-- TODO: Untested.  Test this mingw32 profile: "mvn -P cmake-mingw32 install" -->
+    <profile>
+      <id>cmake-mingw32</id>
+      <properties>
+        <native.lib.directory>windows_32</native.lib.directory>
+        <cmake.generator>Unix Makefiles</cmake.generator>
+        <cmake.classifier>windows-x86_32</cmake.classifier>
+        <cmake.option.first>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake</cmake.option.first>
+        <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
+      </properties>
+    </profile>
+
+    <!-- mingw64 profile -->
+    <!-- TODO: Untested.  Test this mingw64 profile: "mvn -P cmake-mingw64 install" -->
+    <profile>
+      <id>cmake-mingw64</id>
+      <properties>
         <native.lib.directory>windows_64</native.lib.directory>
+        <cmake.generator>Unix Makefiles</cmake.generator>
+        <cmake.classifier>windows-x86_64</cmake.classifier>
+        <cmake.option.first>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake</cmake.option.first>
+        <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
       </properties>
     </profile>
 
@@ -183,6 +241,7 @@
         <cmake.root.dir>/usr/local</cmake.root.dir>
         <cmake.classifier>mac-x86_64</cmake.classifier>
         <native.lib.directory>osx_64</native.lib.directory>
+        <cmake.option.first>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.first>
       </properties>
 
     </profile>

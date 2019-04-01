@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0042 NEW)
+
 project(jssc VERSION 2.7.1 LANGUAGES CXX)
+
+
 
 find_package(Java)
 find_package(JNI)
@@ -65,33 +68,37 @@ list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
 # output to maven conventions to target/generated-sources/<generator>
 # The other part will be in conventions to native-lib-loader.
 
-# linux, macos, etc
-string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
-if(APPLE)
-	# See <native.lib.directory> in pox.xml
-	set(OS_NAME "osx")
+# Detect platform if -DNATIVE_LIB_DIR is not provided
+# TODO: Handle arm, hardfloat, etc
+if(NOT NATIVE_LIB_DIR)
+	# windows, linux, darwin, etc
+	string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+
+	# 32-bit or 64-bit
+	#FIXME: Might fail on cross-compile
+	if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+		set(OS_BITS 64)
+	else()
+		set(OS_BITS 32)
+	endif()
+	SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
 endif()
 
-# 32-bit or 64-bit
-if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-	set(OS_BITS 64)
-else()
-	set(OS_BITS 32)
-endif()
+# library (e.g. /linux_64/)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/${NATIVE_LIB_DIR})
 
-# library (e.g. linux_64.so) TODO: Handle arm, hardfloat, etc
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/${OS_NAME}_${OS_BITS})
-
-add_library(jssc SHARED
-    src/cpp/${JSSC_PLATFORM}/jssc.cpp
-)
+add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
 
 set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER target/nar/javah-include/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
+if(MSVC)
+	# Fix paths for Debug/Release
+	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+endif()
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
