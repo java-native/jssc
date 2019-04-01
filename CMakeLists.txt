@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 2.7)
-project(jssc
-  # FIXME: add back if we can get the cmake min version > 3.
-  # VERSION 2.7.1
-  # FIXME: Dropped Languages for cmake <3.0 for now.
-  #LANGUAGES CXX
-  )
-
-# not supported in early cmake versions.
-# DESCRIPTION "Java Simple Serial Connector"
+cmake_policy(SET CMP0048 NEW)
+project(jssc VERSION 2.7.1 LANGUAGES CXX)
 
 find_package(Java)
 find_package(JNI)
@@ -79,8 +72,7 @@ add_library(jssc SHARED
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
 
-# FIXME: add back if we can get the cmake min version > 3.
-# set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER target/nar/javah-include/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
