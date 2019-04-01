@@ -68,7 +68,7 @@ list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
 # linux, macos, etc
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
 if(APPLE)
-	# scijava expects "osx", not "darwin"
+	# See <native.lib.directory> in pox.xml
 	set(OS_NAME "osx")
 endif()
 

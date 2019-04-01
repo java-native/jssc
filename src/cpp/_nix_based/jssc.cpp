@@ -52,7 +52,7 @@
  * Get native library version
  */
 JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersion(JNIEnv *env, jobject object) {
-    return env->NewStringUTF("2.8.1");
+    return env->NewStringUTF("FIXME" /* FIXME: jSSC_NATIVE_LIB_VERSION missing */);
 }
 
 /* OK */
