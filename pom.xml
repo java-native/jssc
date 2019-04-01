@@ -203,7 +203,6 @@
     </profile>
 
     <!-- mingw32 profile -->
-    <!-- TODO: Untested.  Test this mingw32 profile: "mvn -P cmake-mingw32 install" -->
     <profile>
       <id>cmake-mingw32</id>
       <properties>
@@ -212,11 +211,11 @@
         <cmake.classifier>windows-x86_32</cmake.classifier>
         <cmake.option.first>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake</cmake.option.first>
         <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
+        <cmake.child.dir>bin/cmake</cmake.child.dir>
       </properties>
     </profile>
 
     <!-- mingw64 profile -->
-    <!-- TODO: Untested.  Test this mingw64 profile: "mvn -P cmake-mingw64 install" -->
     <profile>
       <id>cmake-mingw64</id>
       <properties>
@@ -225,6 +224,7 @@
         <cmake.classifier>windows-x86_64</cmake.classifier>
         <cmake.option.first>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake</cmake.option.first>
         <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
+        <cmake.child.dir>bin/cmake</cmake.child.dir>
       </properties>
     </profile>
 

@@ -94,8 +94,8 @@ target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_IN
 set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER target/nar/javah-include/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
-if(MSVC)
-	# Fix paths for Debug/Release
+if(WIN32)
+	# Fix paths for MSVC (Debug/Release) and MINGW
 	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 endif()
