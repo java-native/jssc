@@ -19,6 +19,7 @@
     <cmake.download.binaries>false</cmake.download.binaries>
     <!-- cmake maven plugin -->
     <cmake.classifier>linux-x86_64</cmake.classifier>
+    <cmake.generator>Unix Makefiles</cmake.generator>
     <!-- native lib loader (dependency) -->
     <native.lib.directory>linux_64</native.lib.directory>
   </properties>
@@ -88,7 +89,7 @@
               <sourcePath>${project.basedir}</sourcePath>
               <targetPath>${project.build.directory}/cmake</targetPath>
               <!--FIXME "Makefiles" should be optional see cmake-maven-project/cmake-maven-project#7 -->
-              <generator>Unix Makefiles</generator>
+              <generator>${cmake.generator}</generator>
               <!--TODO Use -DCMAKE_TOOLCHAIN_FILE file for cross-compile
               <options>
                 <option>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake</option>
@@ -162,6 +163,7 @@
       <properties>
         <cmake.download.binaries>true</cmake.download.binaries>
         <cmake.classifier>windows-x86_64</cmake.classifier>
+        <cmake.generator>MinGW Makefiles</cmake.generator>
         <native.lib.directory>windows_64</native.lib.directory>
         <cmake.root.dir />
         <cmake.child.dir />
