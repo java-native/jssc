@@ -37,6 +37,7 @@ target/
 
 # IDE files: IntellIJ
 .idea/
+*.iml
 
 # IDE files: eclipse
 .settings/

@@ -16,27 +16,32 @@
 
     <!-- skip javah execution for java9+, see profile below. -->
     <javah.skip>false</javah.skip>
-    <cmake.download.binaries>false</cmake.download.binaries>
-    <!-- cmake maven plugin -->
-    <cmake.classifier>linux-x86_64</cmake.classifier>
-    <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
-    <cmake.generator>Unix Makefiles</cmake.generator>
-    <!-- Additional command-line options, last prevents warnings on unused options -->
-    <!--FIXME empty option tag throw NPE see cmake-maven-project/cmake-maven-project#24 -->
-    <cmake.option.first>-DFIRST=empty</cmake.option.first>
-    <cmake.option.second>-DSECOND=empty</cmake.option.second>
-    <cmake.option.third>-DTHIRD=empty</cmake.option.third>
-    <cmake.option.fourth>-DFOURTH=empty</cmake.option.fourth>
-    <cmake.option.last>--no-warn-unused-cli</cmake.option.last>
     <!-- native lib loader (dependency) -->
     <native.lib.directory>linux_64</native.lib.directory>
+
+    <!-- custom directories and file paths -->
+    <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
+    <cmake.liststxt.path>${project.basedir}/CMakeLists.txt</cmake.liststxt.path>
+
+    <!-- custom cmake options -->
+    <cmake.generate.args></cmake.generate.args>
+    <cmake.build.args></cmake.build.args>
+    <!-- options given in compile phase after double dashes. -->
+    <cmake.buildtool.args></cmake.buildtool.args>
+
+    <!-- dependency versions -->
+    <dependency.nativelibloader.version>2.0.2</dependency.nativelibloader.version>
+
+    <!-- plugin versions -->
+    <plugin.antrun.version>1.8</plugin.antrun.version>
+    <plugin.nar.version>3.6.0</plugin.nar.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.scijava</groupId>
       <artifactId>native-lib-loader</artifactId>
-      <version>2.0.2</version>
+      <version>${dependency.nativelibloader.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -59,7 +64,7 @@
       <plugin>
         <groupId>com.github.maven-nar</groupId>
         <artifactId>nar-maven-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>${plugin.nar.version}</version>
         <extensions>true</extensions>
 
         <executions>
@@ -78,47 +83,47 @@
 
       <!-- execute cmake -->
       <plugin>
-        <groupId>com.googlecode.cmake-maven-project</groupId>
-        <artifactId>cmake-maven-plugin</artifactId>
-        <version>3.7.2-b1</version>
-
-        <configuration>
-          <downloadBinaries>${cmake.download.binaries}</downloadBinaries>
-          <classifier>${cmake.classifier}</classifier>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${plugin.antrun.version}</version>
 
         <executions>
           <execution>
             <id>cmake-generate</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
+            <goals><goal>run</goal></goals>
+            <phase>generate-sources</phase>
             <configuration>
-              <sourcePath>${project.basedir}</sourcePath>
-              <targetPath>${project.build.directory}/cmake</targetPath>
-              <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
-              <generator>${cmake.generator}</generator>
-              <options>
-                <option>${cmake.option.first}</option>
-                <option>${cmake.option.second}</option>
-                <option>${cmake.option.third}</option>
-                <option>${cmake.option.fourth}</option>
-                <option>${cmake.option.last}</option>
-              </options>
+              <target name="cmake-generate">
+                <mkdir dir="${cmake.generated.directory}" />
+
+                <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
+                  <arg line="${project.basedir}" />
+                  <arg line="--no-warn-unused-cli" />
+                  <arg line="${cmake.generate.args}" />
+                </exec>
+              </target>
             </configuration>
           </execution>
 
           <execution>
             <id>cmake-compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
+            <goals><goal>run</goal></goals>
+            <phase>compile</phase>
             <configuration>
-              <projectDirectory>${project.build.directory}/cmake</projectDirectory>
+              <target name="cmake-build">
+                <exec executable="cmake" dir="${project.basedir}" failonerror="true">
+                  <arg line="--build" />
+                  <arg line="${cmake.generated.directory}" />
+                  <arg line="${cmake.build.args}" />
+                  <arg line="--" />
+                  <arg line="${cmake.buildtool.args}" />
+                </exec>
+              </target>
             </configuration>
           </execution>
         </executions>
       </plugin>
+
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -172,13 +177,9 @@
       </activation>
       <properties>
         <native.lib.directory>windows_64</native.lib.directory>
-        <cmake.root.dir>${env.PROGRAMFILES}/CMake</cmake.root.dir>
-        <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
         <cmake.generator>Visual Studio 14 2015</cmake.generator>
-        <cmake.classifier>windows-x86_64</cmake.classifier>
-        <cmake.option.first>--config Release</cmake.option.first>
-        <cmake.option.second>-DCMAKE_GENERATOR_PLATFORM=x64</cmake.option.second>
-        <cmake.option.third>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.third>
+        <cmake.generate.args>-G "${cmake.generator}" --config Release -DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.build.args>${cmake.generate.args}</cmake.build.args>
       </properties>
     </profile>
 
@@ -193,12 +194,9 @@
       </activation>
       <properties>
         <native.lib.directory>windows_32</native.lib.directory>
-        <cmake.root.dir>${env.PROGRAMFILES}/CMake</cmake.root.dir>
-        <!--FIXME "Makefiles" parameter MUST be optional see cmake-maven-project/cmake-maven-project#7 -->
         <cmake.generator>Visual Studio 14 2015</cmake.generator>
-        <cmake.classifier>windows-x86_32</cmake.classifier>
-        <cmake.option.first>--config Release</cmake.option.first>
-        <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
+        <cmake.generate.args>-G "${cmake.generator}" --config Release -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.build.args>${cmake.generate.args}</cmake.build.args>
       </properties>
     </profile>
 
@@ -207,11 +205,8 @@
       <id>cmake-mingw32</id>
       <properties>
         <native.lib.directory>windows_32</native.lib.directory>
-        <cmake.generator>Unix Makefiles</cmake.generator>
-        <cmake.classifier>windows-x86_32</cmake.classifier>
-        <cmake.option.first>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake</cmake.option.first>
-        <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
-        <cmake.child.dir>bin/cmake</cmake.child.dir>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.build.args>${cmake.generate.args}</cmake.build.args>
       </properties>
     </profile>
 
@@ -220,11 +215,8 @@
       <id>cmake-mingw64</id>
       <properties>
         <native.lib.directory>windows_64</native.lib.directory>
-        <cmake.generator>Unix Makefiles</cmake.generator>
-        <cmake.classifier>windows-x86_64</cmake.classifier>
-        <cmake.option.first>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake</cmake.option.first>
-        <cmake.option.second>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.second>
-        <cmake.child.dir>bin/cmake</cmake.child.dir>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=${native.lib.directory</cmake.generate.args>
+        <cmake.build.args>${cmake.generate.args}</cmake.build.args>
       </properties>
     </profile>
 
@@ -238,10 +230,9 @@
       </activation>
       <properties>
         <!-- final dir is: ${cmake.root.dir}/${cmake.child.dir} -->
-        <cmake.root.dir>/usr/local</cmake.root.dir>
-        <cmake.classifier>mac-x86_64</cmake.classifier>
         <native.lib.directory>osx_64</native.lib.directory>
-        <cmake.option.first>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.option.first>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.build.args>${cmake.generate.args}</cmake.build.args>
       </properties>
 
     </profile>
