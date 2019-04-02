@@ -179,7 +179,6 @@
         <native.lib.directory>windows_64</native.lib.directory>
         <cmake.generator>Visual Studio 14 2015</cmake.generator>
         <cmake.generate.args>-G "${cmake.generator}" --config Release -DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
-        <cmake.build.args>${cmake.generate.args}</cmake.build.args>
       </properties>
     </profile>
 
@@ -196,7 +195,6 @@
         <native.lib.directory>windows_32</native.lib.directory>
         <cmake.generator>Visual Studio 14 2015</cmake.generator>
         <cmake.generate.args>-G "${cmake.generator}" --config Release -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
-        <cmake.buildtool.args>${cmake.generate.args}</cmake.buildtool.args>
       </properties>
     </profile>
 
@@ -206,7 +204,6 @@
       <properties>
         <native.lib.directory>windows_32</native.lib.directory>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
-        <cmake.buildtool.args>${cmake.generate.args}</cmake.buildtool.args>
       </properties>
     </profile>
 
@@ -216,7 +213,6 @@
       <properties>
         <native.lib.directory>windows_64</native.lib.directory>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=${native.lib.directory</cmake.generate.args>
-        <cmake.buildtool.args>${cmake.generate.args}</cmake.buildtool.args>
       </properties>
     </profile>
 
@@ -232,7 +228,6 @@
         <!-- final dir is: ${cmake.root.dir}/${cmake.child.dir} -->
         <native.lib.directory>osx_64</native.lib.directory>
         <cmake.generate.args>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
-        <cmake.buildtool.args>${cmake.generate.args}</cmake.buildtool.args>
       </properties>
 
     </profile>
