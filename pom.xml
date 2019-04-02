@@ -20,7 +20,7 @@
     <native.lib.directory>linux_64</native.lib.directory>
 
     <!-- custom directories and file paths -->
-    <cpp.src.directory>src/main/cpp</cpp.src.directory>
+    <cpp.src.directory>src/cpp</cpp.src.directory>
     <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
     <cmake.liststxt.path>${project.basedir}/CMakeLists.txt</cmake.liststxt.path>
     <javah.output.dir>${project.build.directory}/nar/javah-include</javah.output.dir>
@@ -56,6 +56,9 @@
 
 
   <build>
+    <!-- FIXME: apply maven conventions -->
+    <sourceDirectory>src/java</sourceDirectory>
+
     <plugins>
       <!--
          create header file
