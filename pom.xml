@@ -20,8 +20,11 @@
     <native.lib.directory>linux_64</native.lib.directory>
 
     <!-- custom directories and file paths -->
+    <cpp.src.directory>src/main/cpp</cpp.src.directory>
     <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
     <cmake.liststxt.path>${project.basedir}/CMakeLists.txt</cmake.liststxt.path>
+    <javah.output.dir>${project.build.directory}/nar/javah-include</javah.output.dir>
+    <nativelib.directory>${project.build.outputDirectory}/META-INF/lib</nativelib.directory>
 
     <!-- custom cmake options -->
     <cmake.generate.args></cmake.generate.args>
@@ -53,9 +56,6 @@
 
 
   <build>
-    <!-- bogus and does not sync with maven conventions -->
-    <sourceDirectory>src/java</sourceDirectory>
-
     <plugins>
       <!--
          create header file
@@ -99,6 +99,9 @@
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}" />
                   <arg line="--no-warn-unused-cli" />
+                  <arg line="-DCPP_SRC_DIR=${cpp.src.directory}" />
+                  <arg line="-DJNI_GENERATED_HEADERS_DIR=${javah.output.dir}" />
+                  <arg line="-DJNI_NATIVE_LIB_DIR=${nativelib.directory}" />
                   <arg line="${cmake.generate.args}" />
                 </exec>
               </target>
@@ -112,8 +115,7 @@
             <configuration>
               <target name="cmake-build">
                 <exec executable="cmake" dir="${project.basedir}" failonerror="true">
-                  <arg line="--build" />
-                  <arg line="${cmake.generated.directory}" />
+                  <arg line="--build ${cmake.generated.directory}" />
                   <arg line="${cmake.build.args}" />
                   <arg line="--" />
                   <arg line="${cmake.buildtool.args}" />

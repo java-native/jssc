@@ -63,7 +63,7 @@ endif()
 
 
 # append the generated header file (which should not be generated in to a source folder).
-list(APPEND JSSC_ADDITIONAL_INCLUDES target/nar/javah-include/)
+list(APPEND JSSC_ADDITIONAL_INCLUDES ${JNI_GENERATED_HEADERS_DIR})
 
 # output to maven conventions to target/generated-sources/<generator>
 # The other part will be in conventions to native-lib-loader.
@@ -85,14 +85,14 @@ if(NOT NATIVE_LIB_DIR)
 endif()
 
 # library (e.g. /linux_64/)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../classes/META-INF/lib/${NATIVE_LIB_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${JNI_NATIVE_LIB_DIR}/${NATIVE_LIB_DIR})
 
-add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
+add_library(jssc SHARED ${CPP_SRC_DIR}/${JSSC_PLATFORM}/jssc.cpp)
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
 
 set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(jssc PROPERTIES PUBLIC_HEADER target/nar/javah-include/jssc_SerialNativeInterface.h)
+set_target_properties(jssc PROPERTIES PUBLIC_HEADER ${JNI_GENERATED_HEADERS_DIR}/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if(WIN32)
 	# Fix paths for MSVC (Debug/Release) and MINGW
