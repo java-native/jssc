@@ -38,6 +38,7 @@
     <!-- plugin versions -->
     <plugin.antrun.version>1.8</plugin.antrun.version>
     <plugin.nar.version>3.6.0</plugin.nar.version>
+    <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
   </properties>
 
   <dependencies>
@@ -135,6 +136,29 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M3</version>
 
+      </plugin>
+
+      <!-- check for java 6 compatiblity -->
+       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <version>${plugin.animalsniffer.version}</version>
+        <configuration>
+          <signature>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java16</artifactId>
+            <version>1.1</version>
+          </signature>
+        </configuration>
+        <executions>
+          <execution>
+            <id>ensure-java-1.6-class-library</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
     </plugins>
