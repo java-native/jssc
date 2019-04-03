@@ -243,7 +243,7 @@
       <id>cmake-mingw64</id>
       <properties>
         <native.lib.directory>windows_64</native.lib.directory>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=${native.lib.directory</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
       </properties>
     </profile>
 
