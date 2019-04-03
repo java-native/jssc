@@ -87,6 +87,11 @@ endif()
 # library (e.g. /linux_64/)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${JNI_NATIVE_LIB_DIR}/${NATIVE_LIB_DIR})
 
+# version.h using #cmakedefine for version from pom.xml.
+# Hint: Do not use PROJECT_VERSION, this is already used by cmake.
+set(JSSC_VERSION "${JSSC_VERSION}")
+configure_file(${CPP_SRC_DIR}/version.h.in ${JNI_GENERATED_HEADERS_DIR}/version.h @ONLY)
+
 add_library(jssc SHARED ${CPP_SRC_DIR}/${JSSC_PLATFORM}/jssc.cpp)
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
@@ -107,3 +112,9 @@ if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
 	endif()
 	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" ${STRIP_ARGS} $<TARGET_FILE:jssc>)
 endif()
+
+if(MSVC)
+  add_compile_options(/W4 /WX)
+else(MSVC)
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif(MSVC)

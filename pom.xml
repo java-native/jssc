@@ -106,6 +106,8 @@
                   <arg line="-DCPP_SRC_DIR=${cpp.src.directory}" />
                   <arg line="-DJNI_GENERATED_HEADERS_DIR=${javah.output.dir}" />
                   <arg line="-DJNI_NATIVE_LIB_DIR=${nativelib.directory}" />
+                  <!-- cannot use PROJECT_VERSION, this is already used by cmake itself. -->
+                  <arg line="-DJSSC_VERSION=${project.version}" />
                   <arg line="${cmake.generate.args}" />
                 </exec>
               </target>

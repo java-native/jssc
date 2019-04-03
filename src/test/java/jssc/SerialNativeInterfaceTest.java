@@ -1,6 +1,5 @@
 package jssc;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -28,7 +27,6 @@ public class SerialNativeInterfaceTest {
     }
 
     @Test
-    @Ignore
     public void testPrintVersion() {
         try {
             final String nativeLibraryVersion = SerialNativeInterface.getNativeLibraryVersion();
