@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <windows.h>
 #include <jssc_SerialNativeInterface.h>
+#include "version.h"
 
 //#include <iostream>
 
