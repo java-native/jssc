@@ -253,6 +253,7 @@
       <properties>
         <javah.skip>true</javah.skip>
         <jar.default.skip>true</jar.default.skip>
+        <maven.test.skip>true</maven.test.skip>
         <cmake.generate.skip>true</cmake.generate.skip>
         <cmake.compile.skip>true</cmake.compile.skip>
       </properties>
