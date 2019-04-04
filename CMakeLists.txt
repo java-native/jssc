@@ -72,7 +72,7 @@ if(MAVEN_OUTPUT_DIRECTORY)
 		# windows, linux, darwin, etc
 		string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
 		if(OS_NAME MATCHES "darwin")
-			set(OS_NAME "mac")
+			set(OS_NAME "osx")
 		endif()
 
 		# 32-bit or 64-bit
