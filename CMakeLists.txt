@@ -64,24 +64,28 @@ endif()
 # output to maven conventions to target/generated-sources/<generator>
 # The other part will be in conventions to native-lib-loader.
 
-# Detect platform if -DNATIVE_LIB_DIR is not provided
-# TODO: Handle arm, hardfloat, etc
-if(NOT NATIVE_LIB_DIR)
-	# windows, linux, darwin, etc
-	string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+# handle maven-triggered builds; place library in correct subfolder
+if(MAVEN_OUTPUT_DIRECTORY)
+	# Detect platform if -DNATIVE_LIB_DIR is not provided
+	# TODO: Handle arm, hardfloat, etc
+	if(NOT NATIVE_LIB_DIR)
+		# windows, linux, darwin, etc
+		string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+		if(OS_NAME MATCHES "darwin")
+			set(OS_NAME "mac")
+		endif()
 
-	# 32-bit or 64-bit
-	#FIXME: Might fail on cross-compile
-	if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-		set(OS_BITS 64)
-	else()
-		set(OS_BITS 32)
+		# 32-bit or 64-bit
+		#FIXME: Might fail on cross-compile
+		if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+			set(OS_BITS 64)
+		else()
+			set(OS_BITS 32)
+		endif()
+		SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
 	endif()
-	SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MAVEN_OUTPUT_DIRECTORY}/META-INF/lib/${NATIVE_LIB_DIR})
 endif()
-
-# library (e.g. /linux_64/)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${JNI_NATIVE_LIB_DIR}/${NATIVE_LIB_DIR})
 
 # version.h using #cmakedefine for version from pom.xml.
 # Hint: Do not use PROJECT_VERSION, this is already used by cmake.
@@ -109,8 +113,12 @@ if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
 	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" ${STRIP_ARGS} $<TARGET_FILE:jssc>)
 endif()
 
+# Handle compiler warnings
 if(MSVC)
-  add_compile_options(/W4 /WX)
-else(MSVC)
-  add_compile_options(-Wall -Wextra -pedantic -Werror)
-endif(MSVC)
+    #TODO Treat warnings as errors /WX
+	target_compile_options(jssc PRIVATE /W4)
+else()
+    #TODO Treat warnings as errors -Werror
+	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic)
+endif()
+

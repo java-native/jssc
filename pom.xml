@@ -17,12 +17,9 @@
     <!-- skip javah execution for java9+, see profile below. -->
     <javah.skip>false</javah.skip>
     <!-- native lib loader (dependency) -->
-    <!-- TODO: Handle linux_32 -->
-    <native.lib.directory>linux_64</native.lib.directory>
 
     <!-- custom directories and file paths -->
     <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
-    <nativelib.directory>${project.build.outputDirectory}/META-INF/lib</nativelib.directory>
 
     <!-- custom cmake options -->
     <cmake.generate.args></cmake.generate.args>
@@ -99,7 +96,7 @@
                 <mkdir dir="${cmake.generated.directory}" />
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}" />
-                  <arg line="-DJNI_NATIVE_LIB_DIR=${nativelib.directory}" />
+                  <arg line="-DMAVEN_OUTPUT_DIRECTORY=${project.build.outputDirectory}" />
                   <arg line="-DJSSC_VERSION=${project.version}" />
                   <arg line="${cmake.generate.args}" />
                 </exec>
@@ -198,7 +195,7 @@
 
     <!-- cmake windows-amd64 profile -->
     <profile>
-      <id>cmake-win64</id>
+      <id>win64</id>
       <activation>
         <os>
           <family>Windows</family>
@@ -206,15 +203,14 @@
         </os>
       </activation>
       <properties>
-        <native.lib.directory>windows_64</native.lib.directory>
-        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
 
     <!-- cmake windows-x86 profile -->
     <profile>
-      <id>cmake-win32</id>
+      <id>win32</id>
       <activation>
         <os>
           <family>Windows</family>
@@ -222,43 +218,35 @@
         </os>
       </activation>
       <properties>
-        <native.lib.directory>windows_32</native.lib.directory>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
 
     <!-- mingw32 profile -->
     <profile>
-      <id>cmake-mingw32</id>
+      <id>mingw32</id>
       <properties>
-        <native.lib.directory>windows_32</native.lib.directory>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake -DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
       </properties>
     </profile>
 
     <!-- mingw64 profile -->
     <profile>
-      <id>cmake-mingw64</id>
+      <id>mingw64</id>
       <properties>
-        <native.lib.directory>windows_64</native.lib.directory>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
       </properties>
     </profile>
 
     <!-- cmake mac profile -->
     <profile>
-      <id>cmake-macos</id>
+      <id>macos</id>
       <activation>
         <os>
           <family>mac</family>
         </os>
       </activation>
-      <properties>
-        <!-- final dir is: ${cmake.root.dir}/${cmake.child.dir} -->
-        <native.lib.directory>osx_64</native.lib.directory>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=${native.lib.directory}</cmake.generate.args>
-      </properties>
 
     </profile>
 
