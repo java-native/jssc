@@ -16,6 +16,11 @@
 
     <!-- skip javah execution for java9+, see profile below. -->
     <javah.skip>false</javah.skip>
+    <jar.default.skip>false</jar.default.skip>
+    <cmake.generate.skip>false</cmake.generate.skip>
+    <cmake.compile.skip>false</cmake.compile.skip>
+    <os.bitness>64</os.bitness>
+    <os.family>linux</os.family>
     <!-- native lib loader (dependency) -->
 
     <!-- custom directories and file paths -->
@@ -28,7 +33,8 @@
     <cmake.buildtool.args></cmake.buildtool.args>
 
     <!-- dependency versions -->
-    <dependency.nativelibloader.version>2.0.2</dependency.nativelibloader.version>
+    <dependency.logback.version>1.2.3</dependency.logback.version>
+    <dependency.nativelibloader.version>2.3.3</dependency.nativelibloader.version>
 
     <!-- plugin versions -->
     <plugin.antrun.version>1.8</plugin.antrun.version>
@@ -48,6 +54,13 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${dependency.logback.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
 
@@ -92,6 +105,7 @@
             <goals><goal>run</goal></goals>
             <phase>generate-sources</phase>
             <configuration>
+              <skip>${cmake.generate.skip}</skip>
               <target name="cmake-generate">
                 <mkdir dir="${cmake.generated.directory}" />
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
@@ -109,6 +123,7 @@
             <goals><goal>run</goal></goals>
             <phase>compile</phase>
             <configuration>
+              <skip>${cmake.compile.skip}</skip>
               <target name="cmake-build">
                 <!-- Copy header from target/nar/ (java < 9) -->
                 <copy todir="${cmake.generated.directory}" flatten="true" overwrite="true" verbose="true" failonerror="false">
@@ -135,6 +150,42 @@
         <version>3.0.0-M3</version>
 
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.1.1</version>
+
+        <configuration>
+          <classifier>${os.family}-${os.arch}-${os.bitness}</classifier>
+        </configuration>
+      </plugin>
+
+      <!-- also package the uber-jar -->
+      <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.1</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/uber-jar.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>make-assembly</id> <!-- this is used for inheritance merges -->
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+
 
       <!-- check for java 6 compatiblity -->
        <plugin>
@@ -191,6 +242,22 @@
       </build>
     </profile>
 
+    <!--
+      Profile for only collecting the existing binaries for an uber-jar distribution.
+      This profile is only useful for java developers who cannot invoke cmake.
+    -->
+    <profile>
+      <id>nonativebuild</id>
+      <!-- skip everything which has to do with native compilation. -->
+      <properties>
+        <javah.skip>true</javah.skip>
+        <jar.default.skip>true</jar.default.skip>
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.skip>true</cmake.generate.skip>
+        <cmake.compile.skip>true</cmake.compile.skip>
+      </properties>
+    </profile>
+
     <!-- configure cmake profiles -->
 
     <!-- cmake windows-amd64 profile -->
@@ -203,6 +270,8 @@
         </os>
       </activation>
       <properties>
+        <os.family>windows</os.family>
+        <os.bitness>64</os.bitness>
         <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
@@ -218,6 +287,8 @@
         </os>
       </activation>
       <properties>
+        <os.family>windows</os.family>
+        <os.bitness>32</os.bitness>
         <cmake.generate.args>-DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
@@ -227,6 +298,8 @@
     <profile>
       <id>mingw32</id>
       <properties>
+        <os.family>windows</os.family>
+        <os.bitness>32</os.bitness>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake -DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
       </properties>
     </profile>
@@ -235,6 +308,8 @@
     <profile>
       <id>mingw64</id>
       <properties>
+        <os.family>windows</os.family>
+        <os.bitness>64</os.bitness>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
       </properties>
     </profile>
@@ -247,6 +322,11 @@
           <family>mac</family>
         </os>
       </activation>
+      <properties>
+        <os.family>mac</os.family>
+        <os.bitness>64</os.bitness>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=osx_64</cmake.generate.args>
+      </properties>
 
     </profile>
 

@@ -84,7 +84,7 @@ if(MAVEN_OUTPUT_DIRECTORY)
 		endif()
 		SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
 	endif()
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MAVEN_OUTPUT_DIRECTORY}/META-INF/lib/${NATIVE_LIB_DIR})
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MAVEN_OUTPUT_DIRECTORY}/natives/${NATIVE_LIB_DIR})
 endif()
 
 # version.h using #cmakedefine for version from pom.xml.
@@ -96,7 +96,7 @@ add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} ${JSSC_ADDITIONAL_INCLUDES})
 
-set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
+# set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if(WIN32)
