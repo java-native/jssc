@@ -279,7 +279,6 @@
         </os>
       </activation>
       <properties>
-        <os.family>windows</os.family>
         <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=windows_${os.bitness}</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
@@ -295,7 +294,6 @@
         </os>
       </activation>
       <properties>
-        <os.family>windows</os.family>
         <cmake.generate.args>-DNATIVE_LIB_DIR=windows_${os.bitness}</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
