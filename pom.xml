@@ -65,6 +65,7 @@
 
 
   <build>
+
     <!-- FIXME: apply maven conventions -->
     <sourceDirectory>src/java</sourceDirectory>
 
