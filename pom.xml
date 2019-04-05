@@ -19,7 +19,7 @@
     <jar.default.skip>false</jar.default.skip>
     <cmake.generate.skip>false</cmake.generate.skip>
     <cmake.compile.skip>false</cmake.compile.skip>
-    <os.bitness>64</os.bitness>
+    <os.bitness>${sun.arch.data.model}</os.bitness>
     <os.family>linux</os.family>
     <!-- native lib loader (dependency) -->
 
@@ -272,7 +272,6 @@
       </activation>
       <properties>
         <os.family>windows</os.family>
-        <os.bitness>64</os.bitness>
         <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
@@ -289,7 +288,6 @@
       </activation>
       <properties>
         <os.family>windows</os.family>
-        <os.bitness>32</os.bitness>
         <cmake.generate.args>-DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
@@ -300,7 +298,6 @@
       <id>mingw32</id>
       <properties>
         <os.family>windows</os.family>
-        <os.bitness>32</os.bitness>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake -DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
       </properties>
     </profile>
@@ -310,7 +307,6 @@
       <id>mingw64</id>
       <properties>
         <os.family>windows</os.family>
-        <os.bitness>64</os.bitness>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
       </properties>
     </profile>
@@ -325,7 +321,6 @@
       </activation>
       <properties>
         <os.family>mac</os.family>
-        <os.bitness>64</os.bitness>
         <cmake.generate.args>-DNATIVE_LIB_DIR=osx_64</cmake.generate.args>
       </properties>
 
