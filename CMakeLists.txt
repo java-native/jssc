@@ -96,7 +96,6 @@ add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
 
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} ${JSSC_ADDITIONAL_INCLUDES})
 
-# set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if(WIN32)
@@ -115,10 +114,10 @@ endif()
 
 # Handle compiler warnings
 if(MSVC)
-    #TODO Treat warnings as errors /WX
+	#TODO Treat warnings as errors /WX
 	target_compile_options(jssc PRIVATE /W4)
 else()
-    #TODO Treat warnings as errors -Werror
+	#TODO Treat warnings as errors -Werror
 	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic)
 endif()
 
