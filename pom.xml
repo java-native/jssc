@@ -20,7 +20,7 @@
     <cmake.generate.skip>false</cmake.generate.skip>
     <cmake.compile.skip>false</cmake.compile.skip>
     <os.bitness>${sun.arch.data.model}</os.bitness>
-    <os.family>linux</os.family>
+    <os.family>${os.detected.name}</os.family>
     <!-- native lib loader (dependency) -->
 
     <!-- custom directories and file paths -->
@@ -65,9 +65,17 @@
 
 
   <build>
-
+    <defaultGoal>install</defaultGoal>
     <!-- FIXME: apply maven conventions -->
     <sourceDirectory>src/java</sourceDirectory>
+
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.6.2</version>
+      </extension>
+    </extensions>
 
     <plugins>
       <!--
@@ -272,7 +280,7 @@
       </activation>
       <properties>
         <os.family>windows</os.family>
-        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=windows_${os.bitness}</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
@@ -288,7 +296,7 @@
       </activation>
       <properties>
         <os.family>windows</os.family>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=windows_${os.bitness}</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
@@ -298,7 +306,10 @@
       <id>mingw32</id>
       <properties>
         <os.family>windows</os.family>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw32.cmake -DNATIVE_LIB_DIR=windows_32</cmake.generate.args>
+        <os.bitness>32</os.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
       </properties>
     </profile>
 
@@ -307,23 +318,11 @@
       <id>mingw64</id>
       <properties>
         <os.family>windows</os.family>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw64.cmake -DNATIVE_LIB_DIR=windows_64</cmake.generate.args>
+        <os.bitness>64</os.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
       </properties>
-    </profile>
-
-    <!-- cmake mac profile -->
-    <profile>
-      <id>macos</id>
-      <activation>
-        <os>
-          <family>mac</family>
-        </os>
-      </activation>
-      <properties>
-        <os.family>mac</os.family>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=osx_64</cmake.generate.args>
-      </properties>
-
     </profile>
 
   </profiles>
