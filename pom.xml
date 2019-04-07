@@ -345,11 +345,11 @@
       <id>armsf</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>armsf</os.arch><!-- FIXME "armhf" isn't an architecture -->
+        <os.arch>arm</os.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=${os.family}_arm</cmake.generate.args>
       </properties>
     </profile>
 
@@ -358,11 +358,12 @@
       <id>armhf</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>armhf</os.arch><!-- FIXME "armhf" isn't an architecture -->
+        <os.arch>arm</os.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
+        <!-- FIXME namespace conflict with arm soft float library -->
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.family}_arm</cmake.generate.args>
       </properties>
     </profile>
 
@@ -371,24 +372,24 @@
       <id>aarch64</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>aarm64</os.arch>
+        <os.arch>aarch64</os.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=${os.family}_arm64</cmake.generate.args>
       </properties>
     </profile>
 
     <!-- powerpc profile -->
     <profile>
-      <id>ppcle</id>
+      <id>ppc64</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>ppcle</os.arch><!-- FIXME "ppcle" isn't an architecture -->
+        <os.arch>ppc64</os.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppcle.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppc64.cmake -DNATIVE_LIB_DIR=${os.family}_ppc</cmake.generate.args>
       </properties>
     </profile>
 

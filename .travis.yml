@@ -42,13 +42,6 @@ matrix:
             - cmake3
             - g++-arm-linux-gnueabi
     - os: linux
-      env: PROFILE=armhf,armtrusty
-      addons:
-        apt:
-          packages:
-            - cmake3
-            - g++-arm-linux-gnueabihf
-    - os: linux
       env: PROFILE=aarch64
       addons:
         apt:
@@ -56,7 +49,7 @@ matrix:
             - cmake3
             - g++-aarch64-linux-gnu
     - os: linux
-      env: PROFILE=ppcle
+      env: PROFILE=ppc64
       addons:
         apt:
           packages:
