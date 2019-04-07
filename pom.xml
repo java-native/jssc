@@ -349,8 +349,7 @@
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <!-- Ubuntu 14.04 and older only had one -->
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=arm_32sf</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
       </properties>
     </profile>
 
@@ -363,7 +362,7 @@
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=arm_32hf</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
       </properties>
     </profile>
 
@@ -376,7 +375,20 @@
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=aarch64</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
+      </properties>
+    </profile>
+
+    <!-- powerpc profile -->
+    <profile>
+      <id>ppcle</id>
+      <properties>
+        <os.family>linux</os.family>
+        <os.arch>ppcle</os.arch><!-- FIXME "ppcle" isn't an architecture -->
+        <os.bitness>64</os.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppcle.cmake -DNATIVE_LIB_DIR=${os.arch}_${os.bitness}</cmake.generate.args>
       </properties>
     </profile>
 

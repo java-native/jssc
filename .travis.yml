@@ -55,6 +55,13 @@ matrix:
           packages:
             - cmake3
             - g++-aarch64-linux-gnu
+    - os: linux
+      env: PROFILE=ppcle
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-powerpc64le-linux-gnu
     - os: osx
       addons:
         homebrew:
