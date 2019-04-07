@@ -103,6 +103,10 @@ if(WIN32)
 	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 endif()
+if(FORCE_M32)
+	# Build 32-bit binary on Linux
+	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m32 LINK_FLAGS -m32)
+endif()
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")

@@ -271,6 +271,17 @@
 
     <!-- configure cmake profiles -->
 
+    <!-- cmake linux 32-bit profile -->
+    <profile>
+      <id>m32</id>
+      <properties>
+        <os.arch>x86</os.arch>
+        <os.bitness>32</os.bitness>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
+        <cmake.generate.extra>-DFORCE_M32=True</cmake.generate.extra>
+      </properties>
+    </profile>
+
     <!-- cmake windows-amd64 profile -->
     <profile>
       <id>win64</id>

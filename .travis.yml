@@ -8,6 +8,13 @@ cache:
 matrix:
   include:
     - os: linux
+      env: PROFILE=m32
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-multilib
+    - os: linux
       addons:
         apt:
           packages:
