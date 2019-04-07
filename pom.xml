@@ -367,6 +367,19 @@
       </properties>
     </profile>
 
+    <!-- arm 64-bit -->
+    <profile>
+      <id>aarch64</id>
+      <properties>
+        <os.family>linux</os.family>
+        <os.arch>aarm64</os.arch>
+        <os.bitness>64</os.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=aarch64</cmake.generate.args>
+      </properties>
+    </profile>
+
     <!-- arm trusty profile -->
     <profile>
       <id>armtrusty</id>

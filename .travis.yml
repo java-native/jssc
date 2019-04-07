@@ -48,6 +48,13 @@ matrix:
           packages:
             - cmake3
             - g++-arm-linux-gnueabihf
+    - os: linux
+      env: PROFILE=aarch64
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-aarch64-linux-gnu
     - os: osx
       addons:
         homebrew:
