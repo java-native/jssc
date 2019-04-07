@@ -277,6 +277,8 @@
       <properties>
         <os.arch>x86</os.arch>
         <os.bitness>32</os.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
         <cmake.generate.extra>-DFORCE_M32=True</cmake.generate.extra>
       </properties>
