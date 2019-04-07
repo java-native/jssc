@@ -14,28 +14,28 @@ matrix:
             - cmake3
             - g++
     - os: linux
-      env: MVN_PROFILE='mingw32'
+      env: PROFILE=mingw32
       addons:
         apt:
           packages:
             - cmake3
             - g++-mingw-w64-i686
     - os: linux
-      env: MVN_PROFILE='mingw64'
+      env: PROFILE=mingw64
       addons:
         apt:
           packages:
             - cmake3
             - g++-mingw-w64-x86-64
     - os: linux
-      env: MVN_PROFILE='armsf,armtrusty'
+      env: PROFILE=armsf,armtrusty
       addons:
         apt:
           packages:
             - cmake3
             - g++-arm-linux-gnueabi
     - os: linux
-      env: MVN_PROFILE='armhf,armtrusty'
+      env: PROFILE=armhf,armtrusty
       addons:
         apt:
           packages:
@@ -47,7 +47,7 @@ matrix:
           packages:
             - cmake
 
-script: if [ -z "$MVN_PROFILE" ]; then mvn --batch-mode; else mvn -P "$MVN_PROFILE"; fi
+script: if [ -z "$PROFILE" ]; then mvn --batch-mode; else mvn -P "$PROFILE"; fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

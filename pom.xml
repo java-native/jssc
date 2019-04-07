@@ -28,6 +28,7 @@
 
     <!-- custom cmake options -->
     <cmake.generate.args></cmake.generate.args>
+    <cmake.generate.extra></cmake.generate.extra>
     <cmake.build.args></cmake.build.args>
     <!-- options given in compile phase after double dashes. -->
     <cmake.buildtool.args></cmake.buildtool.args>
