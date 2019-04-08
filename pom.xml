@@ -402,6 +402,31 @@
       </properties>
     </profile>
 
+    <!-- fix arm output directories -->
+    <!-- TODO: See issue #24; remove w/ newer native-lib-loader -->
+    <profile>
+      <id>arm-fix32</id>
+      <activation>
+        <os>
+          <arch>arm</arch>
+        </os>
+      </activation>
+      <properties>
+        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.extra>
+      </properties>
+    </profile>
+    <profile>
+      <id>arm-fix64</id>
+      <activation>
+        <os>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.extra>
+      </properties>
+    </profile>
+
   </profiles>
 
 </project>
