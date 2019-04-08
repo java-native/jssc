@@ -276,7 +276,6 @@
       <id>m32</id>
       <properties>
         <os.detected.arch>x86_32</os.detected.arch>
-        <os.detected.name>linux</os.detected.name>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
