@@ -7,27 +7,6 @@ are to recompile binaries for each platform.
 
 ## Valid paths
 
-Note: Valid starting from `native-lib-loader` version 2.4.0 or later.
-
-The current list of valid paths can be seen on the `native-lib-loader`
-github page. At the time of writing, the supported list is:
-
-  * `linux-arm-32`
-  * `linux-x86-32`
-  * `windows-x86-32`
-  * `aix-ppc64-64`
-  * `linux-amd64-64` (also alias of `linux-i386-64`)
-  * `linux-aarch64-64` (instead of `linux-arm64-64`)
-  * `linux-ppc64le-64`
-  * `mac-amd64-64`
-  * `mac-ppc64le-64`
-  * `mac-x86_64-64`
-  * `windows-amd64-64`
-
-If a library is missing, please consider a pull request or open an issue.
-
-## Legacy paths
-
 The old path structure is ambigious, but supported for compatiblity.
 This structure must be used before `native-lib-loader` version 2.4.0.
 
@@ -35,10 +14,36 @@ This structure must be used before `native-lib-loader` version 2.4.0.
   * `linux_64`
   * `linux_arm`
   * `linux_arm64`
+  * `mac_32`
+  * `mac_64`
   * `windows_32`
   * `windows_64`
 
+
+## Next version
+
+Note: Valid starting from `native-lib-loader` version 2.4.0 or later.
+The path names were aligned to the [os-maven-plugin](https://github.com/trustin/os-maven-plugin/).
+It follows the same conventions as the [osdetector-gradle-plugin](https://github.com/google/osdetector-gradle-plugin).
+
+
+  * `linux-arm_32-32`
+  * `linux-x86_32-32`  (also alias of `linux-i386-64`)
+  * `windows-x86_64-32`
+  * `aix-ppc_64-64`
+  * `linux-x86_64-64`
+  * `linux-aarch_64-64` (instead of `linux-arm64-64`)
+  * `linux-ppcle_64-64`
+  * `mac-x86_64-64`
+  * `mac-ppc_64-64`
+  * `windows-x86_32-64`
+  * `windows-x86_64-64`
+
+If a library is missing, please consider a pull request or open an issue.
+
+
 ## Activation
 
-Compile using `mvn clean install -Ppackage-only` to activate this directory
-for inclusion into the final jar.
+Ar jar with these libraries is always built.
+Use `mvn clean install -Pnonativebuild` to only build this artefact without
+native compilation.
