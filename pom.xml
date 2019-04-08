@@ -169,7 +169,7 @@
         <version>3.1.1</version>
 
         <configuration>
-          <classifier>${os.detected.classifier}-${os.bitness}</classifier>
+          <classifier>${os.family}-${os.arch}-${os.bitness}</classifier>
         </configuration>
       </plugin>
 
@@ -278,7 +278,6 @@
       <properties>
         <os.arch>x86_32</os.arch>
         <os.bitness>32</os.bitness>
-        <os.detected.classifier>${os.family}_${os.arch}</os.detected.classifier>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
@@ -323,7 +322,6 @@
         <os.family>windows</os.family>
         <os.arch>x86_32</os.arch>
         <os.bitness>32</os.bitness>
-        <os.detected.classifier>${os.family}_${os.arch}</os.detected.classifier>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
@@ -337,7 +335,6 @@
         <os.family>windows</os.family>
         <os.arch>x86_64</os.arch>
         <os.bitness>64</os.bitness>
-        <os.detected.classifier>${os.family}_${os.arch}</os.detected.classifier>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
@@ -351,7 +348,6 @@
         <os.family>linux</os.family>
         <os.arch>arm_32</os.arch>
         <os.bitness>32</os.bitness>
-        <os.detected.classifier>${os.family}_${os.arch}</os.detected.classifier>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=${os.family}_arm</cmake.generate.args>
@@ -365,7 +361,6 @@
         <os.family>linux</os.family>
         <os.arch>arm_32</os.arch>
         <os.bitness>32</os.bitness>
-        <os.detected.classifier>${os.family}_${os.arch}</os.detected.classifier>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <!-- FIXME namespace conflict with arm soft float library -->
@@ -380,7 +375,6 @@
         <os.family>linux</os.family>
         <os.arch>aarch_64</os.arch>
         <os.bitness>64</os.bitness>
-        <os.detected.classifier>${os.family}_${os.arch}</os.detected.classifier>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=${os.family}_arm64</cmake.generate.args>
@@ -394,7 +388,6 @@
         <os.family>linux</os.family>
         <os.arch>ppc_64</os.arch>
         <os.bitness>64</os.bitness>
-        <os.detected.classifier>${os.family}_${os.arch}</os.detected.classifier>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppc64.cmake -DNATIVE_LIB_DIR=${os.family}_ppc</cmake.generate.args>
