@@ -61,7 +61,7 @@ matrix:
           packages:
             - cmake
 
-script: if [ -z "$PROFILE" ]; then mvn --batch-mode; else mvn -P "$PROFILE"; fi
+script: if [ -z "$PROFILE" ]; then mvn --batch-mode; else mvn -P "$PROFILE" --batch-mode; fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
