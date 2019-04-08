@@ -169,7 +169,7 @@
         <version>3.1.1</version>
 
         <configuration>
-          <classifier>${os.family}-${os.arch}-${os.bitness}</classifier>
+          <classifier>${os.family}-${os.detected.arch}-${os.bitness}</classifier>
         </configuration>
       </plugin>
 
@@ -276,7 +276,7 @@
     <profile>
       <id>m32</id>
       <properties>
-        <os.arch>x86_32</os.arch>
+        <os.detected.arch>x86_32</os.detected.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
@@ -320,7 +320,7 @@
       <id>mingw32</id>
       <properties>
         <os.family>windows</os.family>
-        <os.arch>x86_32</os.arch>
+        <os.detected.arch>x86_32</os.detected.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
@@ -333,7 +333,7 @@
       <id>mingw64</id>
       <properties>
         <os.family>windows</os.family>
-        <os.arch>x86_64</os.arch>
+        <os.detected.arch>x86_64</os.detected.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
@@ -346,7 +346,7 @@
       <id>armsf</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>arm_32</os.arch>
+        <os.detected.arch>arm_32</os.detected.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
@@ -359,7 +359,7 @@
       <id>armhf</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>arm_32</os.arch>
+        <os.detected.arch>arm_32</os.detected.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
@@ -373,7 +373,7 @@
       <id>aarch64</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>aarch_64</os.arch>
+        <os.detected.arch>aarch_64</os.detected.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
@@ -386,7 +386,7 @@
       <id>ppc64</id>
       <properties>
         <os.family>linux</os.family>
-        <os.arch>ppc_64</os.arch>
+        <os.detected.arch>ppc_64</os.detected.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
