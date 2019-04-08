@@ -19,6 +19,7 @@
     <jar.default.skip>false</jar.default.skip>
     <cmake.generate.skip>false</cmake.generate.skip>
     <cmake.compile.skip>false</cmake.compile.skip>
+    <!-- TODO: replace with os.detected.bitness for os-maven-plugin 1.6.3 onwards. -->
     <os.bitness>${sun.arch.data.model}</os.bitness>
     <os.family>${os.detected.name}</os.family>
     <!-- native lib loader (dependency) -->
@@ -168,7 +169,7 @@
         <version>3.1.1</version>
 
         <configuration>
-          <classifier>${os.family}-${os.arch}-${os.bitness}</classifier>
+          <classifier>${os.detected.classifier}-${os.bitness}</classifier>
         </configuration>
       </plugin>
 
