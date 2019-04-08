@@ -21,7 +21,6 @@
     <cmake.compile.skip>false</cmake.compile.skip>
     <!-- TODO: replace with os.detected.bitness for os-maven-plugin 1.6.3 onwards. -->
     <os.bitness>${sun.arch.data.model}</os.bitness>
-    <os.family>${os.detected.name}</os.family>
     <!-- native lib loader (dependency) -->
 
     <!-- custom directories and file paths -->
@@ -169,7 +168,7 @@
         <version>3.1.1</version>
 
         <configuration>
-          <classifier>${os.family}-${os.detected.arch}-${os.bitness}</classifier>
+          <classifier>${os.detected.name}-${os.detected.arch}-${os.bitness}</classifier>
         </configuration>
       </plugin>
 
@@ -277,10 +276,11 @@
       <id>m32</id>
       <properties>
         <os.detected.arch>x86_32</os.detected.arch>
+        <os.detected.name>linux</os.detected.name>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.detected.name}_${os.bitness}</cmake.generate.args>
         <cmake.generate.extra>-DFORCE_M32=True</cmake.generate.extra>
       </properties>
     </profile>
@@ -295,7 +295,7 @@
         </os>
       </activation>
       <properties>
-        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=windows_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=${os.detected.name}_${os.bitness}</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
@@ -310,7 +310,7 @@
         </os>
       </activation>
       <properties>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=windows_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.detected.name}_${os.bitness}</cmake.generate.args>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
@@ -319,12 +319,12 @@
     <profile>
       <id>mingw32</id>
       <properties>
-        <os.family>windows</os.family>
+        <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_32</os.detected.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.detected.name}_${os.bitness}</cmake.generate.args>
       </properties>
     </profile>
 
@@ -332,12 +332,12 @@
     <profile>
       <id>mingw64</id>
       <properties>
-        <os.family>windows</os.family>
+        <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_64</os.detected.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.family}_${os.bitness}</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.bitness}.cmake -DNATIVE_LIB_DIR=${os.detected.name}_${os.bitness}</cmake.generate.args>
       </properties>
     </profile>
 
@@ -345,12 +345,12 @@
     <profile>
       <id>armsf</id>
       <properties>
-        <os.family>linux</os.family>
+        <os.detected.name>linux</os.detected.name>
         <os.detected.arch>arm_32</os.detected.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=${os.family}_arm</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.args>
       </properties>
     </profile>
 
@@ -358,13 +358,13 @@
     <profile>
       <id>armhf</id>
       <properties>
-        <os.family>linux</os.family>
+        <os.detected.name>linux</os.detected.name>
         <os.detected.arch>arm_32</os.detected.arch>
         <os.bitness>32</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <!-- FIXME namespace conflict with arm soft float library -->
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.family}_arm</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.args>
       </properties>
     </profile>
 
@@ -372,12 +372,12 @@
     <profile>
       <id>aarch64</id>
       <properties>
-        <os.family>linux</os.family>
+        <os.detected.name>linux</os.detected.name>
         <os.detected.arch>aarch_64</os.detected.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=${os.family}_arm64</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.args>
       </properties>
     </profile>
 
@@ -385,12 +385,12 @@
     <profile>
       <id>ppc64</id>
       <properties>
-        <os.family>linux</os.family>
+        <os.detected.name>linux</os.detected.name>
         <os.detected.arch>ppc_64</os.detected.arch>
         <os.bitness>64</os.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppc64.cmake -DNATIVE_LIB_DIR=${os.family}_ppc</cmake.generate.args>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppc64.cmake -DNATIVE_LIB_DIR=${os.detected.name}_ppc</cmake.generate.args>
       </properties>
     </profile>
 
