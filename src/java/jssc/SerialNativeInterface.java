@@ -24,12 +24,9 @@
  */
 package jssc;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import org.scijava.nativelib.NativeLibraryUtil;
+import org.scijava.nativelib.NativeLoader;
+
+import java.io.IOException;
 
 /**
  *
@@ -78,7 +75,11 @@ public class SerialNativeInterface {
     public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
 
     static {
-        NativeLibraryUtil.loadNativeLibrary(SerialNativeInterface.class,"jssc");
+        try {
+            NativeLoader.loadLibrary("jssc");
+        } catch (IOException ioException) {
+            throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());
+        }
     }
 
     /**
