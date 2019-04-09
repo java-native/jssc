@@ -2,8 +2,11 @@ language: java
 
 cache:
   directories:
-    - '$HOME/.m2'
-    - '$HOME/.jabba/jdk'
+    - $HOME/.m2
+    - $HOME/.jabba/jdk
+
+before_cache:
+  - rm -rf $HOME/.m2/repository/com/github/java-native
 
 matrix:
   include:
@@ -60,10 +63,6 @@ matrix:
         homebrew:
           packages:
             - cmake
-
-before_install:
-  - if [ -d "$HOME/.m2/repository/com/github/java-native/java-simple-serial-connector" ]; then rm -rf "$HOME/.m2/repository/com/github/java-native/java-simple-serial-connector"; fi
-  - if [ -d "$HOME/.m2/repository/com/github/java-native/jssc" ]; then rm -rf "$HOME/.m2/repository/com/github/java-native/jssc"; fi
 
 install:
   - mvn dependency:resolve
