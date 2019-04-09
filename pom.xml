@@ -66,7 +66,7 @@
 
 
   <build>
-    <defaultGoal>clean install</defaultGoal>
+    <defaultGoal>install</defaultGoal>
     <!-- FIXME: apply maven conventions -->
     <sourceDirectory>src/java</sourceDirectory>
 
