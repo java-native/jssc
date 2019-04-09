@@ -276,7 +276,7 @@
       <id>m32</id>
       <properties>
         <os.detected.arch>x86_32</os.detected.arch>
-        <os.detected.bitness>32<os.detected.bitness>
+        <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.args>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
