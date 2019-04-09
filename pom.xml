@@ -14,33 +14,33 @@
     <maven.compiler.release>6</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- skip javah execution for java9+, see profile below. -->
-    <javah.skip>false</javah.skip>
-    <jar.default.skip>false</jar.default.skip>
-    <cmake.generate.skip>false</cmake.generate.skip>
-    <cmake.compile.skip>false</cmake.compile.skip>
-    <!-- TODO: remove hard-coded property for os-maven-plugin 1.6.3+. -->
-    <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
-    <!-- native lib loader (dependency) -->
-
-    <!-- custom directories and file paths -->
+    <!-- custom directories and file paths a-z -->
     <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
 
-    <!-- custom cmake options -->
+    <!-- profile-dependant flags a-z -->
+    <cmake.compile.skip>false</cmake.compile.skip>
+    <cmake.build.args></cmake.build.args>
     <cmake.generate.args></cmake.generate.args>
     <cmake.generate.extra></cmake.generate.extra>
-    <cmake.build.args></cmake.build.args>
-    <!-- options given in compile phase after double dashes. -->
-    <cmake.buildtool.args></cmake.buildtool.args>
+    <cmake.generate.skip>false</cmake.generate.skip>
+    <javah.skip>false</javah.skip>
+    <!-- TODO: remove "os.detected.bitness"; already defined os-maven-plugin 1.6.3+ -->
+    <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
 
-    <!-- dependency versions -->
+    <!-- dependency versions a-z -->
+    <dependency.junit.version>4.12</dependency.junit.version>
     <dependency.logback.version>1.2.3</dependency.logback.version>
     <dependency.nativelibloader.version>2.3.3</dependency.nativelibloader.version>
 
-    <!-- plugin versions -->
-    <plugin.antrun.version>1.8</plugin.antrun.version>
-    <plugin.nar.version>3.6.0</plugin.nar.version>
+    <!-- plugin versions a-z -->
     <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
+    <plugin.antrun.version>1.8</plugin.antrun.version>
+    <plugin.assembly.version>3.1.1</plugin.assembly.version>
+    <plugin.jar.version>3.1.1</plugin.jar.version>
+    <plugin.nar.version>3.6.0</plugin.nar.version>
+    <plugin.osmaven.version>1.6.2</plugin.osmaven.version>
+    <plugin.signature.version>1.1</plugin.signature.version>
+    <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
   </properties>
 
   <dependencies>
@@ -52,7 +52,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>${dependency.junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -61,9 +61,7 @@
       <version>${dependency.logback.version}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
-
 
   <build>
     <defaultGoal>install</defaultGoal>
@@ -74,21 +72,17 @@
       <extension>
         <groupId>kr.motd.maven</groupId>
         <artifactId>os-maven-plugin</artifactId>
-        <version>1.6.2</version>
+        <version>${plugin.osmaven.version}</version>
       </extension>
     </extensions>
 
     <plugins>
-      <!--
-         create header file
-         CMAKE can only do this from jar archives.
-       -->
+      <!-- create header file jdk<=8 -->
       <plugin>
         <groupId>com.github.maven-nar</groupId>
         <artifactId>nar-maven-plugin</artifactId>
         <version>${plugin.nar.version}</version>
         <extensions>true</extensions>
-
         <executions>
           <execution>
             <id>default-nar-javah</id>
@@ -117,13 +111,12 @@
             <configuration>
               <skip>${cmake.generate.skip}</skip>
               <target name="cmake-generate">
-                <mkdir dir="${cmake.generated.directory}" />
+                <mkdir dir="${cmake.generated.directory}"/>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
-                  <arg line="${project.basedir}" />
-                  <arg line="-DMAVEN_OUTPUT_DIRECTORY=${project.build.outputDirectory}" />
-                  <arg line="-DJSSC_VERSION=${project.version}" />
-                  <arg line="${cmake.generate.args}" />
-                  <arg line="${cmake.generate.extra}" />
+                  <arg line="${project.basedir}"/>
+                  <arg line="-DMAVEN_OUTPUT_DIRECTORY=${project.build.outputDirectory}"/>
+                  <arg line="${cmake.generate.args}"/>
+                  <arg line="${cmake.generate.extra}"/>
                 </exec>
               </target>
             </configuration>
@@ -136,17 +129,14 @@
             <configuration>
               <skip>${cmake.compile.skip}</skip>
               <target name="cmake-build">
-                <!-- Copy header from target/nar/ (java < 9) -->
+                <!-- copy header jdk<=8 -->
                 <copy todir="${cmake.generated.directory}" flatten="true" overwrite="true" verbose="true" failonerror="false">
                   <fileset dir="${project.build.directory}/nar/" includes="**/*.h"/>
                 </copy>
-
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
-                  <arg line="--build" />
-                  <arg line="." />
-                  <arg line="${cmake.build.args}" />
-                  <arg line="--" />
-                  <arg line="${cmake.buildtool.args}" />
+                  <arg line="--build"/>
+                  <arg line="."/>
+                  <arg line="${cmake.build.args}"/>
                 </exec>
               </target>
             </configuration>
@@ -158,26 +148,24 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M3</version>
-
+        <version>${plugin.surfire.version}</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>${plugin.jar.version}</version>
 
         <configuration>
           <classifier>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</classifier>
         </configuration>
       </plugin>
 
-      <!-- also package the uber-jar -->
-      <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
+      <!-- package the uber-jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>${plugin.assembly.version}</version>
         <configuration>
           <descriptors>
             <descriptor>src/assembly/uber-jar.xml</descriptor>
@@ -187,8 +175,8 @@
 
         <executions>
           <execution>
-            <id>make-assembly</id> <!-- this is used for inheritance merges -->
-            <phase>package</phase> <!-- bind to the packaging phase -->
+            <id>make-assembly</id><!-- used for inheritance merges -->
+            <phase>package</phase><!-- bind to the packaging phase -->
             <goals>
               <goal>single</goal>
             </goals>
@@ -196,10 +184,8 @@
         </executions>
       </plugin>
 
-
-
       <!-- check for java 6 compatiblity -->
-       <plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
         <version>${plugin.animalsniffer.version}</version>
@@ -207,7 +193,7 @@
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
             <artifactId>java16</artifactId>
-            <version>1.1</version>
+            <version>${plugin.signature.version}</version>
           </signature>
         </configuration>
         <executions>
@@ -225,9 +211,7 @@
   </build>
 
   <profiles>
-    <!--
-      javah is gone since java9, do not invoke it.
-    -->
+    <!-- create header file jdk9+ -->
     <profile>
       <id>java-9</id>
       <activation>
@@ -253,23 +237,16 @@
       </build>
     </profile>
 
-    <!--
-      Profile for only collecting the existing binaries for an uber-jar distribution.
-      This profile is only useful for java developers who cannot invoke cmake.
-    -->
+    <!-- collect existing native libraries for a distribution; skips native compilation -->
     <profile>
-      <id>nonativebuild</id>
-      <!-- skip everything which has to do with native compilation. -->
+      <id>package</id>
       <properties>
         <javah.skip>true</javah.skip>
-        <jar.default.skip>true</jar.default.skip>
         <maven.test.skip>true</maven.test.skip>
         <cmake.generate.skip>true</cmake.generate.skip>
         <cmake.compile.skip>true</cmake.compile.skip>
       </properties>
     </profile>
-
-    <!-- configure cmake profiles -->
 
     <!-- cmake linux 32-bit profile -->
     <profile>
@@ -314,7 +291,7 @@
       </properties>
     </profile>
 
-    <!-- mingw32 profile -->
+    <!-- cmake mingw32 profile -->
     <profile>
       <id>mingw32</id>
       <properties>
@@ -327,7 +304,7 @@
       </properties>
     </profile>
 
-    <!-- mingw64 profile -->
+    <!-- cmake mingw64 profile -->
     <profile>
       <id>mingw64</id>
       <properties>
@@ -340,7 +317,7 @@
       </properties>
     </profile>
 
-    <!-- arm soft float profile -->
+    <!-- cmake arm soft float profile -->
     <profile>
       <id>armsf</id>
       <properties>
@@ -353,7 +330,7 @@
       </properties>
     </profile>
 
-    <!-- arm hard float profile -->
+    <!-- cmake arm hard float profile -->
     <profile>
       <id>armhf</id>
       <properties>
@@ -362,12 +339,12 @@
         <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <!-- FIXME namespace conflict with arm soft float library -->
+        <!-- TODO: namespace conflict with arm soft float library -->
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.args>
       </properties>
     </profile>
 
-    <!-- arm 64-bit -->
+    <!-- cmake arm 64-bit -->
     <profile>
       <id>aarch64</id>
       <properties>
@@ -380,7 +357,7 @@
       </properties>
     </profile>
 
-    <!-- powerpc profile -->
+    <!-- cmake powerpc profile -->
     <profile>
       <id>ppc64</id>
       <properties>
@@ -393,7 +370,7 @@
       </properties>
     </profile>
 
-    <!-- arm trusty profile -->
+    <!-- cmake arm trusty profile -->
     <profile>
       <id>armtrusty</id>
       <properties>
@@ -403,7 +380,7 @@
     </profile>
 
     <!-- fix arm output directories -->
-    <!-- TODO: See issue #24; remove w/ newer native-lib-loader -->
+    <!-- TODO: remove "arm-fix32", "arm-fix64" profiles once scijava/native-lib-loader#32 is merged/released -->
     <profile>
       <id>arm-fix32</id>
       <activation>
@@ -426,7 +403,5 @@
         <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.extra>
       </properties>
     </profile>
-
   </profiles>
-
 </project>

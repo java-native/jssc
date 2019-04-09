@@ -4,8 +4,6 @@ cmake_policy(SET CMP0042 NEW)
 
 project(jssc VERSION 2.7.1 LANGUAGES CXX)
 
-
-
 find_package(Java)
 find_package(JNI)
 
@@ -61,10 +59,7 @@ else()
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
 
-# output to maven conventions to target/generated-sources/<generator>
-# The other part will be in conventions to native-lib-loader.
-
-# handle maven-triggered builds; place library in correct subfolder
+# Handle maven-triggered builds; place library in correct subfolder
 if(MAVEN_OUTPUT_DIRECTORY)
 	# Detect platform if -DNATIVE_LIB_DIR is not provided
 	# TODO: Handle arm, hardfloat, etc
@@ -88,8 +83,22 @@ if(MAVEN_OUTPUT_DIRECTORY)
 endif()
 
 # version.h using #cmakedefine for version from pom.xml.
-# Hint: Do not use PROJECT_VERSION, this is already used by cmake.
-set(JSSC_VERSION "${JSSC_VERSION}")
+set(JSSC_VERSION "0.0.0-UNKNOWN")
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/pom.xml POM_FILE)
+foreach(POM_LINE ${POM_FILE})
+	# Assume first "<version>" is the project version
+	if(POM_LINE MATCHES "<version>")
+		string(REGEX REPLACE "^[ \t]+|<[^>]*>" "" DETECTED_VERSION "${POM_LINE}")
+		string(STRIP "${DETECTED_VERSION}" DETECTED_VERSION)
+		if(DETECTED_VERSION STREQUAL "")
+			MESSAGE(WARNING "Could not parse version from pom.xml, defaulting to \"${JSSC_VERSION}\"")
+		else()
+			SET(JSSC_VERSION "${DETECTED_VERSION}")
+			MESSAGE(STATUS "Found version \"${JSSC_VERSION}\" in pom.xml")
+		endif()
+		break()
+	endif()
+endforeach()
 configure_file(src/cpp/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 
 add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
@@ -124,4 +133,3 @@ else()
 	#TODO Treat warnings as errors -Werror
 	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic)
 endif()
-
