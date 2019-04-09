@@ -18,7 +18,7 @@
       <unpack>true</unpack>
       <scope>compile</scope>
       <includes>
-        <include>com.github.java-native:java-simple-serial-connector</include>
+        <include>io.github.java-native:jssc</include>
       </includes>
       <unpackOptions>
         <excludes>

@@ -4,8 +4,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.github.java-native</groupId>
-  <artifactId>java-simple-serial-connector</artifactId>
+  <groupId>io.github.java-native.jssc</groupId>
+  <artifactId>jssc</artifactId>
   <version>2.8.1-SNAPSHOT</version>
 
   <properties>
