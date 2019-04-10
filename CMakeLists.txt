@@ -59,28 +59,25 @@ else()
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
 
-# Handle maven-triggered builds; place library in correct subfolder
-if(MAVEN_OUTPUT_DIRECTORY)
-	# Detect platform if -DNATIVE_LIB_DIR is not provided
-	# TODO: Handle arm, hardfloat, etc
-	if(NOT NATIVE_LIB_DIR)
-		# windows, linux, darwin, etc
-		string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
-		if(OS_NAME MATCHES "darwin")
-			set(OS_NAME "osx")
-		endif()
-
-		# 32-bit or 64-bit
-		#FIXME: Might fail on cross-compile
-		if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-			set(OS_BITS 64)
-		else()
-			set(OS_BITS 32)
-		endif()
-		SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
+# Detect platform if -DNATIVE_LIB_DIR is not provided
+# TODO: Handle arm, hardfloat, etc
+if(NOT NATIVE_LIB_DIR)
+	# windows, linux, darwin, etc
+	string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+	if(OS_NAME MATCHES "darwin")
+		set(OS_NAME "osx")
 	endif()
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MAVEN_OUTPUT_DIRECTORY}/natives/${NATIVE_LIB_DIR})
+
+	# 32-bit or 64-bit
+	#FIXME: Might fail on cross-compile
+	if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+		set(OS_BITS 64)
+	else()
+		set(OS_BITS 32)
+	endif()
+	SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
 endif()
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/natives/${NATIVE_LIB_DIR})
 
 # version.h using #cmakedefine for version from pom.xml.
 set(JSSC_VERSION "0.0.0-UNKNOWN")
