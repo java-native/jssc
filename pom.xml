@@ -43,6 +43,19 @@
     <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
   </properties>
 
+  <organization>
+    <name>Java Native</name>
+    <url>https://github.com/java-native/</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>GNU LGPL 3</name>
+      <url>http://www.gnu.org/licenses/lgpl.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <dependencies>
     <dependency>
       <groupId>org.scijava</groupId>
