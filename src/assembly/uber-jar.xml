@@ -23,7 +23,7 @@
        match installed artifacts from the user's local repository.
       -->
       <includes>
-        <include>io.github.java-native.jssc:jssc:jar:${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</include>
+        <include>${project.groupId}:${project.artifactId}:${project.packaging}:${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</include>
       </includes>
       <unpackOptions>
         <excludes>
