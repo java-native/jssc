@@ -1,6 +1,7 @@
 # Precompiled libraries
 
 The `native` folder contains precompiled libraries for distribution.
+If a library is missing, please consider a pull request or open an issue.
 
 Whenever the interface of `SerialNativeInterface.java` changes, developers
 are to recompile binaries for each platform.
