@@ -24,6 +24,7 @@
     <cmake.generate.extra></cmake.generate.extra>
     <cmake.generate.skip>false</cmake.generate.skip>
     <javah.skip>false</javah.skip>
+    <maven.assembly.id>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</maven.assembly.id>
     <!-- TODO: remove "os.detected.bitness"; already defined os-maven-plugin 1.6.3+ -->
     <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
 
@@ -80,6 +81,11 @@
     <defaultGoal>install</defaultGoal>
     <!-- FIXME: apply maven conventions -->
     <sourceDirectory>src/java</sourceDirectory>
+    <resources>
+        <resource>
+          <directory>${project.basedir}/src/main/resources-precompiled</directory>
+        </resource>
+    </resources>
 
     <extensions>
       <extension>
@@ -127,7 +133,6 @@
                 <mkdir dir="${cmake.generated.directory}"/>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}"/>
-                  <arg line="-DMAVEN_OUTPUT_DIRECTORY=${project.build.outputDirectory}"/>
                   <arg line="${cmake.generate.args}"/>
                   <arg line="${cmake.generate.extra}"/>
                 </exec>
@@ -168,10 +173,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>${plugin.jar.version}</version>
-
-        <configuration>
-          <classifier>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</classifier>
-        </configuration>
       </plugin>
 
       <!-- package the uber-jar -->
@@ -179,20 +180,20 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>${plugin.assembly.version}</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assembly/uber-jar.xml</descriptor>
-          </descriptors>
-          <appendAssemblyId>false</appendAssemblyId>
-        </configuration>
 
         <executions>
           <execution>
-            <id>make-assembly</id><!-- used for inheritance merges -->
-            <phase>package</phase><!-- bind to the packaging phase -->
+            <id>make-assembly</id>
+            <phase>package</phase>
             <goals>
               <goal>single</goal>
             </goals>
+            <configuration>
+              <skipAssembly>${cmake.generate.skip}</skipAssembly>
+              <descriptors>
+                <descriptor>${project.basedir}/src/assembly/one-off-jar.xml</descriptor>
+              </descriptors>
+            </configuration>
           </execution>
         </executions>
       </plugin>
