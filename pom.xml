@@ -78,9 +78,7 @@
   </dependencies>
 
   <build>
-
     <defaultGoal>install</defaultGoal>
-
     <!-- FIXME: apply maven conventions -->
     <sourceDirectory>src/java</sourceDirectory>
     <resources>
@@ -123,6 +121,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>${plugin.antrun.version}</version>
+
         <executions>
           <execution>
             <id>cmake-generate</id>
