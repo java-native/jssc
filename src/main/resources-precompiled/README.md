@@ -1,6 +1,6 @@
 # Precompiled libraries
 
-This folder contains precompiled libraries for distribution.
+The `native` folder contains precompiled libraries for distribution.
 
 Whenever the interface of `SerialNativeInterface.java` changes, developers
 are to recompile binaries for each platform.
@@ -26,7 +26,6 @@ Note: Valid starting from `native-lib-loader` version 2.4.0 or later.
 The path names were aligned to the [os-maven-plugin](https://github.com/trustin/os-maven-plugin/).
 It follows the same conventions as the [osdetector-gradle-plugin](https://github.com/google/osdetector-gradle-plugin).
 
-
   * `linux-arm_32-32`
   * `linux-x86_32-32`  (also alias of `linux-i386-64`)
   * `windows-x86_64-32`
@@ -39,11 +38,13 @@ It follows the same conventions as the [osdetector-gradle-plugin](https://github
   * `windows-x86_32-64`
   * `windows-x86_64-64`
 
-If a library is missing, please consider a pull request or open an issue.
-
+If an architecture, bitness or cpu feature is missing, please consider a pull request against `native-lib-loader`
 
 ## Activation
 
-Ar jar with these libraries is always built.
-Use `mvn clean install -Pnonativebuild` to only build this artefact without
-native compilation.
+No activation needed, a jar with these libraries is always built.
+Optionally, to skip native compilation and only build this artifact:
+
+```bash
+mvn clean install -Ppackage
+```

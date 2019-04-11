@@ -393,7 +393,7 @@
     </profile>
 
     <!-- fix arm output directories -->
-    <!-- TODO: remove "arm-fix32", "arm-fix64" profiles once scijava/native-lib-loader#32 is merged/released -->
+    <!-- TODO: remove "arm-fix32", "arm-fix64" native-lib-loader 2.4.0+ -->
     <profile>
       <id>arm-fix32</id>
       <activation>
