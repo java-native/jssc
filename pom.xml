@@ -46,6 +46,7 @@
     <!-- keep below 3.1.0 because 3.1.0 fails on java 8. -->
     <plugin.javadoc.version>3.0.1</plugin.javadoc.version>
     <plugin.source.version>3.0.1</plugin.source.version>
+    <plugin.compiler.version>3.8.0</plugin.compiler.version>
   </properties>
 
   <organization>
@@ -101,6 +102,11 @@
 
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${plugin.compiler.version}</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
@@ -184,6 +190,15 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerArgument>-Xlint:all</compilerArgument>
+          <showWarnings>true</showWarnings>
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
