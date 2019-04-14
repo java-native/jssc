@@ -28,6 +28,7 @@ package jssc;
  *
  * @author scream3r
  */
+ @SuppressWarnings("serial")
 public class SerialPortException extends Exception {
 
     final public static String TYPE_PORT_ALREADY_OPENED = "Port already opened";
