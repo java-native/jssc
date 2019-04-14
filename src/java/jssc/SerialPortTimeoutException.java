@@ -28,7 +28,6 @@ package jssc;
  *
  * @author scream3r
  */
-@SuppressWarnings("serial")
 public class SerialPortTimeoutException extends Exception {
 
     private String portName;
