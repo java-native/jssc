@@ -67,7 +67,7 @@ matrix:
 install:
   - mvn dependency:resolve
 
-script: if [ -z "$PROFILE" ]; then mvn -e --batch-mode; else mvn -e -P "$PROFILE" --batch-mode; fi
+script: if [ -z "$PROFILE" ]; then mvn -X -e --batch-mode; else mvn -X -e -P "$PROFILE" --batch-mode; fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
