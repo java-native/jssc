@@ -9,10 +9,8 @@
   <version>3.0.0-SNAPSHOT</version>
 
   <properties>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <java.version>1.6</java.version>
     <!-- default: empty for compatiblity with Java 8. -->
-    <maven.compiler.release />
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- custom directories and file paths a-z -->
@@ -194,6 +192,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
           <compilerArgument>-Xlint:all</compilerArgument>
           <showWarnings>true</showWarnings>
           <showDeprecation>true</showDeprecation>
@@ -217,9 +217,13 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <doclint>none</doclint>
-          <detectJavaApiLink>true</detectJavaApiLink>
-          <detectLinks>false</detectLinks>
-          <detectOfflineLinks>true</detectOfflineLinks>
+          <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+          <javaApiLinks>
+            <property>
+              <name>foo</name>
+              <value>bar</value>
+            </property>
+          </javaApiLinks>
         </configuration>
       </plugin>
 
@@ -284,19 +288,17 @@
         <maven.compiler.release>6</maven.compiler.release>
       </properties>
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <configuration>
-                <compilerArgs>
-                  <arg>-h</arg>
-                  <arg>${cmake.generated.directory}</arg>
-                </compilerArgs>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <compilerArgs>
+                <arg>-h</arg>
+                <arg>${cmake.generated.directory}</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
 
