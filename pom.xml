@@ -25,7 +25,7 @@
     <cmake.generate.extra></cmake.generate.extra>
     <cmake.generate.skip>false</cmake.generate.skip>
     <javah.skip>false</javah.skip>
-    <skip.jar.with.dependencies>true</skip.jar.with.dependencies>
+    <jar.dependencies.skip>true</jar.dependencies.skip>
     <maven.assembly.id>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</maven.assembly.id>
     <!-- TODO: remove "os.detected.bitness"; already defined os-maven-plugin 1.6.3+ -->
     <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
@@ -237,7 +237,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <skipAssembly>${skip.jar.with.dependencies}</skipAssembly>
+              <skipAssembly>${jar.dependencies.skip}</skipAssembly>
               <descriptorRefs>
                 <descriptorRef>jar-with-dependencies</descriptorRef>
               </descriptorRefs>
@@ -344,7 +344,7 @@
     <profile>
       <id>jar-with-dependencies</id>
       <properties>
-        <skip.jar.with.dependencies>false</skip.jar.with.dependencies>
+        <jar.dependencies.skip>false</jar.dependencies.skip>
       </properties>
     </profile>
 
