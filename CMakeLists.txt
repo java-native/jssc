@@ -70,10 +70,16 @@ if(NOT NATIVE_LIB_DIR)
 
 	# 32-bit or 64-bit
 	#FIXME: Might fail on cross-compile
-	if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	if(FORCE_M32)
+		set(OS_BITS 32)
+	elseif(FORCE_M64)
 		set(OS_BITS 64)
 	else()
-		set(OS_BITS 32)
+		if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+			set(OS_BITS 64)
+		else()
+			set(OS_BITS 32)
+		endif()
 	endif()
 	SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
 endif()
