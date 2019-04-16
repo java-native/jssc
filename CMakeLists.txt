@@ -112,6 +112,9 @@ endif()
 if(FORCE_M32)
 	# Build 32-bit binary on Linux
 	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m32 LINK_FLAGS -m32)
+elseif(FORCE_M64)
+	# Build 64-bit binary on Linux
+	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m64 LINK_FLAGS -m64)
 endif()
 
 # Call strip on non-debug builds
@@ -128,5 +131,5 @@ if(MSVC)
 	target_compile_options(jssc PRIVATE /W4)
 else()
 	#TODO Treat warnings as errors -Werror
-	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic)
+	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic -Wno-long-long)
 endif()
