@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0048 OLD)
 cmake_policy(SET CMP0042 NEW)
 
+if(APPLE)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING "Minimum macOS version")
+endif()
 project(jssc CXX)
 
 find_package(Java)
