@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0048 OLD)
 cmake_policy(SET CMP0042 NEW)
 
-if(APPLE)
-	set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING "Minimum macOS version")
-endif()
 project(jssc CXX)
 
 find_package(Java)
@@ -129,10 +126,6 @@ elseif(FORCE_M64)
 	# Build 64-bit binary on Linux
 	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m64 LINK_FLAGS -m64)
 endif()
-# Copy native library back to source tree
-add_custom_command(TARGET jssc POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/natives/ ${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources-precompiled/natives/
-)
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
@@ -141,6 +134,11 @@ if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
 	endif()
 	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" ${STRIP_ARGS} $<TARGET_FILE:jssc>)
 endif()
+
+# Copy native library back to source tree
+add_custom_command(TARGET jssc POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/natives/ ${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources-precompiled/natives/
+)
 
 # Handle compiler warnings
 if(MSVC)
