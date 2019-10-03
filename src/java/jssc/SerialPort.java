@@ -1301,13 +1301,6 @@ public class SerialPort {
                         }
                     }
                 }
-                //Need to sleep some time
-                try {
-                    Thread.sleep(0, 100);
-                }
-                catch (Exception ex) {
-                    //Do nothing
-                }
             }
         }
     }

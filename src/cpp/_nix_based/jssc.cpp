@@ -22,13 +22,13 @@
  * e-mail: scream3r.org@gmail.com
  * web-site: http://scream3r.org | http://code.google.com/p/java-simple-serial-connector/
  */
-#include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <time.h>
 #include <errno.h>//-D_TS_ERRNO use for Solaris C++ compiler
+#include <poll.h>
 
 #include <sys/select.h>//since 2.5.0
 
@@ -722,6 +722,9 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
 
     jclass intClass = env->FindClass("[I");
     jobjectArray returnArray = env->NewObjectArray(sizeof(events)/sizeof(jint), intClass, NULL);
+
+    struct pollfd waitingSet = { static_cast<int>(portHandle), POLLIN, 0 };
+    poll(&waitingSet, 1, 1000);
 
     /*Input buffer*/
     jint bytesCountIn = 0;
