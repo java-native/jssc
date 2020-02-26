@@ -32,6 +32,7 @@
     <dependency.junit.version>4.12</dependency.junit.version>
     <dependency.logback.version>1.2.3</dependency.logback.version>
     <dependency.nativelibloader.version>2.3.3</dependency.nativelibloader.version>
+    <dependency.slf4j-api.version>1.7.25</dependency.slf4j-api.version>
 
     <!-- plugin versions a-z -->
     <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
@@ -62,6 +63,12 @@
   </licenses>
 
   <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${dependency.slf4j-api.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.scijava</groupId>
       <artifactId>native-lib-loader</artifactId>
