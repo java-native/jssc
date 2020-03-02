@@ -27,6 +27,11 @@ package jssc;
 import org.scijava.nativelib.NativeLoader;
 
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  *
@@ -75,6 +80,9 @@ public class SerialNativeInterface {
     public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
 
     static {
+        String libFolderPath;
+        String libName;
+
         String osName = System.getProperty("os.name");
         if(osName.equals("Linux"))
             osType = OS_LINUX;
@@ -84,7 +92,17 @@ public class SerialNativeInterface {
             osType = OS_SOLARIS;
         else if(osName.equals("Mac OS X") || osName.equals("Darwin"))
             osType = OS_MAC_OS_X;
-        }//<- since 0.9.0
+
+        String architecture = System.getProperty("os.arch");
+        String userHome = System.getProperty("user.home");
+        String fileSeparator = System.getProperty("file.separator");
+        String tmpFolder = System.getProperty("java.io.tmpdir");
+
+        //since 2.3.0 ->
+        String libRootFolder = new File(userHome).canWrite() ? userHome : tmpFolder;
+        //<- since 2.3.0
+
+        String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
 
         if(architecture.equals("i386") || architecture.equals("i686")){
             architecture = "x86";
@@ -234,6 +252,7 @@ public class SerialNativeInterface {
                 }
             }
         }
+        return returnValue;
     }
 
     /**
