@@ -100,6 +100,7 @@ public class SerialNativeInterface {
 
       if(architecture.equals("i386") || architecture.equals("i686")){
           architecture = "x86";
+          architectureShort = "32";
       }
       else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
           architecture = "x86_64";
@@ -133,6 +134,8 @@ public class SerialNativeInterface {
       if(osName.equals("Linux")){
           osName = "linux";
           osType = OS_LINUX;
+          testFolder = "linux_" + architectureShort;
+          rawLibName = "libjssc.so";
       }
       else if(osName.startsWith("Win")){
           osName = "windows";
