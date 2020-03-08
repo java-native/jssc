@@ -143,35 +143,41 @@ public class SerialNativeInterface {
             libName = libName.replace(".dylib", ".jnilib");
         }
 
-        boolean loadLib = false;
+        boolean loadLibManually = false;
 
         if(loadLibFromPath("jSSC-"+libVersion)) {
             // nothing more to do
         } else if(isLibFolderExist(libFolderPath)){
             if(isLibFileExist(libFolderPath + fileSeparator + libName)){
-                loadLib = true;
+                loadLibManually = true;
             }
             else {
                 if(extractLib((libFolderPath + fileSeparator + libName), osName, libName)){
-                    loadLib = true;
+                    loadLibManually = true;
                 }
             }
         }
         else {
             if(new File(libFolderPath).mkdirs()){
                 if(extractLib((libFolderPath + fileSeparator + libName), osName, libName)){
-                    loadLib = true;
+                    loadLibManually = true;
                 }
             }
         }
 
-        if (loadLib) {
+        if (loadLibManually) {
             System.load(libFolderPath + fileSeparator + libName);
             String versionBase = getLibraryBaseVersion();
             String versionNative = getNativeLibraryVersion();
             if (!versionBase.equals(versionNative)) {
                 System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
             }
+        } else {
+          try {
+            NativeLoader.loadLibrary("jssc");
+          } catch (java.io.IOException e) {
+            System.err.println("Failed to load JSSC native: " + e.toString());
+          }
         }
     }
 
