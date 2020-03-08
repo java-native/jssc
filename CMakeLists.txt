@@ -18,6 +18,7 @@ endif()
 if(APPLE)
 	# Locate IOKit framework for serial/ioss.h
 	find_library(IOKit IOKit)
+	find_library(CF CoreFoundation)
 	if(IOKit)
 		find_path(IOKit_INCLUDE_DIR NAMES IOKitLib.h HINTS ${IOKit_INC_SEARCH_PATH} ${IOKit_PKGC_INCLUDE_DIRS} PATH_SUFFIXES IOKit)
 		list(APPEND JSSC_ADDITIONAL_INCLUDES ${IOKit_INCLUDE_DIR})
@@ -139,6 +140,11 @@ endif()
 add_custom_command(TARGET jssc POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/natives/ ${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources-precompiled/natives/
 )
+
+# Addd mac osx specific libs if required
+if (APPLE)
+	target_link_libraries(jssc ${CF} ${IOKit})
+endif()
 
 # Handle compiler warnings
 if(MSVC)
