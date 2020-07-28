@@ -81,8 +81,6 @@
 
   <build>
     <defaultGoal>install</defaultGoal>
-    <!-- FIXME: apply maven conventions -->
-    <sourceDirectory>src/java</sourceDirectory>
     <resources>
         <resource>
           <directory>${project.basedir}/src/main/resources-precompiled</directory>
