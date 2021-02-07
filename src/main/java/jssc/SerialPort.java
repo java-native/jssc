@@ -116,7 +116,7 @@ public class SerialPort {
     private static final int PARAMS_FLAG_PARMRK = 2;
     //<- since 2.6.0
 
-    private static final boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+    private static final boolean isMac = SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X;
 
     public SerialPort(String portName) {
         this.portName = portName;
