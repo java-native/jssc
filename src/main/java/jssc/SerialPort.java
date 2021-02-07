@@ -116,6 +116,8 @@ public class SerialPort {
     private static final int PARAMS_FLAG_PARMRK = 2;
     //<- since 2.6.0
 
+    private static final boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+
     public SerialPort(String portName) {
         this.portName = portName;
         serialInterface = new SerialNativeInterface();
@@ -1300,6 +1302,15 @@ public class SerialPort {
                             eventListener.serialEvent(new SerialPortEvent(portName, eventType, eventValue));
                         }
                     }
+                }
+                if (!isMac) continue;
+
+                //Need to sleep some time
+                try {
+                    Thread.sleep(0, 100);
+                }
+                catch (Exception ex) {
+                    //Do nothing
                 }
             }
         }
