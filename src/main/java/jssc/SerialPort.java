@@ -484,16 +484,16 @@ public class SerialPort {
     public String readHexString(int byteCount, String separator) throws SerialPortException {
         checkPortOpened("readHexString()");
         String[] strBuffer = readHexStringArray(byteCount);
-        String returnString = "";
+        StringBuilder returnString = new StringBuilder();
         boolean insertSeparator = false;
         for(String value : strBuffer){
             if(insertSeparator){
-                returnString += separator;
+                returnString.append(separator);
             }
-            returnString += value;
+            returnString.append(value);
             insertSeparator = true;
         }
-        return returnString;
+        return returnString.toString();
     }
 
     /**
