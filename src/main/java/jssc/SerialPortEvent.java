@@ -30,6 +30,7 @@ package jssc;
  */
 public class SerialPortEvent {
 
+    private byte[] bytes;
     private String portName;
     private int eventType;
     private int eventValue;
@@ -44,10 +45,18 @@ public class SerialPortEvent {
     public static final int ERR = 128;
     public static final int RING = 256;
 
-    public SerialPortEvent(String portName, int eventType, int eventValue){
+    public SerialPortEvent(byte[] bytes, String portName, int eventType, int eventValue){
+        this.bytes = bytes;
         this.portName = portName;
         this.eventType = eventType;
         this.eventValue = eventValue;
+    }
+
+    /**
+     * Getting the bytes that set off this event
+     */
+    public byte[] getBytes() {
+        return bytes;
     }
 
     /**

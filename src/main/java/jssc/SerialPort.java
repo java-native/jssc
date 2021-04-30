@@ -1110,7 +1110,11 @@ public class SerialPort {
                 int[][] eventArray = waitEvents();
                 for(int i = 0; i < eventArray.length; i++){
                     if(eventArray[i][0] > 0 && !threadTerminated){
-                        eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
+                        try {
+                            eventListener.serialEvent(new SerialPortEvent(readBytes(), portName, eventArray[i][0], eventArray[i][1]));
+                        } catch (SerialPortException ignored) {
+                            //TODO: How should this be handled?
+                        }
                         //FIXME
                         /*if(methodErrorOccurred != null){
                             try {
@@ -1297,7 +1301,11 @@ public class SerialPort {
                                 break;
                         }
                         if(sendEvent){
-                            eventListener.serialEvent(new SerialPortEvent(portName, eventType, eventValue));
+                            try {
+                                eventListener.serialEvent(new SerialPortEvent(readBytes(), portName, eventType, eventValue));
+                            } catch (SerialPortException ignored) {
+                                //TODO: How should this be handled?
+                            }
                         }
                     }
                 }
