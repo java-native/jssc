@@ -30,10 +30,13 @@ package jssc;
  */
 public class SerialPortEvent {
 
-    private byte[] bytes;
-    private String portName;
+
+    private SerialPort port;
     private int eventType;
     private int eventValue;
+
+    @Deprecated
+    private String portName;
 
     public static final int RXCHAR = 1;
     public static final int RXFLAG = 2;
@@ -45,25 +48,32 @@ public class SerialPortEvent {
     public static final int ERR = 128;
     public static final int RING = 256;
 
-    public SerialPortEvent(byte[] bytes, String portName, int eventType, int eventValue){
-        this.bytes = bytes;
+    public SerialPortEvent(SerialPort port, int eventType, int eventValue){
+        this.port = port;
+        this.eventType = eventType;
+        this.eventValue = eventValue;
+    }
+
+    @Deprecated
+    public SerialPortEvent(String portName, int eventType, int eventValue){
         this.portName = portName;
         this.eventType = eventType;
         this.eventValue = eventValue;
     }
 
     /**
-     * Getting the bytes that set off this event
+     * Getting the port that set off this event
      */
-    public byte[] getBytes() {
-        return bytes;
+    public SerialPort getPort(){
+        return port;
     }
 
     /**
      * Getting port name which sent the event
      */
+    @Deprecated
     public String getPortName() {
-        return portName;
+        return port.getPortName();
     }
 
     /**
