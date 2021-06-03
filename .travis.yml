@@ -41,7 +41,7 @@ matrix:
             - cmake
             - g++-mingw-w64-x86-64
     - os: linux
-      env: PROFILE=armhf,armtrusty
+      env: PROFILE=armhf
       addons:
         apt:
           packages:
