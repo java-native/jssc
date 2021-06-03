@@ -1,20 +1,35 @@
 cmake_minimum_required(VERSION 3.0)
-cmake_policy(SET CMP0048 OLD)
+cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0042 NEW)
-# Determine if compiling on Apple and host arch before starting project
-if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
-	execute_process(COMMAND uname  -m OUTPUT_VARIABLE ARCH_TYPE OUTPUT_STRIP_TRAILING_WHITESPACE)	
-	SET(CMAKE_OSX_ARCHITECTURES "${ARCH_TYPE}" CACHE STRING "Build architectures for Mac OS X" FORCE)
+
+# Get some architecture information
+if(WIN32)
+    string(TOLOWER $ENV{PROCESSOR_ARCHITECTURE} OS_ARCH)
+    set(OS_TYPE "Windows")
+else()
+	execute_process(COMMAND uname -m OUTPUT_VARIABLE OS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+	execute_process(COMMAND uname OUTPUT_VARIABLE OS_TYPE OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
+# Determine if compiling on Apple and host arch before starting project
+if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
+	set(CMAKE_OSX_ARCHITECTURES "${OS_ARCH}" CACHE STRING "Build architectures for Mac OS X" FORCE)
+endif()
 
+project(jssc VERSION "" LANGUAGES CXX)
 
-
-
-project(jssc CXX)
+# Use JAVA_HOME from Maven
+if(JAVA_HOME)
+    set(ENV{JAVA_HOME} "${JAVA_HOME}")
+    message(STATUS "Picked up JAVA_HOME from Maven: ${JAVA_HOME}")
+endif()
 
 find_package(Java)
-find_package(JNI)
+# Workaround for FindJNI, per https://stackoverflow.com/a/51764145/3196753
+set(JAVA_AWT_LIBRARY HeaderOnly)
+set(JAVA_JVM_LIBRARY HeaderOnly)
+set(JAVA_AWT_INCLUDE_PATH HeaderOnly)
+find_package(JNI REQUIRED)
 
 # Kitware-recommended technique for defaulting to 'Release' mode
 if(NOT CMAKE_BUILD_TYPE)
@@ -41,22 +56,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	elseif(NOT CMAKE_SYSTEM_NAME STREQUAL SunOS)
 		set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
 	endif()
-	execute_process(COMMAND uname OUTPUT_VARIABLE OS_TYPE OUTPUT_STRIP_TRAILING_WHITESPACE)
-	if(OS_TYPE STREQUAL "Darwin")
-		# Try to locate JNI again for edge-case (e.g. cross-compiling)
-		if(NOT JNI_FOUND)
-			execute_process(COMMAND /usr/libexec/java_home OUTPUT_VARIABLE JAVA_HOME OUTPUT_STRIP_TRAILING_WHITESPACE)
-			set(ENV{JAVA_HOME} ${JAVA_HOME})
-			find_package(JNI)
-		endif()
-	endif()
 elseif(MSVC)
+    # /MT = Multithread, static version of the run-time library
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 endif()
 
 if(WIN32)
-	set(JSSC_PLATFORM "windows")
-	# Don't append "lib" to windows binaries
+	set(CPP_SOURCE "windows")
+	# Remove "lib" prefix from windows binaries
 	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 	# Disable optimization for Release builds (XP/Server 2003)
 	if(NOT MSVC)
@@ -65,7 +72,7 @@ if(WIN32)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Od")
 	endif()
 else()
-	set(JSSC_PLATFORM "_nix_based")
+	set(CPP_SOURCE "_nix_based")
 	# Sane level of optimization for Release builds
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
@@ -79,20 +86,29 @@ if(NOT NATIVE_LIB_DIR)
 		set(OS_NAME "osx")
 	endif()
 
-	# 32-bit or 64-bit
-	#FIXME: Might fail on cross-compile
-	if(FORCE_M32)
-		set(OS_BITS 32)
+	cmake_host_system_information(RESULT OS_SUFFIX_SF QUERY HAS_FPU)
+	# warn of native-lib-loader shortcomming
+	IF(NOT OS_SUFFIX_SF EQUAL 1)
+		message(WARNING "Soft float detected. We can't determine this at runtime; Compatiblity will suffer.")
+	ENDIF()
+
+	# bitness/suffix
+	if("${OS_ARCH}" STREQUAL "aarch64" OR "${OS_ARCH}" STREQUAL "arm64")
+		set(OS_SUFFIX "arm64")
+	elseif("${OS_ARCH}" MATCHES "arm")
+		set(OS_SUFFIX "arm")
+	elseif(FORCE_M32)
+		set(OS_SUFFIX 32)
 	elseif(FORCE_M64)
-		set(OS_BITS 64)
+		set(OS_SUFFIX 64)
 	else()
 		if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-			set(OS_BITS 64)
+			set(OS_SUFFIX 64)
 		else()
-			set(OS_BITS 32)
+			set(OS_SUFFIX 32)
 		endif()
 	endif()
-	SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
+	set(NATIVE_LIB_DIR ${OS_NAME}_${OS_SUFFIX})
 endif()
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/natives/${NATIVE_LIB_DIR})
 
@@ -105,17 +121,17 @@ foreach(POM_LINE ${POM_FILE})
 		string(REGEX REPLACE "^[ \t]+|<[^>]*>" "" DETECTED_VERSION "${POM_LINE}")
 		string(STRIP "${DETECTED_VERSION}" DETECTED_VERSION)
 		if(DETECTED_VERSION STREQUAL "")
-			MESSAGE(WARNING "Could not parse JSSC version from pom.xml, defaulting to \"${JSSC_VERSION}\"")
+			message(WARNING "Could not parse JSSC version from pom.xml, defaulting to \"${JSSC_VERSION}\"")
 		else()
-			SET(JSSC_VERSION "${DETECTED_VERSION}")
-			MESSAGE(STATUS "Found JSSC version \"${JSSC_VERSION}\" in pom.xml")
+			set(JSSC_VERSION "${DETECTED_VERSION}")
+			message(STATUS "Found JSSC version \"${JSSC_VERSION}\" in pom.xml")
 		endif()
 		break()
 	endif()
 endforeach()
 configure_file(src/main/cpp/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 
-add_library(jssc SHARED src/main/cpp/${JSSC_PLATFORM}/jssc.cpp)
+add_library(jssc SHARED src/main/cpp/${CPP_SOURCE}/jssc.cpp)
 
 # Fall-back header for when maven is not available
 list(APPEND JSSC_ADDITIONAL_INCLUDES src/main/cpp/)

@@ -46,9 +46,10 @@
     <!-- profile-dependant flags a-z -->
     <cmake.compile.skip>false</cmake.compile.skip>
     <cmake.build.args></cmake.build.args>
-    <cmake.generate.args></cmake.generate.args>
-    <cmake.generate.extra></cmake.generate.extra>
-    <cmake.generate.skip>false</cmake.generate.skip>
+    <cmake.generator.arg1></cmake.generator.arg1>
+    <cmake.generator.arg2></cmake.generator.arg2>
+    <cmake.generator.arg3></cmake.generator.arg3>
+    <cmake.generator.skip>false</cmake.generator.skip>
     <javah.skip>false</javah.skip>
     <jar.dependencies.skip>true</jar.dependencies.skip>
     <maven.assembly.id>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</maven.assembly.id>
@@ -64,15 +65,15 @@
     <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
     <plugin.antrun.version>1.8</plugin.antrun.version>
     <plugin.assembly.version>3.1.1</plugin.assembly.version>
+    <plugin.compiler.version>3.8.0</plugin.compiler.version>
     <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
     <plugin.jar.version>3.1.1</plugin.jar.version>
+    <plugin.javadoc.version>3.1.1</plugin.javadoc.version>
     <plugin.nar.version>3.6.0</plugin.nar.version>
     <plugin.osmaven.version>1.6.2</plugin.osmaven.version>
     <plugin.signature.version>1.1</plugin.signature.version>
-    <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
-    <plugin.javadoc.version>3.1.1</plugin.javadoc.version>
     <plugin.source.version>3.0.1</plugin.source.version>
-    <plugin.compiler.version>3.8.0</plugin.compiler.version>
+    <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
   </properties>
 
   <dependencies>
@@ -194,13 +195,15 @@
             <goals><goal>run</goal></goals>
             <phase>generate-sources</phase>
             <configuration>
-              <skip>${cmake.generate.skip}</skip>
+              <skip>${cmake.generator.skip}</skip>
               <target name="cmake-generate">
                 <mkdir dir="${cmake.generated.directory}"/>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}"/>
-                  <arg line="${cmake.generate.args}"/>
-                  <arg line="${cmake.generate.extra}"/>
+                  <arg line="${cmake.generator.arg1}"/>
+                  <arg line="${cmake.generator.arg2}"/>
+                  <arg line="${cmake.generator.arg3}"/>
+                  <arg line="-DJAVA_HOME=&quot;${java.home}&quot;"/>
                 </exec>
               </target>
             </configuration>
@@ -214,7 +217,7 @@
               <skip>${cmake.compile.skip}</skip>
               <target name="cmake-build">
                 <!-- copy header jdk<=8 -->
-                <copy todir="${cmake.generated.directory}" flatten="true" overwrite="true" verbose="true" failonerror="false">
+                <copy todir="${cmake.generated.directory}" flatten="true" overwrite="true" verbose="true" failonerror="false" quiet="true">
                   <fileset dir="${project.build.directory}/nar/" includes="**/*.h"/>
                 </copy>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
@@ -280,7 +283,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <skipAssembly>${cmake.generate.skip}</skipAssembly>
+              <skipAssembly>${cmake.generator.skip}</skipAssembly>
               <descriptors>
                 <descriptor>${project.basedir}/src/assembly/one-off-jar.xml</descriptor>
               </descriptors>
@@ -395,7 +398,7 @@
       <properties>
         <javah.skip>true</javah.skip>
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.skip>true</cmake.generate.skip>
+        <cmake.generator.skip>true</cmake.generator.skip>
         <cmake.compile.skip>true</cmake.compile.skip>
       </properties>
 
@@ -445,8 +448,8 @@
         <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
-        <cmake.generate.extra>-DFORCE_M32=True</cmake.generate.extra>
+        <cmake.generator.arg1>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg1>
+        <cmake.generator.arg2>-DFORCE_M32=True</cmake.generator.arg2>
       </properties>
     </profile>
 
@@ -458,8 +461,8 @@
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
-        <cmake.generate.extra>-DFORCE_M64=True</cmake.generate.extra>
+        <cmake.generator.arg1>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg1>
+        <cmake.generator.arg2>-DFORCE_M64=True</cmake.generator.arg2>
       </properties>
     </profile>
 
@@ -473,7 +476,8 @@
         </os>
       </activation>
       <properties>
-        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=x64 -DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
+        <cmake.generator.arg1>-DCMAKE_GENERATOR_PLATFORM=x64</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}></cmake.generator.arg2>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
@@ -488,7 +492,7 @@
         </os>
       </activation>
       <properties>
-        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
+        <cmake.generator.arg1>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg1>
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
@@ -502,7 +506,8 @@
         <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.detected.bitness}.cmake -DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
+        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.detected.bitness}.cmake</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg2>
       </properties>
     </profile>
 
@@ -515,7 +520,8 @@
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.detected.bitness}.cmake -DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
+        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.detected.bitness}.cmake</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg2>
       </properties>
     </profile>
 
@@ -528,7 +534,8 @@
         <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.args>
+        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generator.arg2>
       </properties>
     </profile>
 
@@ -541,33 +548,36 @@
         <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <!-- TODO: namespace conflict with arm soft float library -->
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.args>
+        <!-- TODO: namespace conflict with arm soft float library.  See also cmake's HAS_FPU -->
+        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generator.arg2>
       </properties>
     </profile>
  
     <!-- cmake arm 64-bit linux -->
     <profile>
-      <id>aarch64-linux</id>
+      <id>aarch64</id>
       <activation>
-          <os>
-            <family>Unix</family>
-            <name>Linux</name>
-          </os>
           <property>
             <name>cmake.build.arch</name>
             <value>aarch64</value>
           </property>
       </activation>
       <properties>
-        <os.detected.name>linux</os.detected.name>
         <os.detected.arch>aarch_64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Aarch64.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.args>
       </properties>
     </profile>
+
+<!-- TODO FIXME FIXME -->
+    <profile>
+      <id>aarch64-linux</id>
+      <activation>
+        <os>
+          <family>Unix</family>
+        </os>
+      </activation>
+    </profile> 
 
     <!-- cmake powerpc profile -->
     <profile>
@@ -578,41 +588,8 @@
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppc64.cmake -DNATIVE_LIB_DIR=${os.detected.name}_ppc</cmake.generate.args>
-      </properties>
-    </profile>
-
-    <!-- cmake arm trusty profile -->
-    <profile>
-      <id>armtrusty</id>
-      <properties>
-        <!-- trusty didn't have g++-5, etc -->
-        <cmake.generate.extra>-DSKIP_COMPILER_VERSION=True</cmake.generate.extra>
-      </properties>
-    </profile>
-
-    <!-- fix arm output directories -->
-    <!-- TODO: remove "arm-fix32", "arm-fix64" native-lib-loader 2.4.0+ -->
-    <profile>
-      <id>arm-fix32</id>
-      <activation>
-        <os>
-          <arch>arm</arch>
-        </os>
-      </activation>
-      <properties>
-        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.extra>
-      </properties>
-    </profile>
-    <profile>
-      <id>arm-fix64</id>
-      <activation>
-        <os>
-          <arch>aarch64</arch>
-        </os>
-      </activation>
-      <properties>
-        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.extra>
+        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppc64.cmake</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_ppc</cmake.generator.arg2>
       </properties>
     </profile>
 
@@ -625,8 +602,8 @@
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_OSX_ARCHITECTURES=arm64</cmake.generate.args>
-        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.extra>
+        <cmake.generator.arg1>-DCMAKE_OSX_ARCHITECTURES=arm64</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generator.arg2>
       </properties>
     </profile>
 
@@ -639,8 +616,8 @@
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generate.args>-DCMAKE_OSX_ARCHITECTURES=x86_64</cmake.generate.args>
-        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_x64</cmake.generate.extra>
+        <cmake.generator.arg1>-DCMAKE_OSX_ARCHITECTURES=x86_64</cmake.generator.arg1>
+        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_x64</cmake.generator.arg2>
       </properties>
     </profile>
 
