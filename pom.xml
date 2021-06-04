@@ -46,15 +46,16 @@
     <!-- profile-dependant flags a-z -->
     <cmake.compile.skip>false</cmake.compile.skip>
     <cmake.build.args></cmake.build.args>
-    <cmake.generator.arg1></cmake.generator.arg1>
-    <cmake.generator.arg2></cmake.generator.arg2>
-    <cmake.generator.arg3></cmake.generator.arg3>
+    <cmake.generator.gccarch>IGNORE</cmake.generator.gccarch>
+    <cmake.generator.arg></cmake.generator.arg>
+    <cmake.generator.nativelibdir></cmake.generator.nativelibdir>
+    <cmake.generator.msvcplatform></cmake.generator.msvcplatform>
+    <cmake.generator.osxarchitectures></cmake.generator.osxarchitectures>
     <cmake.generator.skip>false</cmake.generator.skip>
+    <cmake.toolchain.file></cmake.toolchain.file>
     <javah.skip>false</javah.skip>
     <jar.dependencies.skip>true</jar.dependencies.skip>
     <maven.assembly.id>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</maven.assembly.id>
-    <!-- TODO: remove "os.detected.bitness"; already defined os-maven-plugin 1.6.3+ -->
-    <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
 
     <!-- dependency versions a-z -->
     <dependency.junit.version>4.12</dependency.junit.version>
@@ -70,7 +71,7 @@
     <plugin.jar.version>3.1.1</plugin.jar.version>
     <plugin.javadoc.version>3.1.1</plugin.javadoc.version>
     <plugin.nar.version>3.6.0</plugin.nar.version>
-    <plugin.osmaven.version>1.6.2</plugin.osmaven.version>
+    <plugin.osmaven.version>1.7.0</plugin.osmaven.version>
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.source.version>3.0.1</plugin.source.version>
     <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
@@ -200,10 +201,15 @@
                 <mkdir dir="${cmake.generated.directory}"/>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}"/>
-                  <arg line="${cmake.generator.arg1}"/>
-                  <arg line="${cmake.generator.arg2}"/>
-                  <arg line="${cmake.generator.arg3}"/>
+                  <arg line="-DNATIVE_LIB_DIR=&quot;${cmake.generator.nativelibdir}&quot;"/>
+                  <!-- Pass-in maven's JAVA_HOME, helps resolve jni.h -->
                   <arg line="-DJAVA_HOME=&quot;${java.home}&quot;"/>
+                  <!-- Should be one of:
+                       CMAKE_GENERATOR_PLATFORM
+                       CMAKE_TOOLCHAIN_FILE
+                       CMAKE_OSX_ARCHITECTURE
+                  -->
+                  <arg line="${cmake.generator.arg}"/>
                 </exec>
               </target>
             </configuration>
@@ -440,78 +446,128 @@
       </properties>
     </profile>
 
-    <!-- cmake linux 32-bit profile -->
+    <!-- cmake generic arm64 profile (all platforms) -->
     <profile>
-      <id>m32</id>
-      <properties>
-        <os.detected.arch>x86_32</os.detected.arch>
-        <os.detected.bitness>32</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg1>
-        <cmake.generator.arg2>-DFORCE_M32=True</cmake.generator.arg2>
-      </properties>
-    </profile>
-
-    <!-- cmake linux 64-bit profile -->
-    <profile>
-      <id>m64</id>
-      <properties>
-        <os.detected.arch>x86_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg1>
-        <cmake.generator.arg2>-DFORCE_M64=True</cmake.generator.arg2>
-      </properties>
-    </profile>
-
-    <!-- cmake windows-amd64 profile -->
-    <profile>
-      <id>win64</id>
+      <id>aarch64</id>
       <activation>
         <os>
-          <family>Windows</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <os.detected.arch>aarch_64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <cmake.generator.nativelibdir>${os.detected.name}_arm64</cmake.generator.nativelibdir>
+        <!-- msvc only -->
+        <cmake.generator.msvcplatform>ARM64</cmake.generator.msvcplatform>
+        <!-- macos only -->
+        <cmake.generator.osxarchitectures>arm64</cmake.generator.osxarchitectures>
+      </properties>
+    </profile>
+
+    <!-- cmake generic x86_64 profile (all platforms) -->
+    <profile>
+      <id>x86_64</id>
+      <activation>
+        <os>
           <arch>amd64</arch>
         </os>
       </activation>
       <properties>
-        <cmake.generator.arg1>-DCMAKE_GENERATOR_PLATFORM=x64</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}></cmake.generator.arg2>
-        <cmake.build.args>--config Release</cmake.build.args>
+        <os.detected.arch>x86_64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <cmake.generator.nativelibdir>${os.detected.name}_64</cmake.generator.nativelibdir>
+        <!-- msvc only -->
+        <cmake.generator.msvcplatform>x64</cmake.generator.msvcplatform>
+        <!-- macos only -->
+        <cmake.generator.osxarchitectures>x86_64</cmake.generator.osxarchitectures>
+        <!-- linux only -->
+        <cmake.generator.gccarch>M64</cmake.generator.gccarch>
       </properties>
     </profile>
 
-    <!-- cmake windows-x86 profile -->
+    <!-- cmake generic x86 profile (all platforms) -->
     <profile>
-      <id>win32</id>
+      <id>x86</id>
       <activation>
         <os>
-          <family>Windows</family>
           <arch>x86</arch>
         </os>
       </activation>
       <properties>
-        <cmake.generator.arg1>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg1>
+        <os.detected.arch>x86_32</os.detected.arch>
+        <os.detected.bitness>32</os.detected.bitness>
+        <cmake.generator.nativelibdir>${os.detected.name}_32</cmake.generator.nativelibdir>
+        <!-- msvc only -->
+        <cmake.generator.msvcplatform>Win32</cmake.generator.msvcplatform>
+        <!-- macos only -->
+        <cmake.generator.osxarchitectures>x86_64</cmake.generator.osxarchitectures>
+        <!-- linux only -->
+        <cmake.generator.gccarchitecture>M32</cmake.generator.gccarchitecture>
+      </properties>
+    </profile>
+
+    <!-- cmake msvc profile, must occur after generic profile above -->
+    <profile>
+      <id>msvc</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <cmake.generator.arg>-DCMAKE_GENERATOR_PLATFORM=${cmake.generator.msvcplatform}</cmake.generator.arg>
+        <!-- Release is needed on Windows per https://stackoverflow.com/a/20423820/3196753 -->
         <cmake.build.args>--config Release</cmake.build.args>
       </properties>
     </profile>
 
-    <!-- cmake mingw32 profile -->
+    <!-- cmake macos profile, must occur after generic profile above -->
+    <profile>
+      <id>macos</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <cmake.generator.arg>-DCMAKE_OSX_ARCHITECTURES=${cmake.generator.osxarchitectures}</cmake.generator.arg>
+      </properties>
+    </profile>
+
+    <!-- cmake linux profile, must occur after generic profile above -->
+    <profile>
+      <id>linux</id>
+      <activation>
+        <os>
+          <family>unix</family>
+        </os>
+      </activation>
+      <properties>
+        <!-- Should be one of:
+             FORCE_M32
+             FORCE_M64
+        -->
+        <cmake.generator.arg>"-DFORCE_${cmake.generator.gccarch}=True"</cmake.generator.arg>
+      </properties>
+    </profile>
+
+    <!-- cmake mingw32 profile, must occur after os profiles above -->
     <profile>
       <id>mingw32</id>
       <properties>
+        <!-- override os-maven-plugin values -->
         <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_32</os.detected.arch>
         <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.detected.bitness}.cmake</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg2>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
+        <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
       </properties>
     </profile>
 
-    <!-- cmake mingw64 profile -->
+    <!-- cmake mingw64 profile, must occur after os profiles above -->
     <profile>
       <id>mingw64</id>
       <properties>
@@ -520,12 +576,12 @@
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.detected.bitness}.cmake</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generator.arg2>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
+        <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
       </properties>
     </profile>
 
-    <!-- cmake arm soft float profile -->
+    <!-- cmake arm soft float profile, must occur after os profiles above -->
     <profile>
       <id>armsf</id>
       <properties>
@@ -534,12 +590,12 @@
         <os.detected.bitness>32</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armsf.cmake</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generator.arg2>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Armsf.cmake"</cmake.generator.arg>
+        <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
       </properties>
     </profile>
 
-    <!-- cmake arm hard float profile -->
+    <!-- cmake arm hard float profile, must occur after os profiles above -->
     <profile>
       <id>armhf</id>
       <properties>
@@ -549,78 +605,24 @@
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
         <!-- TODO: namespace conflict with arm soft float library.  See also cmake's HAS_FPU -->
-        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generator.arg2>
-      </properties>
-    </profile>
- 
-    <!-- cmake arm 64-bit linux -->
-    <profile>
-      <id>aarch64</id>
-      <activation>
-          <property>
-            <name>cmake.build.arch</name>
-            <value>aarch64</value>
-          </property>
-      </activation>
-      <properties>
-        <os.detected.arch>aarch_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Armhf.cmake"</cmake.generator.arg>
+        <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
       </properties>
     </profile>
 
-<!-- TODO FIXME FIXME -->
-    <profile>
-      <id>aarch64-linux</id>
-      <activation>
-        <os>
-          <family>Unix</family>
-        </os>
-      </activation>
-    </profile> 
-
-    <!-- cmake powerpc profile -->
+    <!-- cmake powerpc profile, must occur after os profiles above -->
     <profile>
       <id>ppc64</id>
       <properties>
-        <os.detected.name>linux</os.detected.name>
+        <!-- <os.detected.name>linux</os.detected.name> -->
         <os.detected.arch>ppc_64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DCMAKE_TOOLCHAIN_FILE=toolchain/Ppc64.cmake</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_ppc</cmake.generator.arg2>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Ppc64.cmake"</cmake.generator.arg>
+        <cmake.generator.nativelibdir>${os.detected.name}_ppc</cmake.generator.nativelibdir>
       </properties>
     </profile>
-
-     <!-- cmake arm 64-bit mac -->
-    <profile>
-      <id>armmac</id>
-      <properties>
-        <os.detected.name>osx</os.detected.name>
-        <os.detected.arch>aarch_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DCMAKE_OSX_ARCHITECTURES=arm64</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generator.arg2>
-      </properties>
-    </profile>
-
-    <!-- cmake intel 64-bit mac -->
-    <profile>
-      <id>intelmac</id>
-      <properties>
-        <os.detected.name>osx</os.detected.name>
-        <os.detected.arch>x86_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.arg1>-DCMAKE_OSX_ARCHITECTURES=x86_64</cmake.generator.arg1>
-        <cmake.generator.arg2>-DNATIVE_LIB_DIR=${os.detected.name}_x64</cmake.generator.arg2>
-      </properties>
-    </profile>
-
 
   </profiles>
 </project>

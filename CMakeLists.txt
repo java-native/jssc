@@ -79,7 +79,7 @@ endif()
 
 # Detect platform if -DNATIVE_LIB_DIR is not provided
 # TODO: Handle arm, hardfloat, etc
-if(NOT NATIVE_LIB_DIR)
+if(NOT NATIVE_LIB_DIR OR "${NATIVE_LIB_DIR}" STREQUAL "")
 	# windows, linux, darwin, etc
 	string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
 	if(OS_NAME MATCHES "darwin")
@@ -144,12 +144,17 @@ if(WIN32)
 	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 endif()
-if(FORCE_M32)
-	# Build 32-bit binary on Linux
-	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m32 LINK_FLAGS -m32)
-elseif(FORCE_M64)
-	# Build 64-bit binary on Linux
-	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m64 LINK_FLAGS -m64)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
+    if(FORCE_IGNORE)
+        # Never used
+    elseif(FORCE_M32)
+        # Build 32-bit binary on Linux
+        set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m32 LINK_FLAGS -m32)
+    elseif(FORCE_M64)
+        # Build 64-bit binary on Linux
+        set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m64 LINK_FLAGS -m64)
+    endif()
 endif()
 
 # Call strip on non-debug builds
