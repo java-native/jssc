@@ -145,10 +145,8 @@ if(WIN32)
 	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
-    if(FORCE_IGNORE)
-        # Never used
-    elseif(FORCE_M32)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32 AND NOT FORCE_IGNORE)
+    if(FORCE_M32)
         # Build 32-bit binary on Linux
         set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m32 LINK_FLAGS -m32)
     elseif(FORCE_M64)
