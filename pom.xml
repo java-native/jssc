@@ -189,8 +189,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>${plugin.antrun.version}</version>
-
         <executions>
+
           <execution>
             <id>cmake-generate</id>
             <goals><goal>run</goal></goals>
@@ -201,13 +201,14 @@
                 <mkdir dir="${cmake.generated.directory}"/>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}"/>
+                  <!-- Set the native lib output directory or leave blank to let CMake calculate -->
                   <arg line="-DNATIVE_LIB_DIR=&quot;${cmake.generator.nativelibdir}&quot;"/>
                   <!-- Pass-in maven's JAVA_HOME, helps resolve jni.h -->
                   <arg line="-DJAVA_HOME=&quot;${java.home}&quot;"/>
-                  <!-- Should be one of:
-                       CMAKE_GENERATOR_PLATFORM
-                       CMAKE_TOOLCHAIN_FILE
-                       CMAKE_OSX_ARCHITECTURE
+                  <!-- Final generator argument should be blank or one of:
+                       -DCMAKE_GENERATOR_PLATFORM=...
+                       -DCMAKE_TOOLCHAIN_FILE=...
+                       -DCMAKE_OSX_ARCHITECTURE=...
                   -->
                   <arg line="${cmake.generator.arg}"/>
                 </exec>
@@ -234,6 +235,37 @@
               </target>
             </configuration>
           </execution>
+
+          <execution>
+            <id>skip-tests-check</id>
+            <phase>compile</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <exportAntProperties>true</exportAntProperties>
+              <target>
+                <echo level="info">Tests will run if the host os.name and os.arch match the target:</echo>
+                <echo level="info">(an unset target is considered a positive match)</echo>
+                <echo level="info">- Host:       "${os.name}:${os.arch}"</echo>
+                <echo level="info">- Target:     "${maven.test.skip.compare}"</echo>
+                <condition property="maven.test.skip" value="true">
+                  <and>
+                    <!-- Honor value if already set -->
+                    <not>
+                      <isset property="maven.test.skip"/>
+                    </not>
+                    <!-- Make sure we have a value to compare -->
+                    <isset property="maven.test.skip.compare"/>
+                    <!-- Assume unit tests are impossible if host and target systems are mismatched -->
+                    <not>
+                      <equals arg1="${maven.test.skip.compare}" arg2="${os.name}:${os.arch}"/>
+                    </not>
+                  </and>
+                </condition>
+                <echo level="info">- Skip Tests: "${maven.test.skip}"</echo>
+              </target>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 
@@ -483,6 +515,8 @@
         <cmake.generator.osxarchitectures>x86_64</cmake.generator.osxarchitectures>
         <!-- linux only -->
         <cmake.generator.gccarch>M64</cmake.generator.gccarch>
+        <!-- used to calculate if java is running natively -->
+        <maven.test.skip.compare>${os.name}:amd64</maven.test.skip.compare>
       </properties>
     </profile>
 
@@ -504,6 +538,8 @@
         <cmake.generator.osxarchitectures>x86_64</cmake.generator.osxarchitectures>
         <!-- linux only -->
         <cmake.generator.gccarchitecture>M32</cmake.generator.gccarchitecture>
+        <!-- used to calculate if java is running natively -->
+        <maven.test.skip.compare>${os.name}:x86</maven.test.skip.compare>
       </properties>
     </profile>
 
@@ -560,10 +596,10 @@
         <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_32</os.detected.arch>
         <os.detected.bitness>32</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
         <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
+        <!-- Unit tests can't work with cross-compilation -->
+        <maven.test.skip>true</maven.test.skip>
       </properties>
     </profile>
 
@@ -574,10 +610,10 @@
         <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
         <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
+        <!-- Unit tests can't work with cross-compilation -->
+        <maven.test.skip>true</maven.test.skip>
       </properties>
     </profile>
 
@@ -588,10 +624,10 @@
         <os.detected.name>linux</os.detected.name>
         <os.detected.arch>arm_32</os.detected.arch>
         <os.detected.bitness>32</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
         <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Armsf.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
+        <!-- Unit tests can't work with cross-compilation -->
+        <maven.test.skip>true</maven.test.skip>
       </properties>
     </profile>
 
@@ -602,11 +638,11 @@
         <os.detected.name>linux</os.detected.name>
         <os.detected.arch>arm_32</os.detected.arch>
         <os.detected.bitness>32</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
         <!-- TODO: namespace conflict with arm soft float library.  See also cmake's HAS_FPU -->
         <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Armhf.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
+        <!-- Unit tests can't work with cross-compilation -->
+        <maven.test.skip>true</maven.test.skip>
       </properties>
     </profile>
 
@@ -617,10 +653,10 @@
         <!-- <os.detected.name>linux</os.detected.name> -->
         <os.detected.arch>ppc_64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
-        <!-- skip test on cross-compile -->
-        <maven.test.skip>true</maven.test.skip>
         <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Ppc64.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_ppc</cmake.generator.nativelibdir>
+        <!-- Unit tests can't work with cross-compilation -->
+        <maven.test.skip>true</maven.test.skip>
       </properties>
     </profile>
 
