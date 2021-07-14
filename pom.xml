@@ -667,7 +667,7 @@
     <profile>
       <id>ppc64</id>
       <properties>
-        <!-- <os.detected.name>linux</os.detected.name> -->
+        <os.detected.name>linux</os.detected.name>
         <os.detected.arch>ppc_64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
         <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Ppc64.cmake"</cmake.generator.arg>
