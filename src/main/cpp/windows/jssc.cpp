@@ -55,8 +55,8 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
         return (jlong)((HANDLE)jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND);
     }
 
-    strcpy(portFullName, prefix);
-    strcat(portFullName, port);
+    strcpy_s(portFullName, prefix);
+    strcat_s(portFullName, port);
     //<- since 2.1.0
 
     HANDLE hComm = CreateFile(portFullName,
@@ -101,10 +101,10 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
     DCB *dcb = new DCB();
     jboolean returnValue = JNI_FALSE;
     if(GetCommState(hComm, dcb)){
-        dcb->BaudRate = baudRate;
-        dcb->ByteSize = byteSize;
-        dcb->StopBits = stopBits;
-        dcb->Parity = parity;
+        dcb->BaudRate = static_cast<BYTE>(baudRate);
+        dcb->ByteSize = static_cast<BYTE>(byteSize);
+        dcb->StopBits = static_cast<BYTE>(stopBits);
+        dcb->Parity = static_cast<BYTE>(parity);
 
         //since 0.8 ->
         if(setRTS == JNI_TRUE){
