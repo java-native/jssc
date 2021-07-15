@@ -20,7 +20,8 @@ project(jssc VERSION "" LANGUAGES CXX)
 
 # Use JAVA_HOME from Maven
 if(JAVA_HOME)
-    set(ENV{JAVA_HOME} "${JAVA_HOME}")
+    # Sanitize path for cmake
+    file(TO_CMAKE_PATH "${JAVA_HOME}" JAVA_HOME)
     message(STATUS "Picked up JAVA_HOME from Maven: ${JAVA_HOME}")
 endif()
 
