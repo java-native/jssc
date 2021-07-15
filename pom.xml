@@ -493,13 +493,49 @@
       </properties>
     </profile>
 
-    <!-- cmake generic arm64 profile (all platforms) -->
+    <!-- Set os.detected.arch; may be overridden lower -->
     <profile>
-      <id>aarch64</id>
+      <id>aarch64_detected</id>
       <activation>
         <os>
           <arch>aarch64</arch>
         </os>
+      </activation>
+      <properties>
+        <os.detected.arch>aarch_64</os.detected.arch>
+      </properties>
+    </profile>
+    <profile>
+      <id>x86_64_detected</id>
+      <activation>
+        <os>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <os.detected.arch>x86_64</os.detected.arch>
+      </properties>
+    </profile>
+    <profile>
+      <id>x86_detected</id>
+      <activation>
+        <os>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <os.detected.arch>x86_32</os.detected.arch>
+      </properties>
+    </profile>
+
+    <!-- cmake generic arm64 profile (all platforms) -->
+    <profile>
+      <id>aarch64</id>
+      <activation>
+        <property>
+          <name>os.detected.arch</name>
+          <value>aarch_64</value>
+        </property>
       </activation>
       <properties>
         <os.detected.arch>aarch_64</os.detected.arch>
@@ -518,9 +554,10 @@
     <profile>
       <id>x86_64</id>
       <activation>
-        <os>
-          <arch>amd64</arch>
-        </os>
+        <property>
+          <name>os.detected.arch</name>
+          <value>x86_64</value>
+        </property>
       </activation>
       <properties>
         <os.detected.arch>x86_64</os.detected.arch>
@@ -541,9 +578,10 @@
     <profile>
       <id>x86</id>
       <activation>
-        <os>
-          <arch>x86</arch>
-        </os>
+        <property>
+          <name>os.detected.arch</name>
+          <value>x86_32</value>
+        </property>
       </activation>
       <properties>
         <os.detected.arch>x86_32</os.detected.arch>
