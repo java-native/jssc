@@ -651,10 +651,10 @@
         <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_32</os.detected.arch>
         <os.detected.bitness>32</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
-        <!-- Unit tests can't work with cross-compilation -->
-        <maven.test.skip>true</maven.test.skip>
+        <!-- used to calculate if Java is running natively -->
+        <maven.test.skip.compare>x86 [Windows]</maven.test.skip.compare>
       </properties>
     </profile>
 
@@ -665,10 +665,10 @@
         <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
-        <!-- Unit tests can't work with cross-compilation -->
-        <maven.test.skip>true</maven.test.skip>
+        <!-- used to calculate if Java is running natively -->
+        <maven.test.skip.compare>amd64 [Windows]</maven.test.skip.compare>
       </properties>
     </profile>
 
@@ -679,10 +679,10 @@
         <os.detected.name>linux</os.detected.name>
         <os.detected.arch>arm_32</os.detected.arch>
         <os.detected.bitness>32</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Armsf.cmake"</cmake.generator.arg>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Armsf.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
-        <!-- Unit tests can't work with cross-compilation -->
-        <maven.test.skip>true</maven.test.skip>
+        <!-- used to calculate if Java is running natively -->
+        <maven.test.skip.compare>armsf [Linux]</maven.test.skip.compare>
       </properties>
     </profile>
 
@@ -694,10 +694,10 @@
         <os.detected.arch>arm_32</os.detected.arch>
         <os.detected.bitness>32</os.detected.bitness>
         <!-- TODO: namespace conflict with arm soft float library.  See also cmake's HAS_FPU -->
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Armhf.cmake"</cmake.generator.arg>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Armhf.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
-        <!-- Unit tests can't work with cross-compilation -->
-        <maven.test.skip>true</maven.test.skip>
+        <!-- used to calculate if Java is running natively -->
+        <maven.test.skip.compare>armhf [Linux]</maven.test.skip.compare>
       </properties>
     </profile>
 
@@ -708,10 +708,10 @@
         <os.detected.name>linux</os.detected.name>
         <os.detected.arch>ppc_64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="toolchain/Ppc64.cmake"</cmake.generator.arg>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Ppc64.cmake"</cmake.generator.arg>
         <cmake.generator.nativelibdir>${os.detected.name}_ppc</cmake.generator.nativelibdir>
-        <!-- Unit tests can't work with cross-compilation -->
-        <maven.test.skip>true</maven.test.skip>
+        <!-- used to calculate if Java is running natively -->
+        <maven.test.skip.compare>ppc64 [Linux]</maven.test.skip.compare>
       </properties>
     </profile>
 
