@@ -23,6 +23,11 @@ if(JAVA_HOME)
     # Sanitize path for cmake
     file(TO_CMAKE_PATH "${JAVA_HOME}" JAVA_HOME)
     message(STATUS "Picked up JAVA_HOME from Maven: ${JAVA_HOME}")
+    # Sanitize accidental jre selection on Linux
+    if(JAVA_HOME MATCHES "/jre$")
+        STRING(REGEX REPLACE "/jre$" "/jdk" JAVA_HOME "${JAVA_HOME}")
+        message(WARNING "Maven JAVA_HOME appears to be a JRE,  trying to fix: ${JAVA_HOME}")
+    endif()
 endif()
 
 find_package(Java)
