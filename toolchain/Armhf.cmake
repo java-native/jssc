@@ -1,16 +1,8 @@
-include(DetectLinux)
-
 set(CMAKE_SYSTEM_NAME Linux)
 set(TOOLCHAIN_PREFIX arm-linux-gnueabi)
 
-# Since Trusty, append compiler version
-# TODO: See if this is needed
-# if(UBUNTU AND LINUX_VERSION VERSION_GREATER "16.04")
-#	set(COMPILER_VERSION 5)
-#	if(NOT COMPILER_VERSION MATCHES "-.*")
-#		set(COMPILER_VERSION "-${COMPILER_VERSION}")
-#	endif()
-# endif()
+message(STATUS "Note: Some compilers may require version information to be found")
+# set(COMPILER_VERSION "-4.7")
 
 set(TOOLCHAIN_SUFFIX hf)
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}${TOOLCHAIN_SUFFIX}-gcc${COMPILER_VERSION})
