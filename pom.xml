@@ -198,7 +198,6 @@
             <configuration>
               <skip>${cmake.generator.skip}</skip>
               <target name="cmake-generate">
-                <echo>######## ${cmake.generator.arg}</echo>
                 <mkdir dir="${cmake.generated.directory}"/>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}"/>
