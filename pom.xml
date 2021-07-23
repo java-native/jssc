@@ -673,6 +673,20 @@
       </properties>
     </profile>
 
+    <!-- cmake mingwaarch64 profile, must occur after os profiles above -->
+    <profile>
+      <id>mingwaarch64</id>
+      <properties>
+        <os.detected.name>windows</os.detected.name>
+        <os.detected.arch>arm_64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/MingwAarch64.cmake"</cmake.generator.arg>
+        <cmake.generator.nativelibdir>windows_arm64</cmake.generator.nativelibdir>
+        <!-- used to calculate if Java is running natively -->
+        <maven.test.skip.compare>aarch64 [Windows]</maven.test.skip.compare>
+      </properties>
+    </profile>
+
     <!-- cmake arm soft float profile, must occur after os profiles above -->
     <profile>
       <id>armsf</id>
