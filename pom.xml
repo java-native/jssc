@@ -198,6 +198,7 @@
             <configuration>
               <skip>${cmake.generator.skip}</skip>
               <target name="cmake-generate">
+                <echo>######## ${cmake.generator.arg}</echo>
                 <mkdir dir="${cmake.generated.directory}"/>
                 <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
                   <arg line="${project.basedir}"/>
@@ -613,6 +614,24 @@
       </properties>
     </profile>
 
+    <!-- cmake linux profile, must occur after generic profile above -->
+    <profile>
+      <id>linux</id>
+      <activation>
+        <os>
+          <!-- warning, "unix" will match "macos" too -->
+          <family>unix</family>
+        </os>
+      </activation>
+      <properties>
+        <!-- Should be one of:
+             FORCE_M32
+             FORCE_M64
+        -->
+        <cmake.generator.arg>"-DFORCE_${cmake.generator.gccarch}=True"</cmake.generator.arg>
+      </properties>
+    </profile>
+
     <!-- cmake macos profile, must occur after generic profile above -->
     <profile>
       <id>macos</id>
@@ -623,23 +642,6 @@
       </activation>
       <properties>
         <cmake.generator.arg>-DCMAKE_OSX_ARCHITECTURES=${cmake.generator.osxarchitectures}</cmake.generator.arg>
-      </properties>
-    </profile>
-
-    <!-- cmake linux profile, must occur after generic profile above -->
-    <profile>
-      <id>linux</id>
-      <activation>
-        <os>
-          <family>unix</family>
-        </os>
-      </activation>
-      <properties>
-        <!-- Should be one of:
-             FORCE_M32
-             FORCE_M64
-        -->
-        <cmake.generator.arg>"-DFORCE_${cmake.generator.gccarch}=True"</cmake.generator.arg>
       </properties>
     </profile>
 
