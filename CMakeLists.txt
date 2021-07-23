@@ -92,12 +92,6 @@ if(NOT NATIVE_LIB_DIR OR "${NATIVE_LIB_DIR}" STREQUAL "")
 		set(OS_NAME "osx")
 	endif()
 
-	cmake_host_system_information(RESULT OS_SUFFIX_SF QUERY HAS_FPU)
-	# warn of native-lib-loader shortcomming
-	IF(NOT OS_SUFFIX_SF EQUAL 1)
-		message(WARNING "Soft float detected. We can't determine this at runtime; Compatiblity will suffer.")
-	ENDIF()
-
 	# bitness/suffix
 	if("${OS_ARCH}" STREQUAL "aarch64" OR "${OS_ARCH}" STREQUAL "arm64")
 		set(OS_SUFFIX "arm64")
@@ -114,6 +108,20 @@ if(NOT NATIVE_LIB_DIR OR "${NATIVE_LIB_DIR}" STREQUAL "")
 			set(OS_SUFFIX 32)
 		endif()
 	endif()
+
+	# handle warnings
+	if(OS_SUFFIX STREQUAL "arm")
+        if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
+            message(WARNING "Cmake < 3.10.0 can't detect HAS_FPU.  This only affects arm 32-bit builds.")
+        else()
+            cmake_host_system_information(RESULT OS_SUFFIX_SF QUERY HAS_FPU)
+            # warn of native-lib-loader shortcomming
+            IF(NOT OS_SUFFIX_SF EQUAL 1)
+                message(WARNING "Soft float detected. We can't determine this at runtime; Compatibility will suffer.")
+            ENDIF()
+        endif()
+    endif()
+
 	set(NATIVE_LIB_DIR ${OS_NAME}_${OS_SUFFIX})
 endif()
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/natives/${NATIVE_LIB_DIR})
