@@ -85,7 +85,6 @@ endif()
 
 # Detect platform if -DNATIVE_LIB_DIR is not provided
 # TODO: Handle arm, hardfloat, etc
-MESSAGE(STATUS "${NATIVE_LIB_DIR} !!!!!")
 if(NOT NATIVE_LIB_DIR OR "${NATIVE_LIB_DIR}" STREQUAL "")
 	# windows, linux, darwin, etc
 	string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
