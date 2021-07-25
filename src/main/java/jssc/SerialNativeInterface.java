@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 
 /**
  *
@@ -81,22 +82,23 @@ public class SerialNativeInterface {
 
     static {
       String libFolderPath;
-      String libName;
 
       String osName = System.getProperty("os.name");
       String architecture = System.getProperty("os.arch");
-      String userHome = System.getProperty("user.home");
       String fileSeparator = System.getProperty("file.separator");
       String tmpFolder = System.getProperty("java.io.tmpdir");
-      String testFolder = "";
+      String extendedFolder = "";
       String architectureShort = "";
       String rawLibName = "";
 
-      //since 2.3.0 ->
-      String libRootFolder = new File(userHome).canWrite() ? userHome : tmpFolder;
-      //<- since 2.3.0
-
       String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
+
+      //since 2.3.0 ->
+      String libRootFolder = getProcessingLibDirectory();
+      if (libRootFolder == null) {
+          libRootFolder = tmpFolder;
+      }
+      //<- since 2.3.0
 
       if(architecture.equals("i386") || architecture.equals("i686")){
           architecture = "x86";
@@ -134,12 +136,14 @@ public class SerialNativeInterface {
       if(osName.equals("Linux")){
           osName = "linux";
           osType = OS_LINUX;
-          testFolder = "linux_" + architectureShort;
+          extendedFolder = "linux_" + architectureShort;
           rawLibName = "libjssc.so";
       }
       else if(osName.startsWith("Win")){
           osName = "windows";
           osType = OS_WINDOWS;
+          extendedFolder = "windows_" + architectureShort;
+          rawLibName = "jssc.dll";
       }//since 0.9.0 ->
       else if(osName.equals("SunOS")){
           osName = "solaris";
@@ -147,18 +151,12 @@ public class SerialNativeInterface {
       }
       else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
           osName = "mac_os_x";
-          testFolder = "osx_64";
+          extendedFolder = architecture.contains("arm") ? "osx_arm64" : "osx_64";
           rawLibName = "libjssc.dylib";
           osType = OS_MAC_OS_X;
       }//<- since 0.9.0
 
-      libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;
-      libName = "jSSC-" + libVersion + "_" + architecture;
-      libName = System.mapLibraryName(libName);
-
-      if(libName.endsWith(".dylib")){//Since 2.1.0 MacOSX 10.8 fix
-          libName = libName.replace(".dylib", ".jnilib");
-      }
+      libFolderPath = libRootFolder + fileSeparator + extendedFolder;
 
       boolean manualLoadLib = false;
       boolean autoLoadLib = false;
@@ -169,42 +167,63 @@ public class SerialNativeInterface {
       } else if(loadLibFromPath("jssc")) {
           // nothing more to do
           autoLoadLib = true;
-      } else if(isLibFolderExist(libFolderPath)){
-          if (isLibFileExist(libFolderPath + fileSeparator + libName)){
-              manualLoadLib = true;
-          }
-          else {
-              if(extractLib((libFolderPath + fileSeparator + libName), osName, libName)){
-                  manualLoadLib = true;
-              }
-          }
-      }
-      else {
-          if (new File(libFolderPath).mkdirs()){
-              if(extractLib((libFolderPath + fileSeparator + libName), osName, libName)){
-                  manualLoadLib = true;
-              }
-          }
+      } else {
+          manualLoadLib = true;
       }
 
       if (autoLoadLib) {
           // If auto-loaded, nothing more to do.
-      } else if (manualLoadLib) {
-          System.load(libFolderPath + fileSeparator + libName);
+      } else {
+          System.load(libFolderPath + fileSeparator + rawLibName);
           String versionBase = getLibraryBaseVersion();
           String versionNative = getNativeLibraryVersion();
-          if (!versionBase.equals(versionNative)) {
+          if (!isExpected(versionBase, versionNative)) {
               System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
           }
-      } else {
-          String fullLoc = System.getProperty("user.dir")
-              + fileSeparator + "target"
-              + fileSeparator + "cmake"
-              + fileSeparator + "natives"
-              + fileSeparator + testFolder
-              + fileSeparator + rawLibName;
-          System.load(fullLoc);
       }
+    }
+
+    /**
+     * Check that the library version is expected.
+     *
+     * @param baseVersion The java version.
+     * @param nativeVersion The native version.
+     * @returns True if the same or if they both share the libVersion above.
+     *      This is allowed because processing has its own snapshot build as it
+     *      is not on Maven.
+     */
+    private static boolean isExpected(String baseVersion, String nativeVersion) {
+        if(baseVersion.equals(nativeVersion)) {
+            return true;
+        } else {
+            return baseVersion.startsWith(libVersion) && nativeVersion.startsWith(libVersion);
+        }
+    }
+
+    /**
+     * Get the Processing serial library directory.
+     *
+     * <p>
+     * Get the Processing serial library directory for opening the native
+     * library (dll, so, dylib). This is necessary because we don't want to
+     * extract to the local filesystem and processing carries the native
+     * libs with it.
+     * </p>
+     *
+     * @return The folder of the serial library for Processing if found on the
+     *   Java library path. If not found, returns null.
+     */
+    private static String getProcessingLibDirectory() {
+        try {
+            return new File(SerialNativeInterface.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .toURI()
+            ).getParent();
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
     /**
@@ -235,54 +254,6 @@ public class SerialNativeInterface {
         File folder = new File(libFilePath);
         if(folder.exists() && folder.isFile()){
             returnValue = true;
-        }
-        return returnValue;
-    }
-
-    /**
-     * Extract lib to lib folder
-     *
-     * @param libFilePath
-     * @param osName
-     * @param libName
-     *
-     * @since 0.8
-     */
-    private static boolean extractLib(String libFilePath, String osName, String libName) {
-        boolean returnValue = false;
-        File libFile = new File(libFilePath);
-        InputStream input = null;
-        FileOutputStream output = null;
-        input = SerialNativeInterface.class.getResourceAsStream("/libs/" + osName + "/" + libName);
-        if(input != null){
-            int read;
-            byte[] buffer = new byte[4096];
-            try {
-                output = new FileOutputStream(libFilePath);
-                while((read = input.read(buffer)) != -1){
-                    output.write(buffer, 0, read);
-                }
-                output.close();
-                input.close();
-                returnValue = true;
-            }
-            catch (Exception ex) {
-                try {
-                    output.close();
-                    if(libFile.exists()){
-                        libFile.delete();
-                    }
-                }
-                catch (Exception ex_out) {
-                    //Do nothing
-                }
-                try {
-                    input.close();
-                }
-                catch (Exception ex_in) {
-                    //Do nothing
-                }
-            }
         }
         return returnValue;
     }
@@ -467,8 +438,8 @@ public class SerialNativeInterface {
      * @param handle handle of opened port
      *
      * @return Method returns the array that contains info about bytes count in buffers:
-     * <br><b>element 0</b> - input buffer</br>
-     * <br><b>element 1</b> - output buffer</br>
+     * <br><b>element 0</b> - input buffer
+     * <br><b>element 1</b> - output buffer
      *
      * @since 0.8
      */
@@ -510,10 +481,10 @@ public class SerialNativeInterface {
      * @param handle handle of opened port
      *
      * @return Method returns the array containing information about lines in following order:
-     * <br><b>element 0</b> - <b>CTS</b> line state</br>
-     * <br><b>element 1</b> - <b>DSR</b> line state</br>
-     * <br><b>element 2</b> - <b>RING</b> line state</br>
-     * <br><b>element 3</b> - <b>RLSD</b> line state</br>
+     * <br><b>element 0</b> - <b>CTS</b> line state
+     * <br><b>element 1</b> - <b>DSR</b> line state
+     * <br><b>element 2</b> - <b>RING</b> line state
+     * <br><b>element 3</b> - <b>RLSD</b> line state
      */
     public native int[] getLinesStatus(long handle);
 
