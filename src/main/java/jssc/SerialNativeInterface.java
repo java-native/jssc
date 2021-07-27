@@ -91,8 +91,8 @@ public class SerialNativeInterface {
              * - Next, it will fallback to <code>jssc.boot.library.path</code>
              * - Finally it will attempt to extract the library from from the jssc.jar file, and load it.
              */
-            NativeLoader.setJniExtractor( new DefaultJniExtractorWrapper("jssc", System.getProperty("jssc.boot.library.path")).getExtractor());
-            NativeLoader.loadLibrary("jssc"); // method call is null-safe
+            NativeLoader.setJniExtractor( new DefaultJniExtractorStub(null, System.getProperty("jssc.boot.library.path")));
+            NativeLoader.loadLibrary("jssc");
         } catch (IOException ioException) {
             throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());
         }
