@@ -37,6 +37,12 @@ matrix:
           packages:
             - g++-mingw-w64-x86-64
     - os: linux
+      env: PROFILE=mingwaarch64
+      addons:
+        apt:
+          packages:
+            - clang
+    - os: linux
       env: PROFILE=armhf
       addons:
         apt:
