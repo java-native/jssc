@@ -748,7 +748,7 @@
         <os.target.toolchain>MingwAarch64</os.target.toolchain>
 
         <os.target.name>windows</os.target.name>
-        <os.target.arch>arm_64</os.target.arch>
+        <os.target.arch>aarch_64</os.target.arch>
         <os.target.bitness>64</os.target.bitness>
       </properties>
     </profile>
