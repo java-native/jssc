@@ -297,6 +297,14 @@
                 <property name="cmake.generator.nativelibdir" value="-DNATIVE_LIB_DIR=&quot;${nativelibdir.prefix}_${nativelibdir.suffix}&quot;"/>
 
                 <!-- Handle toolchain files -->
+                <!-- "linux" + "aarch_64" <=> "Aarch64.cmake" -->
+                <condition property="os.target.toolchain" value="Aarch64">
+                  <and>
+                    <equals arg1="${os.target.arch}" arg2="aarch_64"/>
+                    <equals arg1="${os.detected.name}" arg2="linux"/>
+                  </and>
+                </condition>
+                <!-- Others should be set in maven profile -->
                 <condition property="cmake.generator.arg" value="-DCMAKE_TOOLCHAIN_FILE=&quot;${project.basedir}/toolchain/${os.target.toolchain}.cmake&quot;">
                   <isset property="os.target.toolchain"/>
                 </condition>
