@@ -412,7 +412,7 @@
                 <property description="fallback value" name="gcc.arch" value="IGNORE"/>
 
                 <!-- Set cmake property "CMAKE_OSX_ARCHITECTURES" -->
-                <property name="cmake.generator.arg" value="-DFORCE_${gcc.arch}"/>
+                <property name="cmake.generator.arg" value="-DFORCE_${gcc.arch}=true"/>
               </target>
               <exportAntProperties>true</exportAntProperties>
             </configuration>
