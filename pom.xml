@@ -474,13 +474,35 @@
             <phase>install</phase>
             <goals><goal>run</goal></goals>
             <configuration>
-              <target name="show-file-info" unless="use.msvc">
+              <target name="show-file-info">
                 <!-- Show binary output file information -->
                 <property name="native.dir" value="${project.build.directory}/cmake/natives/${nativelibdir.prefix}_${nativelibdir.suffix}"/>
                 <fileset id="native.files" dir="${native.dir}" includes="*"/>
                 <echo level="info">File information:</echo>
-                <exec executable="file">
-                  <arg value="${native.dir}/${toString:native.files}"/>
+
+                <!-- Calculate path to sh.exe (Windows only) -->
+                <property environment="env"/>
+                <property name="git.sh" value="${env.PROGRAMFILES}\git\bin\sh.exe"/>
+
+                <!-- Convert path to unix format -->
+                <pathconvert targetos="unix" property="native.file.unix" refid="native.files"/>
+
+                <!-- Prepare command ("file" on unix, "sh.exe" on Windows)-->
+                <condition property="exec.command" value="${git.sh}" else="file">
+                  <resourceexists>
+                    <file file="${git.sh}"/>
+                  </resourceexists>
+                </condition>
+
+                <!-- Prepare argument line -->
+                <condition property="exec.argline" value="-c &quot;file '${native.file.unix}'&quot;" else="'${native.file.unix}'">
+                  <resourceexists>
+                    <file file="${git.sh}"/>
+                  </resourceexists>
+                </condition>
+
+                <exec executable="${exec.command}">
+                  <arg line="${exec.argline}"/>
                 </exec>
                 <echo level="info"></echo>
               </target>
@@ -755,7 +777,7 @@
         <os.target.toolchain>MingwAarch64</os.target.toolchain>
 
         <os.target.name>windows</os.target.name>
-        <os.target.arch>arm_64</os.target.arch>
+        <os.target.arch>aarch_64</os.target.arch>
         <os.target.bitness>64</os.target.bitness>
       </properties>
     </profile>
