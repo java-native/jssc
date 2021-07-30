@@ -390,6 +390,35 @@
           </execution>
 
           <execution>
+            <id>calculate-gcc</id>
+            <phase>validate</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <target name="calculate-gcc" if="use.gcc">
+                <!-- Translate arch to gcc format -->
+                <!--
+                  - os.target.arch: must compare to a valid os value from os-maven-plugin
+                  - gcc.arch: one of "M32" or "M64", used to toggle -m32 and -m64 flags respectively
+                -->
+                <!-- x86_64 <=> M64 -->
+                <condition property="gcc.arch" value="M64">
+                  <equals arg1="${os.target.arch}" arg2="x86_64"/>
+                </condition>
+                <!-- x86_32 <=> M32 -->
+                <condition property="gcc.arch" value="M32">
+                  <equals arg1="${os.target.arch}" arg2="x86_32"/>
+                </condition>
+                <!-- Fallback to "IGNORE", which instruct cmake to skip this value -->
+                <property description="fallback value" name="gcc.arch" value="IGNORE"/>
+
+                <!-- Set cmake property "CMAKE_OSX_ARCHITECTURES" -->
+                <property name="cmake.generator.arg" value="-DFORCE_${gcc.arch}"/>
+              </target>
+              <exportAntProperties>true</exportAntProperties>
+            </configuration>
+          </execution>
+
+          <execution>
             <id>set-missing-properties</id>
             <phase>validate</phase>
             <goals><goal>run</goal></goals>
