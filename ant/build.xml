@@ -240,7 +240,6 @@
     </target>
 
     <target name="cmake-generate">
-        <echo level="info">########## ${ant.project.basedir}</echo>
         <mkdir dir="${cmake.generated.directory}"/>
         <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
             <arg line="${ant.project.basedir}"/>
