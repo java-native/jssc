@@ -214,7 +214,10 @@
 
         <!-- Calculate path to sh.exe (Windows only) -->
         <property environment="env"/>
-        <property name="git.sh" value="${env.PROGRAMFILES}\git\bin\sh.exe"/>
+        <property name="git.sh.camel" value="${env.ProgramFiles}\git\bin\sh.exe"/>
+        <condition property="git.sh" value="${env.PROGRAMFILES}\git\bin\sh.exe" else="${git.sh.camel}">
+            <isset property="env.PROGRAMFILES"/>
+        </condition>
 
         <!-- Convert path to unix format -->
         <pathconvert targetos="unix" property="native.file.unix" refid="native.files"/>
