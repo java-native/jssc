@@ -42,10 +42,12 @@
 
     <!-- custom directories and file paths a-z -->
     <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
+    <ant.properties.file>${project.build.directory}/props.properties</ant.properties.file>
+    <ant.project.basedir>${project.basedir}</ant.project.basedir>
 
     <!-- profile-dependant flags a-z -->
-    <cmake.compile.skip>false</cmake.compile.skip>
-    <cmake.generator.skip>false</cmake.generator.skip>
+    <cmake.build.skip>false</cmake.build.skip>
+    <cmake.generate.skip>false</cmake.generate.skip>
     <javah.skip>false</javah.skip>
     <jar.dependencies.skip>true</jar.dependencies.skip>
 
@@ -184,288 +186,39 @@
         <executions>
 
           <execution>
+            <id>gather-props</id>
+            <phase>validate</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <target>
+                <ant dir="ant"/>
+                <property file="${ant.properties.file}" description="read props from ant"/>
+              </target>
+              <exportAntProperties>true</exportAntProperties>
+            </configuration>
+          </execution>
+
+          <execution>
             <id>cmake-generate</id>
             <goals><goal>run</goal></goals>
             <phase>generate-sources</phase>
             <configuration>
-              <skip>${cmake.generator.skip}</skip>
-              <target name="cmake-generate">
-                <mkdir dir="${cmake.generated.directory}"/>
-                <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
-                  <arg line="${project.basedir}"/>
-                  <!-- Set the native lib output directory or leave blank to let CMake calculate -->
-                  <arg line="${cmake.generator.nativelibdir}"/>
-                  <!-- Pass-in maven's JAVA_HOME, helps resolve jni.h -->
-                  <arg line="-DJAVA_HOME=&quot;${java.home}&quot;"/>
-                  <!-- Final generator argument should be blank or one of:
-                       -DCMAKE_GENERATOR_PLATFORM=...
-                       -DCMAKE_TOOLCHAIN_FILE=...
-                       -DCMAKE_OSX_ARCHITECTURE=...
-                  -->
-                  <arg line="${cmake.generator.arg}"/>
-                </exec>
+              <skip>${cmake.generate.skip}</skip>
+              <target>
+                <ant dir="ant" target="cmake-generate"/>
               </target>
             </configuration>
           </execution>
 
           <execution>
-            <id>cmake-compile</id>
+            <id>cmake-build</id>
             <goals><goal>run</goal></goals>
             <phase>compile</phase>
             <configuration>
-              <skip>${cmake.compile.skip}</skip>
-              <target name="cmake-build">
-                <!-- copy header jdk<=8 -->
-                <copy todir="${cmake.generated.directory}" flatten="true" overwrite="true" verbose="true" failonerror="false" quiet="true">
-                  <fileset dir="${project.build.directory}/nar/" includes="**/*.h"/>
-                </copy>
-                <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
-                  <arg line="--build"/>
-                  <arg line="."/>
-                  <arg line="${cmake.build.arg}"/>
-                </exec>
+              <skip>${cmake.build.skip}</skip>
+              <target>
+                <ant dir="ant" target="cmake-build"/>
               </target>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>calculate-cmake-args</id>
-            <phase>validate</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target name="calculate-target">
-                <!-- Calculate the target system -->
-                <!-- Note: Unlike maven, ant will preserve the value if already set -->
-                <property name="os.target.name" value="${os.detected.name}"/>
-                <property name="os.target.arch" value="${os.detected.arch}"/>
-                <property name="os.target.bitness" value="${os.detected.bitness}"/>
-                <property name="os.target.classifier" value="${os.target.name}-${os.target.arch}"/>
-
-                <!-- Guess the compiler based on host os -->
-                <!-- Windows: Assume MSVC -->
-                <condition property="use.msvc" value="true">
-                  <equals arg1="${os.detected.name}" arg2="windows"/>
-                </condition>
-                <!-- MacOS: Assume XCode -->
-                <condition property="use.xcode" value="true">
-                  <equals arg1="${os.detected.name}" arg2="osx"/>
-                </condition>
-                <!-- All others: Fallback on gcc -->
-                <condition property="use.gcc" value="true">
-                  <and>
-                    <not>
-                      <equals arg1="${os.detected.name}" arg2="osx"/>
-                    </not>
-                    <not>
-                      <equals arg1="${os.detected.name}" arg2="windows"/>
-                    </not>
-                  </and>
-                </condition>
-
-                <!-- Translate "NATIVE_LIB_DIR" prefix portion:
-                  - os.target.arch: must compare to a valid os value from os-maven-plugin
-                  - os.target.nativelib.suffix: must be set to a valid directory os value from native-lib-loader plugin
-                -->
-                <property name="nativelibdir.prefix" value="${os.target.name}"/>
-
-                <!-- Translate "NATIVE_LIB_DIR" suffix portion:
-                  - os.target.arch: must compare to a valid arch value from os-maven-plugin
-                  - os.target.nativelib.suffix: must be set to a valid directory suffix value from native-lib-loader plugin
-                -->
-                <!-- "x86_64" <=> "64" -->
-                <condition property="nativelibdir.suffix" value="64">
-                  <equals arg1="${os.target.arch}" arg2="x86_64"/>
-                </condition>
-                <!-- "x86_32" <=> "32" -->
-                <condition property="nativelibdir.suffix" value="32">
-                  <equals arg1="${os.target.arch}" arg2="x86_32"/>
-                </condition>
-                <!-- "aarch_64" <=> "arm64" -->
-                <condition property="nativelibdir.suffix" value="arm64">
-                  <equals arg1="${os.target.arch}" arg2="aarch_64"/>
-                </condition>
-                <!-- "arm_32" <=> "arm" -->
-                <condition property="nativelibdir.suffix" value="arm">
-                  <equals arg1="${os.target.arch}" arg2="arm_32"/>
-                </condition>
-                <!-- "ppc_64" <=> "ppc" -->
-                <condition property="nativelibdir.suffix" value="ppc">
-                  <equals arg1="${os.target.arch}" arg2="ppc_64"/>
-                </condition>
-
-                <!-- Set cmake property "NATIVE_LIB_DIR" -->
-                <property name="cmake.generator.nativelibdir" value="-DNATIVE_LIB_DIR=&quot;${nativelibdir.prefix}_${nativelibdir.suffix}&quot;"/>
-
-                <!-- Handle toolchain files -->
-                <!-- "linux" + "aarch_64" <=> "Aarch64.cmake" -->
-                <condition property="os.target.toolchain" value="Aarch64">
-                  <and>
-                    <equals arg1="${os.target.arch}" arg2="aarch_64"/>
-                    <equals arg1="${os.detected.name}" arg2="linux"/>
-                  </and>
-                </condition>
-                <!-- Others should be set in maven profile -->
-                <condition property="cmake.generator.arg" value="-DCMAKE_TOOLCHAIN_FILE=&quot;${project.basedir}/toolchain/${os.target.toolchain}.cmake&quot;">
-                  <isset property="os.target.toolchain"/>
-                </condition>
-
-                <!-- Setup maven assembly id -->
-                <property name="maven.assembly.id" value="${os.target.name}-${os.target.arch}-${os.target.bitness}"/>
-              </target>
-              <exportAntProperties>true</exportAntProperties>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>calculate-msvc</id>
-            <phase>validate</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target name="calculate-msvc" if="use.msvc">
-                <!-- Translate arch to msvc format -->
-                <!--
-                  - os.target.arch: must compare to a valid os value from os-maven-plugin
-                  - msvc.platform: must be set to a valid value from cmake "-A" option for visual studio platform selection
-                -->
-                <!-- "x86_64" <=> "x64" -->
-                <condition property="msvc.arch" value="x64">
-                  <equals arg1="${os.target.arch}" arg2="x86_64"/>
-                </condition>
-                <!-- "x86_32" <=> "Win32" -->
-                <condition property="msvc.arch" value="Win32">
-                  <equals arg1="${os.target.arch}" arg2="x86_32"/>
-                </condition>
-                <!-- "arm_32" <=> "ARM" -->
-                <condition property="msvc.arch" value="ARM">
-                  <equals arg1="${os.target.arch}" arg2="arm_32"/>
-                </condition>
-                <!-- "aarch_64" <=> "ARM64" -->
-                <condition property="msvc.arch" value="ARM64">
-                  <equals arg1="${os.target.arch}" arg2="aarch_64"/>
-                </condition>
-
-                <!-- Set cmake property "CMAKE_GENERATOR_PLATFORM" -->
-                <property name="cmake.generator.arg" value="-DCMAKE_GENERATOR_PLATFORM=${msvc.arch}"/>
-
-                <!-- Set cmake build to release -->
-                <property name="cmake.build.arg" value="--config Release"/>
-              </target>
-              <exportAntProperties>true</exportAntProperties>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>calculate-xcode</id>
-            <phase>validate</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target name="calculate-xcode" if="use.xcode">
-                <!-- Translate arch to xcode format -->
-                <!--
-                  - os.target.arch: must compare to a valid os value from os-maven-plugin
-                  - xcode.arch: must be set to a valid value llvm/clang triple arch type
-                -->
-                <!-- x86_64 <=> x86_64 -->
-                <condition property="xcode.arch" value="x86_64">
-                  <equals arg1="${os.target.arch}" arg2="x86_64"/>
-                </condition>
-                <!-- x86_32 <=> x86 -->
-                <condition property="xcode.arch" value="x86">
-                  <equals arg1="${os.target.arch}" arg2="x86_32"/>
-                </condition>
-                <!-- aarch_64 <=> arm64 -->
-                <condition property="xcode.arch" value="arm64">
-                  <equals arg1="${os.target.arch}" arg2="aarch_64"/>
-                </condition>
-                <!-- arm_32 <=> arm -->
-                <condition property="xcode.arch" value="arm">
-                  <equals arg1="${os.target.arch}" arg2="arm_32"/>
-                </condition>
-
-                <!-- Set cmake property "CMAKE_OSX_ARCHITECTURES" -->
-                <property name="cmake.generator.arg" value="-DCMAKE_OSX_ARCHITECTURES=${xcode.arch}"/>
-              </target>
-              <exportAntProperties>true</exportAntProperties>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>calculate-gcc</id>
-            <phase>validate</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target name="calculate-gcc" if="use.gcc">
-                <!-- Translate arch to gcc format -->
-                <!--
-                  - os.target.arch: must compare to a valid os value from os-maven-plugin
-                  - gcc.arch: one of "M32" or "M64", used to toggle -m32 and -m64 flags respectively
-                -->
-                <!-- x86_64 <=> M64 -->
-                <condition property="gcc.arch" value="M64">
-                  <equals arg1="${os.target.arch}" arg2="x86_64"/>
-                </condition>
-                <!-- x86_32 <=> M32 -->
-                <condition property="gcc.arch" value="M32">
-                  <equals arg1="${os.target.arch}" arg2="x86_32"/>
-                </condition>
-                <!-- Fallback to "IGNORE", which instruct cmake to skip this value -->
-                <property description="fallback value" name="gcc.arch" value="IGNORE"/>
-
-                <!-- Set cmake property "CMAKE_OSX_ARCHITECTURES" -->
-                <property name="cmake.generator.arg" value="-DFORCE_${gcc.arch}=true"/>
-              </target>
-              <exportAntProperties>true</exportAntProperties>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>set-missing-properties</id>
-            <phase>validate</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target name="set-missing-properties">
-                <!-- makes sure any unset cmake properties fallback to a blank value  -->
-                <!-- this works because ant properties cannot be changed once set-->
-                <property description="fallback value" name="cmake.build.arg" value=""/>
-                <property description="fallback value" name="cmake.generator.arg" value=""/>
-                <property description="fallback value" name="cmake.generator.nativelibdir" value=""/>
-              </target>
-              <exportAntProperties>true</exportAntProperties>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>calculate-testable</id>
-            <phase>compile</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target name="calculate-testable">
-                <!-- Calculate if tests will run -->
-                <condition property="maven.test.skip" value="true" else="true">
-                  <!-- Honor existing flag if set -->
-                  <and>
-                    <not>
-                      <isset property="maven.test.skip"/>
-                    </not>
-                    <!-- Run tests if detected system matches target system -->
-                    <equals arg1="${os.target.classifier}" arg2="${os.detected.classifier}"/>
-                  </and>
-                </condition>
-
-                <!-- Summarize host/target -->
-                <echo level="info">Tests will run only if the TARGET and HOST match:${line.separator}${line.separator}</echo>
-                <echo level="info">TARGET:   ${os.target.classifier}</echo>
-                <echo level="info">DETECTED: ${os.detected.classifier}</echo>
-                <echo level="info"/>
-
-                <!-- Negate result for human readability -->
-                <condition property="maven.test.message" value="Tests will NOT run" else="Tests WILL run">
-                  <equals arg1="${maven.test.skip}" arg2="true"/>
-                </condition>
-                <echo level="info">===== ${maven.test.message} =====</echo>
-                <echo level="info"/>
-              </target>
-              <exportAntProperties>true</exportAntProperties>
             </configuration>
           </execution>
 
@@ -474,39 +227,9 @@
             <phase>install</phase>
             <goals><goal>run</goal></goals>
             <configuration>
-              <target name="show-file-info">
-                <!-- Show binary output file information -->
-                <property name="native.dir" value="${project.build.directory}/cmake/natives/${nativelibdir.prefix}_${nativelibdir.suffix}"/>
-                <fileset id="native.files" dir="${native.dir}" includes="*"/>
-                <echo level="info">File information:</echo>
-
-                <!-- Calculate path to sh.exe (Windows only) -->
-                <property environment="env"/>
-                <property name="git.sh" value="${env.PROGRAMFILES}\git\bin\sh.exe"/>
-
-                <!-- Convert path to unix format -->
-                <pathconvert targetos="unix" property="native.file.unix" refid="native.files"/>
-
-                <!-- Prepare command ("file" on unix, "sh.exe" on Windows)-->
-                <condition property="exec.command" value="${git.sh}" else="file">
-                  <resourceexists>
-                    <file file="${git.sh}"/>
-                  </resourceexists>
-                </condition>
-
-                <!-- Prepare argument line -->
-                <condition property="exec.argline" value="-c &quot;file '${native.file.unix}'&quot;" else="'${native.file.unix}'">
-                  <resourceexists>
-                    <file file="${git.sh}"/>
-                  </resourceexists>
-                </condition>
-
-                <exec executable="${exec.command}">
-                  <arg line="${exec.argline}"/>
-                </exec>
-                <echo level="info"></echo>
+              <target>
+                <ant dir="ant" target="show-file-info"/>
               </target>
-              <exportAntProperties>true</exportAntProperties>
             </configuration>
           </execution>
 
@@ -565,7 +288,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <skipAssembly>${cmake.generator.skip}</skipAssembly>
+              <skipAssembly>${cmake.generate.skip}</skipAssembly>
               <descriptors>
                 <descriptor>${project.basedir}/src/assembly/one-off-jar.xml</descriptor>
               </descriptors>
@@ -680,8 +403,8 @@
       <properties>
         <javah.skip>true</javah.skip>
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.skip>true</cmake.generator.skip>
-        <cmake.compile.skip>true</cmake.compile.skip>
+        <cmake.build.skip>true</cmake.build.skip>
+        <cmake.generate.skip>true</cmake.generate.skip>
       </properties>
 
      <build>
