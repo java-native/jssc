@@ -38,15 +38,41 @@ public class SerialPortEvent {
     @Deprecated
     private String portName;
 
-    public static final int RXCHAR = 1;
-    public static final int RXFLAG = 2;
-    public static final int TXEMPTY = 4;
-    public static final int CTS = 8;
-    public static final int DSR = 16;
-    public static final int RLSD = 32;
-    public static final int BREAK = 64;
-    public static final int ERR = 128;
-    public static final int RING = 256;
+    /** Deprecated: Use <code>SerialPort.MASK_RXCHAR</code> instead **/
+    @Deprecated
+    public static final int RXCHAR = SerialPort.MASK_RXCHAR;
+
+    /** Deprecated: Use <code>SerialPort.MASK_RXFLAG</code> instead **/
+    @Deprecated
+    public static final int RXFLAG = SerialPort.MASK_RXFLAG;
+
+    /** Deprecated: Use <code>SerialPort.MASK_TXEMPTY</code> instead **/
+    @Deprecated
+    public static final int TXEMPTY = SerialPort.MASK_TXEMPTY;
+
+    /** Deprecated: Use <code>SerialPort.MASK_CTS</code> instead **/
+    @Deprecated
+    public static final int CTS = SerialPort.MASK_CTS;
+
+    /** Deprecated: Use <code>SerialPort.MASK_DSR</code> instead **/
+    @Deprecated
+    public static final int DSR = SerialPort.MASK_DSR;
+
+    /** Deprecated: Use <code>SerialPort.MASK_RLSD</code> instead **/
+    @Deprecated
+    public static final int RLSD = SerialPort.MASK_RLSD;
+
+    /** Deprecated: Use <code>SerialPort.MASK_BREAK</code> instead **/
+    @Deprecated
+    public static final int BREAK = SerialPort.MASK_BREAK;
+
+    /** Deprecated: Use <code>SerialPort.MASK_ERR</code> instead **/
+    @Deprecated
+    public static final int ERR = SerialPort.MASK_ERR;
+
+    /** Deprecated: Use <code>SerialPort.MASK_RING</code> instead **/
+    @Deprecated
+    public static final int RING = SerialPort.MASK_RING;
 
     public SerialPortEvent(SerialPort port, int eventType, int eventValue){
         this.port = port;
@@ -105,62 +131,62 @@ public class SerialPortEvent {
      * Method returns true if event of type <b>"RXCHAR"</b> is received and otherwise false
      */
     public boolean isRXCHAR() {
-        return eventType == RXCHAR;
+        return eventType == SerialPort.MASK_RXCHAR;
     }
 
     /**
      * Method returns true if event of type <b>"RXFLAG"</b> is received and otherwise false
      */
     public boolean isRXFLAG() {
-        return eventType == RXFLAG;
+        return eventType == SerialPort.MASK_RXFLAG;
     }
 
     /**
      * Method returns true if event of type <b>"TXEMPTY"</b> is received and otherwise false
      */
     public boolean isTXEMPTY() {
-        return eventType == TXEMPTY;
+        return eventType == SerialPort.MASK_TXEMPTY;
     }
 
     /**
      * Method returns true if event of type <b>"CTS"</b> is received and otherwise false
      */
     public boolean isCTS() {
-        return eventType == CTS;
+        return eventType == SerialPort.MASK_CTS;
     }
 
     /**
      * Method returns true if event of type <b>"DSR"</b> is received and otherwise false
      */
     public boolean isDSR() {
-        return eventType == DSR;
+        return eventType == SerialPort.MASK_DSR;
     }
 
     /**
      * Method returns true if event of type <b>"RLSD"</b> is received and otherwise false
      */
     public boolean isRLSD() {
-        return eventType == RLSD;
+        return eventType == SerialPort.MASK_RLSD;
     }
 
     /**
      * Method returns true if event of type <b>"BREAK"</b> is received and otherwise false
      */
     public boolean isBREAK() {
-        return eventType == BREAK;
+        return eventType == SerialPort.MASK_BREAK;
     }
 
     /**
      * Method returns true if event of type <b>"ERR"</b> is received and otherwise false
      */
     public boolean isERR() {
-        return eventType == ERR;
+        return eventType == SerialPort.MASK_ERR;
     }
 
     /**
      * Method returns true if event of type <b>"RING"</b> is received and otherwise false
      */
     public boolean isRING() {
-        return eventType == RING;
+        return eventType == SerialPort.MASK_RING;
     }
 }

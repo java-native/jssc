@@ -32,6 +32,7 @@ import java.nio.charset.Charset;
  *
  * @author scream3r
  */
+@SuppressWarnings("unused")
 public class SerialPort {
 
     private SerialNativeInterface serialInterface;
@@ -45,74 +46,120 @@ public class SerialPort {
     //since 2.2.0 ->
     private Method methodErrorOccurred = null;
     //<- since 2.2.0
-    
+
+    /** Baud rate 110 symbols/second **/
     public static final int BAUDRATE_110 = 110;
+    /** Baud rate 300 symbols/second **/
     public static final int BAUDRATE_300 = 300;
+    /** Baud rate 600 symbols/second **/
     public static final int BAUDRATE_600 = 600;
+    /** Baud rate 1200 symbols/second **/
     public static final int BAUDRATE_1200 = 1200;
+    /** Baud rate 2400 symbols/second **/
     public static final int BAUDRATE_2400 = 2400;
+    /** Baud rate 4800 symbols/second **/
     public static final int BAUDRATE_4800 = 4800;
+    /** Baud rate 9600 symbols/second **/
     public static final int BAUDRATE_9600 = 9600;
+    /** Baud rate 14400 symbols/second **/
     public static final int BAUDRATE_14400 = 14400;
+    /** Baud rate 19200 symbols/second **/
     public static final int BAUDRATE_19200 = 19200;
+    /** Baud rate 38400 symbols/second **/
     public static final int BAUDRATE_38400 = 38400;
+    /** Baud rate 57600 symbols/second **/
     public static final int BAUDRATE_57600 = 57600;
+    /** Baud rate 115200 symbols/second **/
     public static final int BAUDRATE_115200 = 115200;
+    /** Baud rate 128000 symbols/second **/
     public static final int BAUDRATE_128000 = 128000;
+    /** Baud rate 256000 symbols/second **/
     public static final int BAUDRATE_256000 = 256000;
 
-
+    /** Five (5) data bits per byte **/
     public static final int DATABITS_5 = 5;
+    /** Six (6) data bits per byte **/
     public static final int DATABITS_6 = 6;
+    /** Seven (7) data bits per byte **/
     public static final int DATABITS_7 = 7;
+    /** Eight (8) data bits per byte **/
     public static final int DATABITS_8 = 8;
-    
 
+    /** One (1) stop bits per byte **/
     public static final int STOPBITS_1 = 1;
+    /** Two (2) stop bits per byte **/
     public static final int STOPBITS_2 = 2;
+    /** One and a half (1.5) stop bits per byte **/
     public static final int STOPBITS_1_5 = 3;
-    
 
+    /** Do not send a parity bit **/
     public static final int PARITY_NONE = 0;
+    /** Use a very basic checksum: Send an additional bit to report if odd number of data bits **/
     public static final int PARITY_ODD = 1;
+    /** Use a very basic checksum: Send an additional bit to report if even number of data bits **/
     public static final int PARITY_EVEN = 2;
+    /** Use a very basic checksum: Send a parity bit to indicate "mark signal" condition (rarely used) **/
     public static final int PARITY_MARK = 3;
+    /** Use a very basic checksum: Send a parity bit to indicate "space signal" condition (rarely used) **/
     public static final int PARITY_SPACE = 4;
-     
 
+
+    /** Receive "abort" status code **/
     public static final int PURGE_RXABORT = 0x0002;
+    /** Receive "clear" status code **/
     public static final int PURGE_RXCLEAR = 0x0008;
+    /** Transfer "abort" status code **/
     public static final int PURGE_TXABORT = 0x0001;
+    /** Transfer "clear" status code **/
     public static final int PURGE_TXCLEAR = 0x0004;
 
 
+    /** Receive character flag **/
     public static final int MASK_RXCHAR = 1;
+    /** Receive flag **/
     public static final int MASK_RXFLAG = 2;
+    /** Receive empty flag **/
     public static final int MASK_TXEMPTY = 4;
+    /** CTS (clear to send) mask **/
     public static final int MASK_CTS = 8;
+    /** DSR (data set to ready) flag **/
     public static final int MASK_DSR = 16;
+    /** RLSD (Receive Line Signal Detected) flag **/
     public static final int MASK_RLSD = 32;
+    /** Break (reset a communications line or change the operating mode) flag **/
     public static final int MASK_BREAK = 64;
+    /** Error flag **/
     public static final int MASK_ERR = 128;
-    public static final int MASK_RING = 256;
+    /** State of RING line (0 - OFF, 1 - ON) **/
+     public static final int MASK_RING = 256;
 
 
     //since 0.8 ->
+    /** Disable flow control **/
     public static final int FLOWCONTROL_NONE = 0;
+    /** Legacy hardware control: RTS/CTS (request to send/clear to send) flow control on input **/
     public static final int FLOWCONTROL_RTSCTS_IN = 1;
+    /** Legacy hardware control: RTS/CTS (request to send/clear to send) flow control on output **/
     public static final int FLOWCONTROL_RTSCTS_OUT = 2;
+    /** Software flow control: XON/XOFF flow control on input **/
     public static final int FLOWCONTROL_XONXOFF_IN = 4;
+    /** Software flow control: XON/XOFF flow control on output **/
     public static final int FLOWCONTROL_XONXOFF_OUT = 8;
     //<- since 0.8
 
     //since 0.8 ->
+    /** Indicates faulty data or frame **/
     public static final int ERROR_FRAME = 0x0008;
+    /** Overrun error; receiver hardware unable to handle receive data **/
     public static final int ERROR_OVERRUN = 0x0002;
+    /** Parity/check bit error **/
     public static final int ERROR_PARITY = 0x0004;
     //<- since 0.8
 
     //since 2.6.0 ->
+    /** Ignore bytes with framing error or parity error **/
     private static final int PARAMS_FLAG_IGNPAR = 1;
+    /** Mark bytes with parity error or framing error **/
     private static final int PARAMS_FLAG_PARMRK = 2;
     //<- since 2.6.0
 
