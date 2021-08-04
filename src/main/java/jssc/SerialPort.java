@@ -555,12 +555,6 @@ public class SerialPort {
                 timeIsOut = false;
                 break;
             }
-            try {
-                Thread.sleep(0, 100);//Need to sleep some time to prevent high CPU loading
-            }
-            catch (InterruptedException ex) {
-                //Do nothing
-            }
         }
         if(timeIsOut){
             throw new SerialPortTimeoutException(portName, methodName, timeout);
