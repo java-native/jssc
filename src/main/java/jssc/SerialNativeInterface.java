@@ -115,6 +115,13 @@ public class SerialNativeInterface {
         else
             osType = OS_UNKNOWN;
         try {
+            /**
+             * JSSC includes a small, platform-specific shared library and uses native-lib-loader for extraction.
+             * - First, native-lib-loader will attempt to load this library from the system library path.
+             * - Next, it will fallback to <code>jssc.boot.library.path</code>
+             * - Finally it will attempt to extract the library from from the jssc.jar file, and load it.
+             */
+            NativeLoader.setJniExtractor(new DefaultJniExtractorStub(null, System.getProperty("jssc.boot.library.path")));
             NativeLoader.loadLibrary("jssc");
         } catch (IOException ioException) {
             throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());
@@ -122,10 +129,16 @@ public class SerialNativeInterface {
     }
 
     /**
+     * Default constructor
+     * TODO: This class is effectively static, why instantiate it?
+     */
+    public SerialNativeInterface() {}
+
+    /**
      * Get OS type
      *
      * @return <code>OS_LINUX</code>, <code>OS_WINDOWS</code>, <code>OS_SOLARIS</code>,<code>OS_MACOS</code>
-     * or <code>-1</code> if unknown.
+     * or <code>OS_UNKNOWN</code> if unknown.
      * 
      * @since 0.8
      */

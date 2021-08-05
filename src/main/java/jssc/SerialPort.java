@@ -26,7 +26,6 @@ package jssc;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
 
 /**
  *
@@ -35,16 +34,16 @@ import java.nio.charset.Charset;
 @SuppressWarnings("unused")
 public class SerialPort {
 
-    private SerialNativeInterface serialInterface;
+    private final SerialNativeInterface serialInterface;
     private SerialPortEventListener eventListener;
-    private long portHandle;
-    private String portName;
-    private boolean portOpened = false;
+    private volatile long portHandle;
+    private final String portName;
+    private volatile boolean portOpened = false;
     private boolean maskAssigned = false;
     private boolean eventListenerAdded = false;
 
     //since 2.2.0 ->
-    private Method methodErrorOccurred = null;
+    private volatile Method methodErrorOccurred = null;
     //<- since 2.2.0
 
     /** Baud rate 110 symbols/second **/
@@ -201,7 +200,7 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public boolean openPort() throws SerialPortException {
+    public synchronized boolean openPort() throws SerialPortException {
         if(portOpened){
             throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
         }
@@ -261,7 +260,7 @@ public class SerialPort {
      *
      * @since 0.8
      */
-    public boolean setParams(int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR) throws SerialPortException {
+    public synchronized boolean setParams(int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR) throws SerialPortException {
         checkPortOpened("setParams()");
         if(stopBits == 1){
             stopBits = 0;
@@ -292,7 +291,7 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public boolean purgePort(int flags) throws SerialPortException {
+    public synchronized boolean purgePort(int flags) throws SerialPortException {
         checkPortOpened("purgePort()");
         return serialInterface.purgePort(portHandle, flags);
     }
@@ -317,7 +316,7 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public boolean setEventsMask(int mask) throws SerialPortException {
+    public synchronized boolean setEventsMask(int mask) throws SerialPortException {
         checkPortOpened("setEventsMask()");
         if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX ||
            SerialNativeInterface.getOsType() == SerialNativeInterface.OS_SOLARIS ||
@@ -629,12 +628,6 @@ public class SerialPort {
             if(getInputBufferBytesCount() >= byteCount){
                 timeIsOut = false;
                 break;
-            }
-            try {
-                Thread.sleep(0, 100);//Need to sleep some time to prevent high CPU loading
-            }
-            catch (InterruptedException ex) {
-                //Do nothing
             }
         }
         if(timeIsOut){
@@ -1092,7 +1085,7 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    private void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
+    private synchronized void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
         checkPortOpened("addEventListener()");
         if(!eventListenerAdded){
             if((maskAssigned && overwriteMask) || !maskAssigned) {
@@ -1144,7 +1137,7 @@ public class SerialPort {
      * 
      * @throws SerialPortException if exception occurred
      */
-    public boolean removeEventListener() throws SerialPortException {
+    public synchronized boolean removeEventListener() throws SerialPortException {
         checkPortOpened("removeEventListener()");
         if(!eventListenerAdded){
             throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_CANT_REMOVE_LISTENER);
@@ -1173,7 +1166,7 @@ public class SerialPort {
      * 
      * @throws SerialPortException if exception occurred
      */
-    public boolean closePort() throws SerialPortException {
+    public synchronized boolean closePort() throws SerialPortException {
         checkPortOpened("closePort()");
         if(eventListenerAdded){
             removeEventListener();
