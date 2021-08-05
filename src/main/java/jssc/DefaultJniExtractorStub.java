@@ -17,14 +17,12 @@ import java.io.IOException;
  */
 public class DefaultJniExtractorStub extends DefaultJniExtractor {
     private File bootPath;
-    private boolean useStub;
 
     /**
      * Default constructor
      */
     public DefaultJniExtractorStub(Class libraryJarClass) throws IOException {
         super(libraryJarClass);
-        useStub = false;
     }
 
     /**
@@ -37,13 +35,12 @@ public class DefaultJniExtractorStub extends DefaultJniExtractor {
      */
     public DefaultJniExtractorStub(Class libraryJarClass, String bootPath) throws IOException {
         this(libraryJarClass);
-        this.bootPath = new File(bootPath);
 
         if(bootPath != null) {
             File bootTest = new File(bootPath);
             if(bootTest.exists()) {
                 // assume a static, existing directory will contain the native libs
-                this.useStub = true;
+                this.bootPath = bootTest;
             } else {
                 System.err.println("WARNING " + DefaultJniExtractorStub.class.getCanonicalName() + ": Boot path " + bootPath + " not found, falling back to default extraction behavior.");
             }
@@ -60,7 +57,7 @@ public class DefaultJniExtractorStub extends DefaultJniExtractor {
     @Override
     public File extractJni(String libPath, String libName) throws IOException {
         // Lie and pretend it's already extracted at the bootPath location
-        if(useStub) {
+        if(bootPath != null) {
             return new File(bootPath, NativeLibraryUtil.getPlatformLibraryName(libName));
         }
         // Fallback on default behavior
@@ -69,7 +66,7 @@ public class DefaultJniExtractorStub extends DefaultJniExtractor {
 
     @Override
     public void extractRegistered() throws IOException {
-        if(useStub) {
+        if(bootPath != null) {
             return; // no-op
         }
         super.extractRegistered();
