@@ -529,14 +529,57 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
   (JNIEnv *env, jobject, jlong portHandle, jbyteArray buffer){
     jbyte* jBuffer = env->GetByteArrayElements(buffer, JNI_FALSE);
     jint bufferSize = env->GetArrayLength(buffer);
-    jint result = write(portHandle, jBuffer, (size_t)bufferSize);
+    fd_set write_fd_set;
+    int byteRemains = bufferSize;
+    struct timeval timeout;
+    int result;
+    jclass threadClass = env->FindClass("java/lang/Thread");
+    jmethodID areWeInterruptedMethod = env->GetStaticMethodID(threadClass, "interrupted", "()Z");
+      
+    while(byteRemains > 0) {
+        
+        // Check if the java thread has been interrupted, and if so, throw the exception
+        if (env->CallStaticBooleanMethod(threadClass, areWeInterruptedMethod)) {
+            jclass excClass = env->FindClass("java/lang/InterruptedException");
+            env->ThrowNew(excClass, "Interrupted while writing to serial port");
+            // It shouldn't matter what we return, the exception will be thrown right away
+            break;
+        }
+        
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 100000; // 100 ms
+        FD_ZERO(&write_fd_set);
+        FD_SET(portHandle, &write_fd_set);
+        
+        result = select(portHandle + 1, NULL, &write_fd_set, NULL, &timeout);
+        if (result < 0) {
+            env->ThrowNew(env->FindClass("java/io/IOException"), "Waiting for serial port to become writable failed");
+            // Return value is ignored anyway, exception is handled immidiatly
+            break;
+        } else if (result == 0) {
+            // timeout
+            continue;
+        }
+        
+        result = write(portHandle, jBuffer + (bufferSize - byteRemains), byteRemains);
+        if(result < 0){
+            env->ThrowNew(env->FindClass("java/io/IOException"), "Error writing to serial port");
+            break;
+        } else if (result == 0) {
+            env->ThrowNew(env->FindClass("java/io/IOException"), "Serial port was closed unexpectedly");
+            break;
+        } else { // result > 0
+            byteRemains -= result;
+        }
+    }
     env->ReleaseByteArrayElements(buffer, jBuffer, 0);
-    return result == bufferSize ? JNI_TRUE : JNI_FALSE;
+    return JNI_TRUE; //result == bufferSize ? JNI_TRUE : JNI_FALSE;
 }
 
 /**
  * Waits until 'read()' has something to tell for the specified filedescriptor.
  */
+/*
 static void awaitReadReady(JNIEnv*, jlong fd){
 #if HAVE_POLL == 0
     // Alternative impl using 'select' as 'poll' isn't available (or broken).
@@ -579,7 +622,8 @@ static void awaitReadReady(JNIEnv*, jlong fd){
 
 #endif
 }
-
+*/
+ 
 /* OK */
 /*
  * Reading data from the port
@@ -588,36 +632,51 @@ static void awaitReadReady(JNIEnv*, jlong fd){
  */
 JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
   (JNIEnv *env, jobject, jlong portHandle, jint byteCount){
-
-    // TODO: Errors should be communicated by raising java exceptions; Will break
-    //       backwards compatibility.
-
+    fd_set read_fd_set;
     jbyte *lpBuffer = new jbyte[byteCount];
-    jbyteArray returnArray = NULL;
     int byteRemains = byteCount;
-
+    struct timeval timeout;
+    int result;
+    jclass threadClass = env->FindClass("java/lang/Thread");
+    jmethodID areWeInterruptedMethod = env->GetStaticMethodID(threadClass, "interrupted", "()Z");
+      
     while(byteRemains > 0) {
-        int result = 0;
 
-        awaitReadReady(env, portHandle);
-
-        errno = 0;
-        result = read(portHandle, lpBuffer + (byteCount - byteRemains), byteRemains);
+        // Check if the java thread has been interrupted, and if so, throw the exception
+        if (env->CallStaticBooleanMethod(threadClass, areWeInterruptedMethod)) {
+            jclass excClass = env->FindClass("java/lang/InterruptedException");
+            env->ThrowNew(excClass, "Interrupted while reading from serial port");
+            // It shouldn't matter what we return, the exception will be thrown right away
+            break;
+        }
+        
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 100000; // 100 ms
+        FD_ZERO(&read_fd_set);
+        FD_SET(portHandle, &read_fd_set);
+        
+        result = select(portHandle + 1, &read_fd_set, NULL, NULL, &timeout);
         if (result < 0) {
-            // man read: On error, -1 is returned, and errno is set to indicate the error.
-            // TODO: May candidate for raising a java exception. See comment at begin of function.
+            env->ThrowNew(env->FindClass("java/io/IOException"), "Error while waiting for input from serial port");
+            // Return value is ignored anyway, exception is handled immidiatly
+            break;
+        } else if (result == 0) {
+            // timeout
+            continue;
         }
-        else if (result == 0) {
-            // AFAIK this happens either on EOF or on EWOULDBLOCK (see 'man read').
-            // TODO: Is "just continue" really the right thing to do? I will keep it that
-            //       way because the old code did so and I don't know better.
-        }
-        else {
+        
+        result = read(portHandle, lpBuffer + (byteCount - byteRemains), byteRemains);
+        if(result < 0){
+            env->ThrowNew(env->FindClass("java/io/IOException"), "Error reading from serial port");
+            break;
+        } else if (result == 0) {
+            env->ThrowNew(env->FindClass("java/io/IOException"), "Serial port was closed unexpectedly");
+            break;
+        } else { // result > 0
             byteRemains -= result;
         }
     }
-
-    returnArray = env->NewByteArray(byteCount);
+    jbyteArray returnArray = env->NewByteArray(byteCount);
     env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
     delete[] lpBuffer;
     return returnArray;
