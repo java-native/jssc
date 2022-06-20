@@ -40,19 +40,9 @@
 #endif
 #ifdef __APPLE__
     #include <serial/ioss.h>//Needed for IOSSIOSPEED in Mac OS X (Non standard baudrate)
-#elif !defined(HAVE_POLL)
-    // Seems as poll has some portability issues on OsX (Search for "poll" in
-    // "https://cr.yp.to/docs/unixport.html"). So we only make use of poll on
-    // all platforms except "__APPLE__".
-    // If you want to force usage of 'poll', pass "-DHAVE_POLL=1" to gcc.
-    #define HAVE_POLL 1
 #endif
 
-#if HAVE_POLL == 0
-    #include <sys/select.h>
-#else
-    #include <poll.h>
-#endif
+#include <sys/select.h>
 
 #include <jni.h>
 #include <jssc_SerialNativeInterface.h>
@@ -527,7 +517,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setDTR
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
   (JNIEnv *env, jobject, jlong portHandle, jbyteArray buffer){
-    jbyte* jBuffer = env->GetByteArrayElements(buffer, JNI_FALSE);
+    jbyte* jBuffer = NULL;
     jint bufferSize = env->GetArrayLength(buffer);
     fd_set write_fd_set;
     int byteRemains = bufferSize;
@@ -535,7 +525,15 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
     int result;
     jclass threadClass = env->FindClass("java/lang/Thread");
     jmethodID areWeInterruptedMethod = env->GetStaticMethodID(threadClass, "interrupted", "()Z");
-      
+
+    if (portHandle < 0 || portHandle > FD_SETSIZE) {
+        char msg[95];
+        snprintf(msg, sizeof msg, "select(): file descriptor %ld outside expected range 0..%d", portHandle, FD_SETSIZE);
+        return env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"), msg);
+    }
+
+    jBuffer = env->GetByteArrayElements(buffer, JNI_FALSE);
+
     while(byteRemains > 0) {
         
         // Check if the java thread has been interrupted, and if so, throw the exception
@@ -576,70 +574,29 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
     return JNI_TRUE; //result == bufferSize ? JNI_TRUE : JNI_FALSE;
 }
 
-/**
- * Waits until 'read()' has something to tell for the specified filedescriptor.
- */
-/*
-static void awaitReadReady(JNIEnv*, jlong fd){
-#if HAVE_POLL == 0
-    // Alternative impl using 'select' as 'poll' isn't available (or broken).
 
-    //assert(fd < FD_SETSIZE); // <- Might help when hunting SEGFAULTs.
-    fd_set readFds;
-    while(true) {
-        FD_ZERO(&readFds);
-        FD_SET(fd, &readFds);
-        int result = select(fd + 1, &readFds, NULL, NULL, NULL);
-        if(result < 0){
-            // man select: On error, -1 is returned, and errno is set to indicate the error
-            // TODO: Maybe a candidate to raise a java exception. But won't do
-            //       yet for backward compatibility.
-            continue;
-        }
-        // Did wait successfully.
-        break;
-    }
-    FD_CLR(fd, &readFds);
-
-#else
-    // Default impl using 'poll'. This is more robust against fd>=1024 (eg
-    // SEGFAULT problems).
-
-    struct pollfd fds[1];
-    fds[0].fd = fd;
-    fds[0].events = POLLIN;
-    while(true){
-        int result = poll(fds, 1, -1);
-        if(result < 0){
-            // man poll: On error, -1 is returned, and errno is set to indicate the error.
-            // TODO: Maybe a candidate to raise a java exception. But won't do
-            //       yet for backward compatibility.
-            continue;
-        }
-        // Did wait successfully.
-        break;
-    }
-
-#endif
-}
-*/
- 
-/* OK */
 /*
  * Reading data from the port
- *
- * Rewritten to use poll() instead of select() to handle fd>=1024
  */
 JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
   (JNIEnv *env, jobject, jlong portHandle, jint byteCount){
     fd_set read_fd_set;
-    jbyte *lpBuffer = new jbyte[byteCount];
+    jbyte *lpBuffer = NULL;
     int byteRemains = byteCount;
     struct timeval timeout;
     int result;
     jclass threadClass = env->FindClass("java/lang/Thread");
     jmethodID areWeInterruptedMethod = env->GetStaticMethodID(threadClass, "interrupted", "()Z");
-      
+
+    if (portHandle < 0 || portHandle > FD_SETSIZE) {
+        char msg[95];
+        snprintf(msg, sizeof msg, "select(): file descriptor %ld outside expected range 0..%d", portHandle, FD_SETSIZE);
+        env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"), msg);
+        return NULL;
+    }
+
+    lpBuffer = new jbyte[byteCount];
+
     while(byteRemains > 0) {
 
         // Check if the java thread has been interrupted, and if so, throw the exception
