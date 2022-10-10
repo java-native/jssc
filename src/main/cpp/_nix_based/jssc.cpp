@@ -44,9 +44,6 @@
     #include <IOKit/serial/IOSerialKeys.h>
     #include <IOKit/usb/USBSpec.h>
     #include <serial/ioss.h>//Needed for IOSSIOSPEED in Mac OS X (Non standard baudrate)
-<<<<<<< HEAD
-    #include <sys/param.h> // Needed for MAXPATHLEN
-=======
 #elif !defined(HAVE_POLL)
     // Seems as poll has some portability issues on OsX (Search for "poll" in
     // "https://cr.yp.to/docs/unixport.html"). So we only make use of poll on
@@ -59,7 +56,6 @@
     #include <sys/select.h>
 #else
     #include <poll.h>
->>>>>>> 6886b44d051befe77c604f1e0b4bac453cd889bb
 #endif
 
 #include <jni.h>
