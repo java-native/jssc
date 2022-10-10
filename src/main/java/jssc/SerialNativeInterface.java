@@ -202,7 +202,9 @@ public class SerialNativeInterface {
         if (autoLoadLib) {
             // If auto-loaded, nothing more to do.
         } else {
-            String jsscPath = libFolderPath + fileSeparator + rawLibName;
+            String envPath = System.getProperty("jssc.boot.library.path");
+            String processingPath = libFolderPath + fileSeparator + rawLibName;
+            String jsscPath = envPath == null ? processingPath : envPath;
             try {
                 NativeLoader.setJniExtractor(new DefaultJniExtractorStub(null, jsscPath));
                 NativeLoader.loadLibrary("jssc");
