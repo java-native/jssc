@@ -43,6 +43,12 @@ public class SerialPortList {
     private static final Pattern PORTNAMES_REGEXP;
     private static final String PORTNAMES_PATH;
 
+    /**
+     * Default constructor
+     * private: no constructor available
+     */
+    private SerialPortList() {}
+
     static {
         serialInterface = new SerialNativeInterface();
         switch (SerialNativeInterface.getOsType()) {
@@ -57,7 +63,7 @@ public class SerialPortList {
                 break;
             }
             case SerialNativeInterface.OS_MAC_OS_X: {
-                PORTNAMES_REGEXP = Pattern.compile("(cu|tty)\\..+");
+                PORTNAMES_REGEXP = Pattern.compile("(tty|cu)\\..*");
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
@@ -74,7 +80,7 @@ public class SerialPortList {
         }
     }
 
-    //since 2.1.0 -> Fully rewrited port name comparator
+    //since 2.1.0 -> Fully rewritten port name comparator
     private static final Comparator<String> PORTNAMES_COMPARATOR = new Comparator<String>() {
 
         @Override
@@ -334,15 +340,16 @@ public class SerialPortList {
                     String fileName = file.getName();
                     if(!file.isDirectory() && !file.isFile() && pattern.matcher(fileName).find()){
                         String portName = searchPath + fileName;
-                        /*
-                        long portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
-                        if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){
-                            continue;
+                        // For linux ttyS0..31 serial ports check existence by opening each of them
+                        if (fileName.startsWith("ttyS")) {
+	                        long portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
+	                        if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){
+	                            continue;
+	                        }
+	                        else if(portHandle != SerialNativeInterface.ERR_PORT_BUSY) {
+	                            serialInterface.closePort(portHandle);
+	                        }
                         }
-                        else if(portHandle != SerialNativeInterface.ERR_PORT_BUSY) {
-                            serialInterface.closePort(portHandle);
-                        }
-                        */
                         portsTree.add(portName);
                     }
                 }

@@ -40,149 +40,185 @@ import java.net.URISyntaxException;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.9";
-    private static final String libMinorSuffix = "1"; //since 0.9.0
+    private static final String libVersion = "2.9.4";
 
+    /** Linux **/
     public static final int OS_LINUX = 0;
+    /** Windows **/
     public static final int OS_WINDOWS = 1;
+    /** Solaris **/
     public static final int OS_SOLARIS = 2;//since 0.9.0
+    /** MacOS **/
     public static final int OS_MAC_OS_X = 3;//since 0.9.0
-
-    private static int osType = -1;
+    /** Unknown **/
+    public static final int OS_UNKNOWN = -1;//since 0.9.0
 
     /**
+     * Port is busy
+     *
      * @since 2.3.0
      */
     public static final long ERR_PORT_BUSY = -1;
     /**
+     * Port is not found
+     *
      * @since 2.3.0
      */
     public static final long ERR_PORT_NOT_FOUND = -2;
     /**
+     * Insufficient permissions to access port
+     *
      * @since 2.3.0
      */
     public static final long ERR_PERMISSION_DENIED = -3;
     /**
+     * Serial port handle is incorrect
+     *
      * @since 2.3.0
      */
     public static final long ERR_INCORRECT_SERIAL_PORT = -4;
 
     /**
+     * Disable exclusive lock for serial port
+     *
+     * Usage:
+     * <code>System.setProperty("jssc_no_tiocexcl", "true");</code>
+     *
      * @since 2.6.0
      */
     public static final String PROPERTY_JSSC_NO_TIOCEXCL = "JSSC_NO_TIOCEXCL";
     /**
+     * Ignore bytes with framing error or parity error
+     *
+     * Usage:
+     * <code>System.setProperty("jssc_ignpar", "true");</code>
+     *
      * @since 2.6.0
      */
     public static final String PROPERTY_JSSC_IGNPAR = "JSSC_IGNPAR";
     /**
+     * Mark bytes with parity error or framing error
+     *
+     * Usage:
+     * <code>System.setProperty("jssc_iparmrk", "true");</code>
+     *
      * @since 2.6.0
      */
     public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
 
+    private static int osType;
+    
     static {
-      String libFolderPath;
+        String libFolderPath;
 
-      String osName = System.getProperty("os.name");
-      String architecture = System.getProperty("os.arch");
-      String fileSeparator = System.getProperty("file.separator");
-      String tmpFolder = System.getProperty("java.io.tmpdir");
-      String extendedFolder = "";
-      String architectureShort = "";
-      String rawLibName = "";
+        String osName = System.getProperty("os.name");
+        String architecture = System.getProperty("os.arch");
+        String fileSeparator = System.getProperty("file.separator");
+        String tmpFolder = System.getProperty("java.io.tmpdir");
+        String extendedFolder = "";
+        String architectureShort = "";
+        String rawLibName = "";
 
-      String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
+        String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
 
-      //since 2.3.0 ->
-      String libRootFolder = getProcessingLibDirectory();
-      if (libRootFolder == null) {
-          libRootFolder = tmpFolder;
-      }
-      //<- since 2.3.0
+        //since 2.3.0 ->
+        String libRootFolder = getProcessingLibDirectory();
+        if (libRootFolder == null) {
+            libRootFolder = tmpFolder;
+        }
+        //<- since 2.3.0
 
-      if(architecture.equals("i386") || architecture.equals("i686")){
-          architecture = "x86";
-          architectureShort = "32";
-      }
-      else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
-          architecture = "x86_64";
-          architectureShort = "64";
-      }
-      else if(architecture.equals("arm")) {//since 2.1.0
-          String floatStr = "sf";
-          if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
-              floatStr = "hf";
-          }
-          else {
-              try {
-                  Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
-                  BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
-                  String buffer = "";
-                  while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
-                      if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
-                          floatStr = "hf";
-                          break;
-                      }
-                  }
-                  reader.close();
-              }
-              catch (Exception ex) {
-                  //Do nothing
-              }
-          }
-          architecture = "arm" + floatStr;
-      }
+        if(architecture.equals("i386") || architecture.equals("i686")){
+            architecture = "x86";
+            architectureShort = "32";
+        }
+        else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
+            architecture = "x86_64";
+            architectureShort = "64";
+        }
+        else if(architecture.equals("arm")) {//since 2.1.0
+            String floatStr = "sf";
+            if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
+                floatStr = "hf";
+            }
+            else {
+                try {
+                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
+                    String buffer = "";
+                    while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
+                        if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
+                            floatStr = "hf";
+                            break;
+                        }
+                    }
+                    reader.close();
+                }
+                catch (Exception ex) {
+                    //Do nothing
+                }
+            }
+            architecture = "arm" + floatStr;
+        }
 
-      if(osName.equals("Linux")){
-          osName = "linux";
-          osType = OS_LINUX;
-          extendedFolder = "linux_" + architectureShort;
-          rawLibName = "libjssc.so";
-      }
-      else if(osName.startsWith("Win")){
-          osName = "windows";
-          osType = OS_WINDOWS;
-          extendedFolder = "windows_" + architectureShort;
-          rawLibName = "jssc.dll";
-      }//since 0.9.0 ->
-      else if(osName.equals("SunOS")){
-          osName = "solaris";
-          osType = OS_SOLARIS;
-      }
-      else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
-          osName = "mac_os_x";
-          extendedFolder = architecture.contains("arm") ? "osx_arm64" : "osx_64";
-          rawLibName = "libjssc.dylib";
-          osType = OS_MAC_OS_X;
-      }//<- since 0.9.0
+        if(osName.equals("Linux")){
+            osName = "linux";
+            osType = OS_LINUX;
+            extendedFolder = "linux_" + architectureShort;
+            rawLibName = "libjssc.so";
+        }
+        else if(osName.startsWith("Win")){
+            osName = "windows";
+            osType = OS_WINDOWS;
+            extendedFolder = "windows_" + architectureShort;
+            rawLibName = "jssc.dll";
+        }//since 0.9.0 ->
+        else if(osName.equals("SunOS")){
+            osName = "solaris";
+            osType = OS_SOLARIS;
+        }
+        else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
+            osName = "mac_os_x";
+            extendedFolder = architecture.contains("arm") ? "osx_arm64" : "osx_64";
+            rawLibName = "libjssc.dylib";
+            osType = OS_MAC_OS_X;
+        }//<- since 0.9.0
 
-      libFolderPath = libRootFolder + fileSeparator + extendedFolder;
+        libFolderPath = libRootFolder + fileSeparator + extendedFolder;
 
-      boolean manualLoadLib = false;
-      boolean autoLoadLib = false;
+        boolean manualLoadLib = false;
+        boolean autoLoadLib = false;
 
-      if(loadLibFromPath("jSSC-"+libVersion)) {
-          // nothing more to do
-          autoLoadLib = true;
-      } else if(loadLibFromPath("jssc")) {
-          // nothing more to do
-          autoLoadLib = true;
-      } else {
-          manualLoadLib = true;
-      }
+        if(loadLibFromPath("jSSC-"+libVersion)) {
+            // nothing more to do
+            autoLoadLib = true;
+        } else if(loadLibFromPath("jssc")) {
+            // nothing more to do
+            autoLoadLib = true;
+        } else {
+            manualLoadLib = true;
+        }
 
-      if (autoLoadLib) {
-          // If auto-loaded, nothing more to do.
-      } else {
-          System.load(libFolderPath + fileSeparator + rawLibName);
-          String versionBase = getLibraryBaseVersion();
-          String versionNative = getNativeLibraryVersion();
-          if (!isExpected(versionBase, versionNative)) {
-              System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
-          }
-      }
+        if (autoLoadLib) {
+            // If auto-loaded, nothing more to do.
+        } else {
+            String envPath = System.getProperty("jssc.boot.library.path");
+            String processingPath = libFolderPath + fileSeparator + rawLibName;
+            String jsscPath = envPath == null ? processingPath : envPath;
+            try {
+                NativeLoader.setJniExtractor(new DefaultJniExtractorStub(null, jsscPath));
+                NativeLoader.loadLibrary("jssc");
+                String versionBase = getLibraryVersion();
+                String versionNative = getNativeLibraryVersion();
+                if (!isExpected(versionBase, versionNative)) {
+                    System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
+                }
+            } catch (IOException ioException) {
+                throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());
+            }
+        }
     }
-
+ 
     /**
      * Check that the library version is expected.
      *
@@ -259,8 +295,17 @@ public class SerialNativeInterface {
     }
 
     /**
-     * Get OS type (OS_LINUX || OS_WINDOWS || OS_SOLARIS)
+     * Default constructor
+     * TODO: This class is effectively static, why instantiate it?
+     */
+    public SerialNativeInterface() {}
+
+    /**
+     * Get OS type
      *
+     * @return <code>OS_LINUX</code>, <code>OS_WINDOWS</code>, <code>OS_SOLARIS</code>,<code>OS_MACOS</code>
+     * or <code>OS_UNKNOWN</code> if unknown.
+     * 
      * @since 0.8
      */
     public static int getOsType() {
@@ -268,36 +313,20 @@ public class SerialNativeInterface {
     }
 
     /**
-     * Get jSSC version. The version of library is <b>Base Version</b> + <b>Minor Suffix</b>
+     * Get library version
+     *
+     * @return Full library version in "major.minor.patch" format.
      *
      * @since 0.8
      */
     public static String getLibraryVersion() {
-        return libVersion + "." + libMinorSuffix;
-    }
-
-    /**
-     * Get jSSC Base Version
-     *
-     * @since 0.9.0
-     */
-    public static String getLibraryBaseVersion() {
         return libVersion;
     }
 
     /**
-     * Get jSSC minor suffix. For example in version 0.8.1 - <b>1</b> is a minor suffix
+     * Get native library version
      *
-     * @since 0.9.0
-     */
-    public static String getLibraryMinorSuffix() {
-        return libMinorSuffix;
-    }
-
-    /**
-     * Get jSSC native library version
-     *
-     * @return native lib version (for jSSC-2.8.0 should be 2.8 for example)
+     * @return Full native library version in "major.minor.patch" format.
      *
      * @since 2.8.0
      */
@@ -462,7 +491,7 @@ public class SerialNativeInterface {
      *
      * @param handle handle of opened port
      *
-     * @return Mask of setted flow control mode
+     * @return Mask of set flow control mode
      *
      * @since 0.8
      */
@@ -489,10 +518,10 @@ public class SerialNativeInterface {
     public native int[] getLinesStatus(long handle);
 
     /**
-     * Send Break singnal for setted duration
-     *
+     * Send Break signal for set duration
+     * 
      * @param handle handle of opened port
-     * @param duration duration of Break signal
+     * @param duration duration of Break signal, in milliseconds
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @since 0.8

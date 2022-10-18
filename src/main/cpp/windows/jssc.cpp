@@ -101,7 +101,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
     DCB *dcb = new DCB();
     jboolean returnValue = JNI_FALSE;
     if(GetCommState(hComm, dcb)){
-        dcb->BaudRate = static_cast<BYTE>(baudRate);
+        dcb->BaudRate = static_cast<DWORD>(baudRate);
         dcb->ByteSize = static_cast<BYTE>(byteSize);
         dcb->StopBits = static_cast<BYTE>(stopBits);
         dcb->Parity = static_cast<BYTE>(parity);
@@ -136,7 +136,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
 
         if(SetCommState(hComm, dcb)){
 
-        	//since 2.1.0 -> previously setted timeouts by another application should be cleared
+        	//since 2.1.0 -> timeouts set previously by another application should be cleared
         	COMMTIMEOUTS *lpCommTimeouts = new COMMTIMEOUTS();
         	lpCommTimeouts->ReadIntervalTimeout = 0;
         	lpCommTimeouts->ReadTotalTimeoutConstant = 0;
@@ -392,7 +392,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getFlowControlMode
 }
 
 /*
- * Send break for setted duration
+ * Send break for set duration
  *
  * since 0.8
  */
