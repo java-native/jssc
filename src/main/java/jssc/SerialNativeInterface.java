@@ -109,113 +109,28 @@ public class SerialNativeInterface {
     private static int osType;
     
     static {
-        String libFolderPath;
-
         String osName = System.getProperty("os.name");
-        String architecture = System.getProperty("os.arch");
-        String fileSeparator = System.getProperty("file.separator");
-        String tmpFolder = System.getProperty("java.io.tmpdir");
-        String extendedFolder = "";
-        String architectureShort = "";
-        String rawLibName = "";
-
-        String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
-
-        //since 2.3.0 ->
-        String libRootFolder = getProcessingLibDirectory();
-        if (libRootFolder == null) {
-            libRootFolder = tmpFolder;
-        }
-        //<- since 2.3.0
-
-        if(architecture.equals("i386") || architecture.equals("i686")){
-            architecture = "x86";
-            architectureShort = "32";
-        }
-        else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
-            architecture = "x86_64";
-            architectureShort = "64";
-        }
-        else if(architecture.equals("arm")) {//since 2.1.0
-            String floatStr = "sf";
-            if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
-                floatStr = "hf";
-            }
-            else {
-                try {
-                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
-                    String buffer = "";
-                    while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
-                        if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
-                            floatStr = "hf";
-                            break;
-                        }
-                    }
-                    reader.close();
-                }
-                catch (Exception ex) {
-                    //Do nothing
-                }
-            }
-            architecture = "arm" + floatStr;
-        }
-
-        if(osName.equals("Linux")){
-            osName = "linux";
+        if(osName.equals("Linux"))
             osType = OS_LINUX;
-            extendedFolder = "linux_" + architectureShort;
-            rawLibName = "libjssc.so";
-        }
-        else if(osName.startsWith("Win")){
-            osName = "windows";
+        else if(osName.startsWith("Win"))
             osType = OS_WINDOWS;
-            extendedFolder = "windows_" + architectureShort;
-            rawLibName = "jssc.dll";
-        }//since 0.9.0 ->
-        else if(osName.equals("SunOS")){
-            osName = "solaris";
+        else if(osName.equals("SunOS"))
             osType = OS_SOLARIS;
-        }
-        else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
-            osName = "mac_os_x";
-            extendedFolder = architecture.contains("arm") ? "osx_arm64" : "osx_64";
-            rawLibName = "libjssc.dylib";
+        else if(osName.equals("Mac OS X") || osName.equals("Darwin"))
             osType = OS_MAC_OS_X;
-        }//<- since 0.9.0
-
-        libFolderPath = libRootFolder + fileSeparator + extendedFolder;
-
-        boolean manualLoadLib = false;
-        boolean autoLoadLib = false;
-
-        if(loadLibFromPath("jSSC-"+libVersion)) {
-            // nothing more to do
-            autoLoadLib = true;
-        } else if(loadLibFromPath("jssc")) {
-            // nothing more to do
-            autoLoadLib = true;
-        } else {
-            manualLoadLib = true;
-        }
-
-        if (autoLoadLib) {
-            // If auto-loaded, nothing more to do.
-        } else {
-            String envPath = System.getProperty("jssc.boot.library.path");
-            String processingPath = libFolderPath + fileSeparator + rawLibName;
-            String jsscPath = envPath == null ? processingPath : envPath;
-            try {
-                NativeLoader.setJniExtractor(new DefaultJniExtractorStub(null, jsscPath));
-                NativeLoader.loadLibrary("jssc");
-                String versionBase = getLibraryVersion();
-                String versionNative = getNativeLibraryVersion();
-                if (!isExpected(versionBase, versionNative)) {
-                    System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
-                }
-            } catch (IOException ioException) {
-                throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());
-            }
+        else
+            osType = OS_UNKNOWN;
+        try {
+            /*
+             * JSSC includes a small, platform-specific shared library and uses native-lib-loader for extraction.
+             * - First, native-lib-loader will attempt to load this library from the system library path.
+             * - Next, it will fallback to <code>jssc.boot.library.path</code>
+             * - Finally it will attempt to extract the library from from the jssc.jar file, and load it.
+             */
+            NativeLoader.setJniExtractor(new DefaultJniExtractorStub(null, System.getProperty("jssc.boot.library.path")));
+            NativeLoader.loadLibrary("jssc");
+        } catch (IOException ioException) {
+            throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());
         }
     }
  
