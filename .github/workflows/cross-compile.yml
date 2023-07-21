@@ -122,7 +122,7 @@ jobs:
           while  git pull --rebase && ! git push; do sleep 5; done
 
   macos:
-    runs-on: macos-10.15
+    runs-on: macos-11
     needs: create-branch
     strategy:
       matrix:
@@ -136,8 +136,6 @@ jobs:
             profile: 'aarch64'
             macos-deployment-target: 11.0
             sdk-version: MacOSX11.0.sdk
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_12.2.app/Contents/Developer
 
     steps:
       - name: Checkout
@@ -153,12 +151,13 @@ jobs:
         if: ${{ matrix.sdk-version == 'MacOSX10.9.sdk' }}
         run: |
           wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.9.sdk.tar.xz \
-            | tar -xjv -C /Applications/Xcode_12.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+            | tar -xjv -C $XCODE_12_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs
 
       - name: Set SDK version
         run: |
           export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos-deployment-target }}
-          export SDKROOT=${{ env.DEVELOPER_DIR }}/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
+          export SDKROOT=$XCODE_12_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
+          export CMAKE_OSX_SYSROOT=$SDKROOT
       - name: Build with Maven
         run: mvn -B clean install -P ${{ matrix.profile }}
 
