@@ -171,3 +171,4 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
 }
 #endif
 #endif
+
