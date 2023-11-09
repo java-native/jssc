@@ -1,5 +1,6 @@
 package jssc;
 
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -41,6 +42,8 @@ public class SerialNativeInterfaceTest {
 
     @Test(expected = java.io.IOException.class)
     public void reportsWriteErrorsAsIOException() throws Exception {
+        Assume.assumeFalse(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS);
+
         long fd = -1; /*bad file by intent*/
         byte[] buf = new byte[]{ 0x6A, 0x73, 0x73, 0x63, 0x0A };
         SerialNativeInterface testTarget = new SerialNativeInterface();
