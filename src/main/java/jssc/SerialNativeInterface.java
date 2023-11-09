@@ -290,7 +290,7 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native int[] getBuffersBytesCount(long handle);
+    public native int[] getBuffersBytesCount(long handle) throws IOException;
 
     /**
      * Set flow control mode

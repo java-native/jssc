@@ -646,17 +646,18 @@ JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getBuffersBytesCount
     jint returnValues[2];
     returnValues[0] = -1; //Input buffer
     returnValues[1] = -1; //Output buffer
-    jintArray returnArray = env->NewIntArray(2);
-    if( returnArray == NULL ) return NULL;
 
     err = ioctl(portHandle, FIONREAD, &returnValues[0]) == -1
        || ioctl(portHandle, TIOCOUTQ, &returnValues[1]) == -1;
     if( err ){
         err = errno;
-        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), strerror(err));
+        jclass exClz = env->FindClass("java/io/IOException");
+        if( exClz != NULL ) env->ThrowNew(exClz, strerror(err));
         return NULL;
     }
 
+    jintArray returnArray = env->NewIntArray(2);
+    if( returnArray == NULL ) return NULL;
     env->SetIntArrayRegion(returnArray, 0, 2, returnValues);
     return returnArray;
 }

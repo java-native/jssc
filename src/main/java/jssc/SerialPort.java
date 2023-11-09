@@ -876,7 +876,11 @@ public class SerialPort {
      */
     public int getInputBufferBytesCount() throws SerialPortException {
         checkPortOpened("getInputBufferBytesCount()");
-        return serialInterface.getBuffersBytesCount(portHandle)[0];
+        try{
+            return serialInterface.getBuffersBytesCount(portHandle)[0];
+        }catch( IOException ex ){
+            throw SerialPortException.wrapNativeException(ex, this, "getInputBufferBytesCount");
+        }
     }
 
     /**
@@ -890,7 +894,11 @@ public class SerialPort {
      */
     public int getOutputBufferBytesCount() throws SerialPortException {
         checkPortOpened("getOutputBufferBytesCount()");
-        return serialInterface.getBuffersBytesCount(portHandle)[1];
+        try{
+            return serialInterface.getBuffersBytesCount(portHandle)[1];
+        }catch( IOException ex ){
+            throw SerialPortException.wrapNativeException(ex, this, "getOutputBufferBytesCount");
+        }
     }
 
     /**
