@@ -289,4 +289,10 @@
             <arg line="${cmake.build.arg}"/>
         </exec>
     </target>
+
+    <target name="update-resources-precompiled">
+        <copy todir="${ant.project.basedir}/src/main/resources-precompiled/natives/">
+            <fileset dir="${cmake.generated.directory}/natives/" includes="**" />
+        </copy>
+    </target>
 </project>

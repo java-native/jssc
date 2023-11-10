@@ -72,6 +72,7 @@
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.source.version>3.0.1</plugin.source.version>
     <plugin.surfire.version>3.0.0-M4</plugin.surfire.version>
+    <update-resources-precompiled.skip>true</update-resources-precompiled.skip>
   </properties>
 
   <dependencies>
@@ -243,6 +244,18 @@
               <skip>${cmake.build.skip}</skip>
               <target>
                 <ant dir="ant" target="cmake-build" />
+              </target>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>update-resources-precompiled</id>
+            <phase>prepare-package</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <skip>${update-resources-precompiled.skip}</skip>
+              <target>
+                <ant dir="ant" target="update-resources-precompiled" />
               </target>
             </configuration>
           </execution>
@@ -429,6 +442,14 @@
       </activation>
       <properties>
         <target.java.version>7</target.java.version>
+      </properties>
+    </profile>
+
+    <!-- Copy newly built native libraries back to source tree -->
+    <profile>
+      <id>update-resources-precompiled</id>
+      <properties>
+        <update-resources-precompiled.skip>false</update-resources-precompiled.skip>
       </properties>
     </profile>
 

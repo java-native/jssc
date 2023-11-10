@@ -118,7 +118,7 @@ jobs:
                 ${{ matrix.image }} \
                 bash -c \
                   'apt-get update && apt-get install --yes maven openjdk-11-jdk-headless && \
-                   mvn -B clean install -P dockcross \
+                   mvn -B clean install -P dockcross,update-resources-precompiled \
                     -Dos.target.name=${{ matrix.os_target_name }} \
                     -Dos.target.arch=${{ matrix.os_target_arch }} \
                     -Dos.target.bitness=${{ matrix.os_target_bitness }} \
@@ -171,7 +171,7 @@ jobs:
           export SDKROOT=$XCODE_12_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
           export CMAKE_OSX_SYSROOT=$SDKROOT
       - name: Build with Maven
-        run: mvn -B clean install -P ${{ matrix.profile }}
+        run: mvn -B clean install -P ${{ matrix.profile }},update-resources-precompiled
 
       - name: Push recompiled binaries
         run: |
