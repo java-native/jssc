@@ -8,7 +8,7 @@ env:
 
 jobs:
   create-branch:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - run: echo "precompiled_branch=$(git branch --show-current)-precompiled-natives" >> $GITHUB_ENV
@@ -31,7 +31,7 @@ jobs:
       base_rev: ${{ env.rev }}
 
   linux-windows:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: create-branch
     strategy:
       matrix:
@@ -104,7 +104,7 @@ jobs:
         run: docker pull ${{ matrix.image }}
 
       - name: Set up JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: temurin
@@ -154,7 +154,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: temurin
@@ -181,3 +181,18 @@ jobs:
           git add src/main/resources-precompiled/**
           git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for ${{ matrix.target }}"
           while  git pull --rebase && ! git push; do sleep 5; done
+
+  single-commit:
+    runs-on: ubuntu-latest
+    needs: [create-branch, linux-windows, macos]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Squash into one commit
+        run: |
+          git config --global user.email "${GITHUB_BOT_EMAIL}"
+          git config --global user.name "${GITHUB_BOT_NAME}"
+          git fetch && git checkout -t origin/${{ needs.create-branch.outputs.precompiled_branch }}
+          git reset --soft ${{ needs.create-branch.outputs.base_rev }}
+          git add src/main/resources-precompiled/**
+          git commit -m "Precompiled natives @${{ needs.create-branch.outputs.base_rev }}"
+          git push -f
