@@ -1,16 +1,24 @@
 package jssc;
 
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class SerialNativeInterfaceTest {
 
+    private SerialNativeInterface testTarget;
+
+    @Before
+    public void before(){
+        testTarget = new SerialNativeInterface();
+    }
 
     @Test
     public void testInitNativeInterface() {
@@ -48,6 +56,16 @@ public class SerialNativeInterfaceTest {
         byte[] buf = new byte[]{ 0x6A, 0x73, 0x73, 0x63, 0x0A };
         SerialNativeInterface testTarget = new SerialNativeInterface();
         testTarget.writeBytes(fd, buf);
+    }
+
+    @Test
+    public void throwsIllegalArgumentExceptionIfPortHandleIllegal() throws Exception {
+        try{
+            testTarget.readBytes(999, 42);
+            fail("Where is the exception?");
+        }catch( IllegalArgumentException ex ){
+            assertTrue(ex.getMessage().contains("EBADF"));
+        }
     }
 
 }

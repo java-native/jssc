@@ -549,22 +549,51 @@ Finally:
 
 /**
  * Waits until 'read()' has something to tell for the specified filedescriptor.
+ *
+ * Returns zero on success. Returns negative values on error and may
+ * sets up a java exception in 'env'.
  */
-static void awaitReadReady(JNIEnv*, jlong fd){
+static int awaitReadReady(JNIEnv*env, jlong fd){
+    int err;
+    int numUnknownErrors = 0;
 #if HAVE_POLL == 0
     // Alternative impl using 'select' as 'poll' isn't available (or broken).
 
-    //assert(fd < FD_SETSIZE); // <- Might help when hunting SEGFAULTs.
+    if( fd >= FD_SETSIZE ){
+        jclass exClz = env->FindClass("java/lang/UnsupportedOperationException");
+        if( exClz != NULL ) env->ThrowNew(exClz, "Bad luck. 'select' cannot hanlde large fds.");
+        static_assert(EBADF > 0, "EBADF > 0");
+        return -EBADF;
+    }
     fd_set readFds;
     while(true) {
         FD_ZERO(&readFds);
         FD_SET(fd, &readFds);
         int result = select(fd + 1, &readFds, NULL, NULL, NULL);
-        if(result < 0){
-            // man select: On error, -1 is returned, and errno is set to indicate the error
-            // TODO: Maybe a candidate to raise a java exception. But won't do
-            //       yet for backward compatibility.
-            continue;
+        if( result < 0 ){
+            err = errno;
+            jclass exClz = NULL;
+            switch( err ){
+            case EBADF:
+                exClz = env->FindClass("java/lang/IllegalArgumentException");
+                if( exClz != NULL ) env->ThrowNew(exClz, "EBADF select()");
+                static_assert(EBADF > 0, "EBADF > 0");
+                return -err;
+            case EINVAL:
+                exClz = env->FindClass("java/lang/IllegalArgumentException");
+                if( exClz != NULL ) env->ThrowNew(exClz, "EINVAL select()");
+                static_assert(EINVAL > 0, "EINVAL > 0");
+                return -err;
+            default:
+                // TODO: Maybe other errors are candidates to raise java exceptions too. We can
+                //       add them as soon we know which of them occur, and what they actually
+                //       mean in our context. For now, we infinitely loop, as the original code
+                //       did.
+                if( numUnknownErrors == 0) fprintf(stderr, "select(): %s\n", strerror(err));
+                static_assert(INT_MAX >= 0x7FFF, "INT_MAX >= 0x7FFF");
+                numUnknownErrors = (numUnknownErrors + 1) & 0x3FFF;
+                continue;
+            }
         }
         // Did wait successfully.
         break;
@@ -580,17 +609,32 @@ static void awaitReadReady(JNIEnv*, jlong fd){
     fds[0].events = POLLIN;
     while(true){
         int result = poll(fds, 1, -1);
-        if(result < 0){
-            // man poll: On error, -1 is returned, and errno is set to indicate the error.
-            // TODO: Maybe a candidate to raise a java exception. But won't do
-            //       yet for backward compatibility.
-            continue;
+        if( result < 0 ){
+            err = errno;
+            jclass exClz = NULL;
+            switch( err ){
+            case EINVAL:
+                exClz = env->FindClass("java/lang/IllegalArgumentException");
+                if( exClz != NULL ) env->ThrowNew(exClz, "EINVAL poll()");
+                static_assert(EINVAL > 0, "EINVAL > 0");
+                return -EINVAL;
+            default:
+                // TODO: Maybe other errors are candidates to raise java exceptions too. We can
+                //       add them as soon we know which of them occur, and what they actually
+                //       mean in our context. For now, we infinitely loop, as the original code
+                //       did.
+                if( numUnknownErrors == 0) fprintf(stderr, "poll(): %s\n", strerror(err));
+                static_assert(INT_MAX >= 0x7FFF, "INT_MAX >= 0x7FFF");
+                numUnknownErrors = (numUnknownErrors + 1) & 0x3FFF;
+                continue;
+            }
         }
         // Did wait successfully.
         break;
     }
 
 #endif
+    return 0;
 }
 
 /* OK */
@@ -602,9 +646,7 @@ static void awaitReadReady(JNIEnv*, jlong fd){
 JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
   (JNIEnv *env, jobject, jlong portHandle, jint byteCount){
 
-    // TODO: Errors should be communicated by raising java exceptions; Will break
-    //       backwards compatibility.
-
+    int err;
     jbyte *lpBuffer = new jbyte[byteCount];
     jbyteArray returnArray = NULL;
     int byteRemains = byteCount;
@@ -612,13 +654,32 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     while(byteRemains > 0) {
         int result = 0;
 
-        awaitReadReady(env, portHandle);
+        err = awaitReadReady(env, portHandle);
+        if( err < 0 ){
+            /* nothing we could read. */
+            if( byteRemains != byteCount ){
+                /* return what we already have so far. */
+                env->ExceptionClear();
+                break;
+            }else{
+                /* nothing we could return. pass-through exception */
+                assert(env->ExceptionCheck());
+                returnArray = NULL; goto Finally;
+            }
+        }
 
         errno = 0;
         result = read(portHandle, lpBuffer + (byteCount - byteRemains), byteRemains);
         if (result < 0) {
-            // man read: On error, -1 is returned, and errno is set to indicate the error.
-            // TODO: May candidate for raising a java exception. See comment at begin of function.
+            err = errno;
+            const char *exName = NULL, *emsg = NULL;
+            switch( err ){
+            case EBADF: exName = "java/lang/IllegalArgumentException"; emsg = "EBADF"; break;
+            default: exName = "java/io/IOException"; emsg = strerror(err); break;
+            }
+            jclass exClz = env->FindClass(exName);
+            if( exClz != NULL ) env->ThrowNew(exClz, emsg);
+            returnArray = NULL; goto Finally;
         }
         else if (result == 0) {
             // AFAIK this happens either on EOF or on EWOULDBLOCK (see 'man read').
@@ -630,8 +691,12 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
         }
     }
 
-    returnArray = env->NewByteArray(byteCount);
-    env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
+    returnArray = env->NewByteArray(byteCount - byteRemains);
+    if( returnArray == NULL ) goto Finally;
+    env->SetByteArrayRegion(returnArray, 0, byteCount - byteRemains, lpBuffer);
+    assert(env->ExceptionCheck() == JNI_FALSE);
+
+Finally:
     delete[] lpBuffer;
     return returnArray;
 }

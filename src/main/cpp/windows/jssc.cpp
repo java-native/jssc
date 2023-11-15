@@ -266,8 +266,8 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpNumberOfBytesTransferred;
     DWORD lpNumberOfBytesRead;
-    OVERLAPPED *overlapped = new OVERLAPPED();
     jbyte *lpBuffer = NULL;
+
     jbyteArray returnArray = env->NewByteArray(byteCount);
 
     lpBuffer = (jbyte *)malloc(byteCount * sizeof(jbyte));
@@ -276,6 +276,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
         return returnArray;
     }
 
+    OVERLAPPED *overlapped = new OVERLAPPED();
     overlapped->hEvent = CreateEventA(NULL, true, false, NULL);
     if(ReadFile(hComm, lpBuffer, (DWORD)byteCount, &lpNumberOfBytesRead, overlapped)){
         env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
@@ -286,6 +287,10 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
                 env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
             }
         }
+    }
+    else if(GetLastError() == ERROR_INVALID_HANDLE){
+        jclass exClz = env->FindClass("java/lang/IllegalArgumentException");
+        if( exClz != NULL ) env->ThrowNew(exClz, "EBADF");
     }
     CloseHandle(overlapped->hEvent);
     delete overlapped;
