@@ -561,7 +561,7 @@ static int awaitReadReady(JNIEnv*env, jlong fd){
 
     if( fd >= FD_SETSIZE ){
         jclass exClz = env->FindClass("java/lang/UnsupportedOperationException");
-        if( exClz != NULL ) env->ThrowNew(exClz, "Bad luck. 'select' cannot hanlde large fds.");
+        if( exClz != NULL ) env->ThrowNew(exClz, "Bad luck. 'select' cannot handle large fds.");
         static_assert(EBADF > 0, "EBADF > 0");
         return -EBADF;
     }
@@ -574,25 +574,25 @@ static int awaitReadReady(JNIEnv*env, jlong fd){
             err = errno;
             jclass exClz = NULL;
             switch( err ){
-            case EBADF:
-                exClz = env->FindClass("java/lang/IllegalArgumentException");
-                if( exClz != NULL ) env->ThrowNew(exClz, "EBADF select()");
-                static_assert(EBADF > 0, "EBADF > 0");
-                return -err;
-            case EINVAL:
-                exClz = env->FindClass("java/lang/IllegalArgumentException");
-                if( exClz != NULL ) env->ThrowNew(exClz, "EINVAL select()");
-                static_assert(EINVAL > 0, "EINVAL > 0");
-                return -err;
-            default:
-                // TODO: Maybe other errors are candidates to raise java exceptions too. We can
-                //       add them as soon we know which of them occur, and what they actually
-                //       mean in our context. For now, we infinitely loop, as the original code
-                //       did.
-                if( numUnknownErrors == 0) fprintf(stderr, "select(): %s\n", strerror(err));
-                static_assert(INT_MAX >= 0x7FFF, "INT_MAX >= 0x7FFF");
-                numUnknownErrors = (numUnknownErrors + 1) & 0x3FFF;
-                continue;
+                case EBADF:
+                    exClz = env->FindClass("java/lang/IllegalArgumentException");
+                    if( exClz != NULL ) env->ThrowNew(exClz, "EBADF select()");
+                    static_assert(EBADF > 0, "EBADF > 0");
+                    return -err;
+                case EINVAL:
+                    exClz = env->FindClass("java/lang/IllegalArgumentException");
+                    if( exClz != NULL ) env->ThrowNew(exClz, "EINVAL select()");
+                    static_assert(EINVAL > 0, "EINVAL > 0");
+                    return -err;
+                default:
+                    // TODO: Maybe other errors are candidates to raise java exceptions too. We can
+                    //       add them as soon we know which of them occur, and what they actually
+                    //       mean in our context. For now, we infinitely loop, as the original code
+                    //       did.
+                    if( numUnknownErrors == 0) fprintf(stderr, "select(): %s\n", strerror(err));
+                    static_assert(INT_MAX >= 0x7FFF, "INT_MAX >= 0x7FFF");
+                    numUnknownErrors = (numUnknownErrors + 1) & 0x3FFF;
+                    continue;
             }
         }
         // Did wait successfully.
@@ -613,20 +613,20 @@ static int awaitReadReady(JNIEnv*env, jlong fd){
             err = errno;
             jclass exClz = NULL;
             switch( err ){
-            case EINVAL:
-                exClz = env->FindClass("java/lang/IllegalArgumentException");
-                if( exClz != NULL ) env->ThrowNew(exClz, "EINVAL poll()");
-                static_assert(EINVAL > 0, "EINVAL > 0");
-                return -EINVAL;
-            default:
-                // TODO: Maybe other errors are candidates to raise java exceptions too. We can
-                //       add them as soon we know which of them occur, and what they actually
-                //       mean in our context. For now, we infinitely loop, as the original code
-                //       did.
-                if( numUnknownErrors == 0) fprintf(stderr, "poll(): %s\n", strerror(err));
-                static_assert(INT_MAX >= 0x7FFF, "INT_MAX >= 0x7FFF");
-                numUnknownErrors = (numUnknownErrors + 1) & 0x3FFF;
-                continue;
+                case EINVAL:
+                    exClz = env->FindClass("java/lang/IllegalArgumentException");
+                    if( exClz != NULL ) env->ThrowNew(exClz, "EINVAL poll()");
+                    static_assert(EINVAL > 0, "EINVAL > 0");
+                    return -err;
+                default:
+                    // TODO: Maybe other errors are candidates to raise java exceptions too. We can
+                    //       add them as soon we know which of them occur, and what they actually
+                    //       mean in our context. For now, we infinitely loop, as the original code
+                    //       did.
+                    if( numUnknownErrors == 0) fprintf(stderr, "poll(): %s\n", strerror(err));
+                    static_assert(INT_MAX >= 0x7FFF, "INT_MAX >= 0x7FFF");
+                    numUnknownErrors = (numUnknownErrors + 1) & 0x3FFF;
+                    continue;
             }
         }
         // Did wait successfully.
@@ -674,8 +674,8 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
             err = errno;
             const char *exName = NULL, *emsg = NULL;
             switch( err ){
-            case EBADF: exName = "java/lang/IllegalArgumentException"; emsg = "EBADF"; break;
-            default: exName = "java/io/IOException"; emsg = strerror(err); break;
+                case EBADF: exName = "java/lang/IllegalArgumentException"; emsg = "EBADF"; break;
+                default: exName = "java/io/IOException"; emsg = strerror(err); break;
             }
             jclass exClz = env->FindClass(exName);
             if( exClz != NULL ) env->ThrowNew(exClz, emsg);
