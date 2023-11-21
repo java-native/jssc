@@ -72,6 +72,7 @@
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.source.version>3.0.1</plugin.source.version>
     <plugin.surfire.version>3.0.0-M4</plugin.surfire.version>
+    <update-resources-precompiled.skip>true</update-resources-precompiled.skip>
   </properties>
 
   <dependencies>
@@ -248,6 +249,18 @@
           </execution>
 
           <execution>
+            <id>update-resources-precompiled</id>
+            <phase>prepare-package</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <skip>${update-resources-precompiled.skip}</skip>
+              <target>
+                <ant dir="ant" target="update-resources-precompiled" />
+              </target>
+            </configuration>
+          </execution>
+
+          <execution>
             <id>show-file-info</id>
             <phase>install</phase>
             <goals><goal>run</goal></goals>
@@ -279,6 +292,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${plugin.surfire.version}</version>
         <configuration>
+          <!-- Separate JVMs between classes; Needed for "jssc.boot.library.path" test to be effective -->
           <reuseForks>false</reuseForks>
           <excludes>
             <!--suppress UnresolvedMavenProperty -->
@@ -431,6 +445,14 @@
       </properties>
     </profile>
 
+    <!-- Copy newly built native libraries back to source tree -->
+    <profile>
+      <id>update-resources-precompiled</id>
+      <properties>
+        <update-resources-precompiled.skip>false</update-resources-precompiled.skip>
+      </properties>
+    </profile>
+
     <!-- collect existing native libraries for a distribution; skips native compilation -->
     <profile>
       <id>package</id>
@@ -494,6 +516,32 @@
         <os.target.arch>aarch_64</os.target.arch>
       </properties>
     </profile>
+
+    <!-- Cross compile for riscv32 -->
+    <profile>
+      <id>riscv64</id>
+      <properties>
+        <os.target.toolchain>Riscv64</os.target.toolchain>
+
+        <os.target.name>linux</os.target.name>
+        <os.target.arch>riscv64</os.target.arch>
+        <os.target.bitness>64</os.target.bitness>
+      </properties>
+    </profile>
+
+    <!-- Cross compile for riscv32 -->
+    <profile>
+      <id>riscv32</id>
+      <properties>
+        <os.target.toolchain>Riscv32</os.target.toolchain>
+
+        <os.target.name>linux</os.target.name>
+        <os.target.arch>riscv32</os.target.arch>
+        <os.target.bitness>32</os.target.bitness>
+      </properties>
+    </profile>
+
+
 
     <!-- Cross compile for x86_64 -->
     <profile>

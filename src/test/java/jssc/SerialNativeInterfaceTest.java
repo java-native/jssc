@@ -1,5 +1,6 @@
 package jssc;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,15 +10,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 public class SerialNativeInterfaceTest {
-
-    private SerialNativeInterface testTarget;
-
-    @Before
-    public void before(){
-        testTarget = new SerialNativeInterface();
-    }
 
     @Test
     public void testInitNativeInterface() {
@@ -49,6 +45,8 @@ public class SerialNativeInterfaceTest {
 
     @Test(expected = java.io.IOException.class)
     public void reportsWriteErrorsAsIOException() throws Exception {
+        Assume.assumeFalse(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS);
+
         long fd = -1; /*bad file by intent*/
         byte[] buf = new byte[]{ 0x6A, 0x73, 0x73, 0x63, 0x0A };
         SerialNativeInterface testTarget = new SerialNativeInterface();
@@ -56,7 +54,43 @@ public class SerialNativeInterfaceTest {
     }
 
     @Test
+    public void throwsIllegalArgumentExceptionIfPortHandleIllegal() throws Exception {
+        assumeFalse(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X);
+
+        SerialNativeInterface testTarget = new SerialNativeInterface();
+        try{
+            testTarget.readBytes(999, 42);
+            fail("Where is the exception?");
+        }catch( IllegalArgumentException ex ){
+            assertTrue(ex.getMessage().contains("EBADF"));
+        }
+    }
+
+    /**
+     * <p>This is a duplicate of {@link #throwsIllegalArgumentExceptionIfPortHandleIllegal()}
+     * but targets osx only. Not yet analyzed why osx (using select) hangs here. See also <a
+     * href="https://github.com/java-native/jssc/pull/155">PR 155</a>. Where this
+     * was discovered.</p>
+     *
+     * <p>TODO: Go down that rabbit hole and get rid of that "bug".</p>
+     */
+    @Test
+    @org.junit.Ignore("TODO analyze where this osx hang comes from")
+    public void throwsIllegalArgumentExceptionIfPortHandleIllegalOsx() throws Exception {
+        assumeTrue(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X);
+
+        SerialNativeInterface testTarget = new SerialNativeInterface();
+        try{
+            testTarget.readBytes(999, 42);
+            fail("Where is the exception?");
+        }catch( IllegalArgumentException ex ){
+            assertTrue(ex.getMessage().contains("EBADF"));
+        }
+    }
+
+    @Test
     public void throwsNpeIfPassedBufferIsNull() throws Exception {
+        SerialNativeInterface testTarget = new SerialNativeInterface();
         long fd = 1;
         byte[] buf = null;
         try{

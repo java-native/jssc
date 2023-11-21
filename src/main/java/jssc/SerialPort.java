@@ -512,7 +512,11 @@ public class SerialPort {
      */
     public byte[] readBytes(int byteCount) throws SerialPortException {
         checkPortOpened("readBytes()");
-        return serialInterface.readBytes(portHandle, byteCount);
+        try{
+            return serialInterface.readBytes(portHandle, byteCount);
+        }catch( IOException ex ){
+            throw SerialPortException.wrapNativeException(ex, this, "readBytes");
+        }
     }
 
     /**

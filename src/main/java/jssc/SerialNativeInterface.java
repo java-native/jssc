@@ -267,7 +267,7 @@ public class SerialNativeInterface {
      * 
      * @return Method returns the array of read bytes
      */
-    public native byte[] readBytes(long handle, int byteCount);
+    public native byte[] readBytes(long handle, int byteCount) throws IOException;
 
     /**
      * Write data to port

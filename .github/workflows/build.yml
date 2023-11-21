@@ -1,0 +1,90 @@
+name: build
+
+on: [push, pull_request]
+
+env:
+  MAVEN_OPTS: -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+jobs:
+  ubuntu:
+    runs-on: [ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: x86
+            packages: g++-multilib
+
+          - profile: x86_64
+            packages: g++-
+
+          - profile: armhf
+            packages: g++-arm-linux-gnueabihf
+
+          - profile: aarch64
+            packages: g++-aarch64-linux-gnu
+
+          - profile: riscv64
+            packages: g++-riscv64-linux-gnu
+
+          - profile: ppc64
+            packages: g++-powerpc64le-linux-gnu
+
+          - profile: mingw32
+            packages: g++-mingw-w64-i686
+
+          - profile: mingw64
+            packages: g++-mingw-w64-x86-64
+
+          - profile: mingwaarch64
+            packages: clang
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - run: sudo apt-get install socat ${{ matrix.packages }}
+      - run: mvn -P "${{ matrix.profile }}" --batch-mode
+
+  macos:
+    runs-on: [macos-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: aarch64
+          - profile: x86_64
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - run: brew install socat
+      - run: mvn -P "${{ matrix.profile }}" --batch-mode
+
+  windows:
+    runs-on: [windows-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: aarch64
+
+          - profile: x86_64
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - run: mvn -P "${{ matrix.profile }}" --batch-mode

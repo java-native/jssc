@@ -191,9 +191,9 @@ if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
 	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" ${STRIP_ARGS} $<TARGET_FILE:jssc>)
 endif()
 
-# Copy native library back to source tree
+# Copy native library to target/classes for processing by junit, maven
 add_custom_command(TARGET jssc POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/natives/ ${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources-precompiled/natives/
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/natives/ ${CMAKE_CURRENT_BINARY_DIR}/../classes/natives/
 )
 
 # Handle compiler warnings
