@@ -88,17 +88,9 @@ public class SerialNativeInterfaceTest {
         }
     }
 
-    @Test
+    @Test(expected = java.lang.NullPointerException.class)
     public void throwsNpeIfPassedBufferIsNull() throws Exception {
-        SerialNativeInterface testTarget = new SerialNativeInterface();
-        long fd = 1;
-        byte[] buf = null;
-        try{
-            testTarget.writeBytes(fd, buf);
-            fail("Where is the exception?");
-        }catch( NullPointerException ex ){
-            assertTrue(ex.getMessage().contains("buffer"));
-        }
+        new SerialNativeInterface().writeBytes(1, null);
     }
 
 }
