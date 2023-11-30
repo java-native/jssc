@@ -14,12 +14,6 @@ public class DisplayMethodNameRule {
     public TestWatcher testWatcher = new TestWatcher() {
         @Override
         protected void starting(Description description) {
-            /*String nl = System.getProperty("line.separator");
-            System.out.println(String.format(nl +
-                            "-------------------------------------------------------" + nl +
-                            "METHOD: %s" + nl +
-                            "-------------------------------------------------------",
-                    description.getMethodName()));*/
             System.out.println(INFO.colorize(description));
         }
     };
