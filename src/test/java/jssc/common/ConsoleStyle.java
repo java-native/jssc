@@ -5,7 +5,7 @@ import org.junit.runner.Description;
 import static jssc.common.ConsoleColor.*;
 
 /**
- * Utility class for coloring a console message similar to JUnit 4
+ * Utility class for coloring a console message similar to maven
  */
 public enum ConsoleStyle {
     INFO,
