@@ -24,12 +24,14 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+
+import jssc.junit.rules.DisplayMethodNameRule;
 import jssc.junit.rules.VirtualPortRule;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class VirtualPortTest {
+public class VirtualPortTest extends DisplayMethodNameRule {
 
   private static final String HELLO_WORLD = "Hello, world!";
 

@@ -1,6 +1,7 @@
 package jssc.bootpath;
 
 import jssc.SerialNativeInterface;
+import jssc.junit.rules.DisplayMethodNameRule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -16,7 +17,7 @@ import static org.junit.Assert.fail;
  * - maven-surefire-plugin DOES offer JVM unloading between classes using <code>reuseForks=false</code>
  * - Unloading is needed due to NativeLoader.loadLibrary(...) calls System.loadLibrary(...) which is static
  */
-public class ManualBootLibraryPathFailedTest {
+public class ManualBootLibraryPathFailedTest extends DisplayMethodNameRule {
     @Test
     public void testBootPathOverride() {
         String nativeLibDir = "/"; // This should be valid on all platforms
