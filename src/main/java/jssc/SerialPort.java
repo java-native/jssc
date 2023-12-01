@@ -26,7 +26,6 @@ package jssc;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 
 /**
  *
@@ -42,10 +41,6 @@ public class SerialPort {
     private volatile boolean portOpened = false;
     private boolean maskAssigned = false;
     private boolean eventListenerAdded = false;
-
-    //since 2.2.0 ->
-    private volatile Method methodErrorOccurred = null;
-    //<- since 2.2.0
 
     /** Baud rate 110 symbols/second **/
     public static final int BAUDRATE_110 = 110;
@@ -1111,19 +1106,6 @@ public class SerialPort {
             eventListener = listener;
             eventThread = getNewEventThread();
             eventThread.setName("EventThread " + portName);
-            //since 2.2.0 ->
-            try {
-                Method method = eventListener.getClass().getMethod("errorOccurred", new Class<?>[]{SerialPortException.class});
-                method.setAccessible(true);
-                methodErrorOccurred = method;
-            }
-            catch (SecurityException ex) {
-                //Do nothing
-            }
-            catch (NoSuchMethodException ex) {
-                //Do nothing
-            }
-            //<- since 2.2.0
             eventThread.start();
             eventListenerAdded = true;
         }
@@ -1171,7 +1153,6 @@ public class SerialPort {
                 }
             }
         }
-        methodErrorOccurred = null;
         eventListenerAdded = false;
         return true;
     }
@@ -1209,15 +1190,6 @@ public class SerialPort {
                 for(int[] event : eventArray){
                     if(event[0] > 0 && !threadTerminated){
                         eventListener.serialEvent(new SerialPortEvent(SerialPort.this, event[0], event[1]));
-                        //FIXME
-                        /*if(methodErrorOccurred != null){
-                            try {
-                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException(SerialPort.this, "method", "exception")});
-                            }
-                            catch (Exception ex) {
-                                System.out.println(ex);
-                            }
-                        }*/
                     }
                 }
             }
