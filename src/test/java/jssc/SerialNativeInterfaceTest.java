@@ -1,5 +1,6 @@
 package jssc;
 
+import jssc.junit.rules.DisplayMethodNameRule;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +14,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
-public class SerialNativeInterfaceTest {
+public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
 
     @Test
     public void testInitNativeInterface() {
