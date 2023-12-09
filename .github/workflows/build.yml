@@ -48,7 +48,7 @@ jobs:
           java-version: 11
           distribution: temurin
 
-      - run: sudo apt-get install socat ${{ matrix.packages }}
+      - run: sudo apt-get update && sudo apt-get install socat ${{ matrix.packages }}
       - run: mvn -P "${{ matrix.profile }}" --batch-mode
 
   macos:
