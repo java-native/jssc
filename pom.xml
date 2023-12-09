@@ -84,13 +84,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
+      <artifactId>log4j-core</artifactId>
       <version>${dependency.log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <version>${dependency.log4j.version}</version>
       <scope>test</scope>
     </dependency>
@@ -98,12 +98,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${dependency.junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${dependency.logback.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
