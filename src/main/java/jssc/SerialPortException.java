@@ -24,11 +24,13 @@
  */
 package jssc;
 
+import java.io.IOException;
+
 /**
  *
  * @author scream3r
  */
-public class SerialPortException extends Exception {
+public class SerialPortException extends IOException {
     final private static long serialVersionUID = 1L;
     /** Port already opened **/
     final public static String TYPE_PORT_ALREADY_OPENED = "Port already opened";
