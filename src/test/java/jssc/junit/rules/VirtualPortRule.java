@@ -99,7 +99,7 @@ public class VirtualPortRule implements TestRule {
         } finally {
           // stop socat
           for (final Future<?> process : VirtualPortRule.this.processes) {
-            process.cancel(false);
+            process.cancel(true);
           }
 
           executor.shutdown();
