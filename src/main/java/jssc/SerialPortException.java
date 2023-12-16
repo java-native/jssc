@@ -45,14 +45,6 @@ public class SerialPortException extends IOException {
     /** Can't remove event listener **/
     final public static String TYPE_CANT_REMOVE_LISTENER = "Can't remove event listener, because listener not added";
     /**
-     * @since 0.8
-     */
-    final public static String TYPE_PARAMETER_IS_NOT_CORRECT = "Parameter is not correct";
-    /**
-     * @since 0.8
-     */
-    final public static String TYPE_NULL_NOT_PERMITTED = "Null not permitted";
-    /**
      * @since 0.9.0
      */
     final public static String TYPE_PORT_BUSY = "Port busy";
