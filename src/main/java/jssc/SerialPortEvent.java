@@ -24,6 +24,10 @@
  */
 package jssc;
 
+import org.intellij.lang.annotations.MagicConstant;
+
+import static jssc.SerialPort.*;
+
 /**
  *
  * @author scream3r
@@ -40,15 +44,15 @@ public class SerialPortEvent {
 
     /** Deprecated: Use <code>SerialPort.MASK_RXCHAR</code> instead **/
     @Deprecated
-    public static final int RXCHAR = SerialPort.MASK_RXCHAR;
+    public static final int RXCHAR = MASK_RXCHAR;
 
     /** Deprecated: Use <code>SerialPort.MASK_RXFLAG</code> instead **/
     @Deprecated
-    public static final int RXFLAG = SerialPort.MASK_RXFLAG;
+    public static final int RXFLAG = MASK_RXFLAG;
 
     /** Deprecated: Use <code>SerialPort.MASK_TXEMPTY</code> instead **/
     @Deprecated
-    public static final int TXEMPTY = SerialPort.MASK_TXEMPTY;
+    public static final int TXEMPTY = MASK_TXEMPTY;
 
     /** Deprecated: Use <code>SerialPort.MASK_CTS</code> instead **/
     @Deprecated
@@ -83,7 +87,22 @@ public class SerialPortEvent {
      *
      * @see #getEventType()
      */
-    public SerialPortEvent(SerialPort port, int eventType, int eventValue){
+    public SerialPortEvent(
+            SerialPort port,
+            @MagicConstant(intValues = {
+                    MASK_RXCHAR,
+                    MASK_RXFLAG,
+                    MASK_TXEMPTY,
+                    MASK_CTS,
+                    MASK_DSR,
+                    MASK_RLSD,
+                    MASK_BREAK,
+                    MASK_ERR,
+                    MASK_RING,
+            })
+            int eventType,
+            int eventValue
+    ){
         this.port = port;
         this.eventType = eventType;
         this.eventValue = eventValue;
@@ -100,7 +119,22 @@ public class SerialPortEvent {
      * @see #SerialPortEvent(SerialPort, int, int)
      */
     @Deprecated
-    public SerialPortEvent(String portName, int eventType, int eventValue){
+    public SerialPortEvent(
+            String portName,
+            @MagicConstant(intValues = {
+                    MASK_RXCHAR,
+                    MASK_RXFLAG,
+                    MASK_TXEMPTY,
+                    MASK_CTS,
+                    MASK_DSR,
+                    MASK_RLSD,
+                    MASK_BREAK,
+                    MASK_ERR,
+                    MASK_RING,
+            })
+            int eventType,
+            int eventValue
+    ){
         this.portName = portName;
         this.eventType = eventType;
         this.eventValue = eventValue;
@@ -131,6 +165,17 @@ public class SerialPortEvent {
      * @return The <code>SerialPort.MASK_*</code> event mask
      */
     @SuppressWarnings("unused")
+    @MagicConstant(intValues = {
+            MASK_RXCHAR,
+            MASK_RXFLAG,
+            MASK_TXEMPTY,
+            MASK_CTS,
+            MASK_DSR,
+            MASK_RLSD,
+            MASK_BREAK,
+            MASK_ERR,
+            MASK_RING,
+    })
     public int getEventType() {
         return eventType;
     }
@@ -161,7 +206,7 @@ public class SerialPortEvent {
      */
     @SuppressWarnings("unused")
     public boolean isRXCHAR() {
-        return eventType == SerialPort.MASK_RXCHAR;
+        return eventType == MASK_RXCHAR;
     }
 
     /**
@@ -170,7 +215,7 @@ public class SerialPortEvent {
      */
     @SuppressWarnings("unused")
     public boolean isRXFLAG() {
-        return eventType == SerialPort.MASK_RXFLAG;
+        return eventType == MASK_RXFLAG;
     }
 
     /**
@@ -179,7 +224,7 @@ public class SerialPortEvent {
      */
     @SuppressWarnings("unused")
     public boolean isTXEMPTY() {
-        return eventType == SerialPort.MASK_TXEMPTY;
+        return eventType == MASK_TXEMPTY;
     }
 
     /**

@@ -100,6 +100,13 @@
       <version>${dependency.junit.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations-java5</artifactId>
+      <version>24.1.0</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>

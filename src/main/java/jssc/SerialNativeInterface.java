@@ -24,6 +24,7 @@
  */
 package jssc;
 
+import org.intellij.lang.annotations.MagicConstant;
 import org.scijava.nativelib.NativeLoader;
 
 import java.io.IOException;
@@ -141,6 +142,13 @@ public class SerialNativeInterface {
      * 
      * @since 0.8
      */
+    @MagicConstant(intValues = {
+            OS_LINUX,
+            OS_WINDOWS,
+            OS_SOLARIS,
+            OS_MAC_OS_X,
+            OS_UNKNOWN,
+    })
     public static int getOsType() {
         return osType;
     }

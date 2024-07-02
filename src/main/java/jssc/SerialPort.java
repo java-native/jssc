@@ -24,6 +24,8 @@
  */
 package jssc;
 
+import org.intellij.lang.annotations.MagicConstant;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
@@ -241,7 +243,46 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public boolean setParams(int baudRate, int dataBits, int stopBits, int parity) throws SerialPortException {
+    public boolean setParams(
+            @MagicConstant(intValues = {
+                    BAUDRATE_110,
+                    BAUDRATE_300,
+                    BAUDRATE_600,
+                    BAUDRATE_1200,
+                    BAUDRATE_2400,
+                    BAUDRATE_4800,
+                    BAUDRATE_9600,
+                    BAUDRATE_14400,
+                    BAUDRATE_19200,
+                    BAUDRATE_38400,
+                    BAUDRATE_57600,
+                    BAUDRATE_115200,
+                    BAUDRATE_128000,
+                    BAUDRATE_256000,
+            })
+            int baudRate,
+            @MagicConstant(intValues = {
+                    DATABITS_5,
+                    DATABITS_6,
+                    DATABITS_7,
+                    DATABITS_8,
+            })
+            int dataBits,
+            @MagicConstant(intValues = {
+                    STOPBITS_1,
+                    STOPBITS_2,
+                    STOPBITS_1_5,
+            })
+            int stopBits,
+            @MagicConstant(intValues = {
+                    PARITY_NONE,
+                    PARITY_ODD,
+                    PARITY_EVEN,
+                    PARITY_MARK,
+                    PARITY_SPACE,
+            })
+            int parity
+    ) throws SerialPortException {
         return setParams(baudRate, dataBits, stopBits, parity, true, true);
     }
 
@@ -261,7 +302,48 @@ public class SerialPort {
      *
      * @since 0.8
      */
-    public synchronized boolean setParams(int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR) throws SerialPortException {
+    public synchronized boolean setParams(
+            @MagicConstant(intValues = {
+                    BAUDRATE_110,
+                    BAUDRATE_300,
+                    BAUDRATE_600,
+                    BAUDRATE_1200,
+                    BAUDRATE_2400,
+                    BAUDRATE_4800,
+                    BAUDRATE_9600,
+                    BAUDRATE_14400,
+                    BAUDRATE_19200,
+                    BAUDRATE_38400,
+                    BAUDRATE_57600,
+                    BAUDRATE_115200,
+                    BAUDRATE_128000,
+                    BAUDRATE_256000,
+            })
+            int baudRate,
+            @MagicConstant(intValues = {
+                    DATABITS_5,
+                    DATABITS_6,
+                    DATABITS_7,
+                    DATABITS_8,
+            })
+            int dataBits,
+            @MagicConstant(intValues = {
+                    STOPBITS_1,
+                    STOPBITS_2,
+                    STOPBITS_1_5,
+            })
+            int stopBits,
+            @MagicConstant(intValues = {
+                    PARITY_NONE,
+                    PARITY_ODD,
+                    PARITY_EVEN,
+                    PARITY_MARK,
+                    PARITY_SPACE,
+            })
+            int parity,
+            boolean setRTS,
+            boolean setDTR
+    ) throws SerialPortException {
         checkPortOpened("setParams()");
         if(stopBits == 1){
             stopBits = 0;
@@ -292,7 +374,15 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public synchronized boolean purgePort(int flags) throws SerialPortException {
+    public synchronized boolean purgePort(
+            @MagicConstant(intValues = {
+                    PURGE_RXABORT,
+                    PURGE_RXCLEAR,
+                    PURGE_TXABORT,
+                    PURGE_TXCLEAR,
+            })
+            int flags
+    ) throws SerialPortException {
         checkPortOpened("purgePort()");
         return serialInterface.purgePort(portHandle, flags);
     }
@@ -317,7 +407,20 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public synchronized boolean setEventsMask(int mask) throws SerialPortException {
+    public synchronized boolean setEventsMask(
+            @MagicConstant(intValues = {
+                    MASK_RXCHAR,
+                    MASK_RXFLAG,
+                    MASK_TXEMPTY,
+                    MASK_CTS,
+                    MASK_DSR,
+                    MASK_RLSD,
+                    MASK_BREAK,
+                    MASK_ERR,
+                    MASK_RING,
+            })
+            int mask
+    ) throws SerialPortException {
         checkPortOpened("setEventsMask()");
         if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX ||
            SerialNativeInterface.getOsType() == SerialNativeInterface.OS_SOLARIS ||
@@ -917,7 +1020,16 @@ public class SerialPort {
      *
      * @since 0.8
      */
-    public boolean setFlowControlMode(int mask) throws SerialPortException {
+    public boolean setFlowControlMode(
+            @MagicConstant(intValues = {
+                    FLOWCONTROL_NONE,
+                    FLOWCONTROL_RTSCTS_IN,
+                    FLOWCONTROL_RTSCTS_OUT,
+                    FLOWCONTROL_XONXOFF_IN,
+                    FLOWCONTROL_XONXOFF_OUT,
+            })
+            int mask
+    ) throws SerialPortException {
         checkPortOpened("setFlowControlMode()");
         return serialInterface.setFlowControlMode(portHandle, mask);
     }
@@ -931,6 +1043,13 @@ public class SerialPort {
      *
      * @since 0.8
      */
+    @MagicConstant(intValues = {
+            FLOWCONTROL_NONE,
+            FLOWCONTROL_RTSCTS_IN,
+            FLOWCONTROL_RTSCTS_OUT,
+            FLOWCONTROL_XONXOFF_IN,
+            FLOWCONTROL_XONXOFF_OUT,
+    })
     public int getFlowControlMode() throws SerialPortException {
         checkPortOpened("getFlowControlMode()");
         return serialInterface.getFlowControlMode(portHandle);
@@ -1299,6 +1418,11 @@ public class SerialPort {
                 int[][] eventArray = waitEvents();
                 int mask = getLinuxMask();
                 boolean interruptTxChanged = false;
+                @MagicConstant(flags = {
+                        ERROR_FRAME,
+                        ERROR_OVERRUN,
+                        ERROR_PARITY,
+                })
                 int errorMask = 0;
                 for(int[] event : eventArray){
                     boolean sendEvent = false;
