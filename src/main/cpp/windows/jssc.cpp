@@ -653,12 +653,12 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getSerialPortName
     char valueName[256];
     DWORD valueNameSize;
     DWORD enumResult;
+    boolean hasMoreElements = true;
+    DWORD keysCount = 0;
     if(RegOpenKeyExA(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &phkResult) != ERROR_SUCCESS){
         returnArray = NULL;
         goto Finally;
     }
-    boolean hasMoreElements = true;
-    DWORD keysCount = 0;
     /* Iterate a 1st time to see how long our resulting array has to be. */
     while(hasMoreElements){
         valueNameSize = 256;
@@ -706,7 +706,7 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getSerialPortName
                 i -= 1;
             }else{
                 char exMsg[128];
-                snprintf(exMsg, sizeof exMsg, "RegEnumValueA(): Code %d: "
+                snprintf(exMsg, sizeof exMsg, "RegEnumValueA(): Code %ld: "
                     "https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes#system-error-codes",
                     result);
                 jclass exClz = env->FindClass("java/lang/RuntimeException");
