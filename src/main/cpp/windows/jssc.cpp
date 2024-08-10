@@ -686,7 +686,7 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getSerialPortName
             if(result == ERROR_SUCCESS){
                 env->SetObjectArrayElement(returnArray, i, env->NewStringUTF((char*)lpData));
             }else if(result == ERROR_MORE_DATA && lpData_capacity < UINT_MAX){
-                /* whops our supplied buffer was not large enough. Fallback to a heap
+                /* whoops our supplied buffer was not large enough. Fallback to a heap
                  * allocd one. RegEnumValueA was kind enough to set 'lpcbData' to the
                  * required length before return. */
                 lpData = (lpData == lpDataOnStack) ? NULL : lpData;
