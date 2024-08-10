@@ -24,6 +24,7 @@
  */
 #include <jni.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <windows.h>
 #include <jssc_SerialNativeInterface.h>
 #include "version.h"
@@ -643,47 +644,81 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
  */
 JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getSerialPortNames
   (JNIEnv *env, jobject){
-    HKEY phkResult;
+    HKEY phkResult = NULL;
     LPCSTR lpSubKey = "HARDWARE\\DEVICEMAP\\SERIALCOMM\\";
     jobjectArray returnArray = NULL;
-    if(RegOpenKeyExA(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &phkResult) == ERROR_SUCCESS){
-        boolean hasMoreElements = true;
-        DWORD keysCount = 0;
-        char valueName[256];
-        DWORD valueNameSize;
-        DWORD enumResult;
-        while(hasMoreElements){
-            valueNameSize = 256;
-            enumResult = RegEnumValueA(phkResult, keysCount, valueName, &valueNameSize, NULL, NULL, NULL, NULL);
-            if(enumResult == ERROR_SUCCESS){
-                keysCount++;
-            }
-            else if(enumResult == ERROR_NO_MORE_ITEMS){
-                hasMoreElements = false;
-            }
-            else {
-                hasMoreElements = false;
-            }
-        }
-        if(keysCount > 0){
-            jclass stringClass = env->FindClass("java/lang/String");
-            returnArray = env->NewObjectArray((jsize)keysCount, stringClass, NULL);
-            char lpValueName[256];
-            DWORD lpcchValueName;
-            byte lpData[256];
-            DWORD lpcbData;
-            DWORD result;
-            for(DWORD i = 0; i < keysCount; i++){
-                lpcchValueName = 256;
-                lpcbData = 256;
-                result = RegEnumValueA(phkResult, i, lpValueName, &lpcchValueName, NULL, NULL, lpData, &lpcbData);
-                if(result == ERROR_SUCCESS){
-                    env->SetObjectArrayElement(returnArray, i, env->NewStringUTF((char*)lpData));
-                }
-            }
-        }
-        CloseHandle(phkResult);
+    byte lpDataOnStack[256];
+    byte *lpData = lpDataOnStack;
+    DWORD lpData_capacity = 256;
+    char valueName[256];
+    DWORD valueNameSize;
+    DWORD enumResult;
+    boolean hasMoreElements = true;
+    DWORD keysCount = 0;
+    if(RegOpenKeyExA(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &phkResult) != ERROR_SUCCESS){
+        returnArray = NULL;
+        goto Finally;
     }
+    /* Iterate a 1st time to see how long our resulting array has to be. */
+    while(hasMoreElements){
+        valueNameSize = 256;
+        enumResult = RegEnumValueA(phkResult, keysCount, valueName, &valueNameSize, NULL, NULL, NULL, NULL);
+        if(enumResult == ERROR_SUCCESS){
+            keysCount++;
+        }
+        else if(enumResult == ERROR_NO_MORE_ITEMS){
+            hasMoreElements = false;
+        }
+        else {
+            hasMoreElements = false;
+        }
+    }
+    if(keysCount > 0){
+        jclass stringClass = env->FindClass("java/lang/String");
+        returnArray = env->NewObjectArray((jsize)keysCount, stringClass, NULL);
+        DWORD lpcbData;
+        DWORD result;
+        /* iterate 2nd time but this time our array is ready to catch results. */
+        for(DWORD i = 0; i < keysCount; i++){
+            valueNameSize = 256;
+            lpcbData = lpData_capacity;
+            result = RegEnumValueA(phkResult, i, valueName, &valueNameSize, NULL, NULL, lpData, &lpcbData);
+            if(result == ERROR_SUCCESS){
+                env->SetObjectArrayElement(returnArray, i, env->NewStringUTF((char*)lpData));
+            }else if(result == ERROR_MORE_DATA && lpData_capacity < UINT_MAX){
+                /* whoops our supplied buffer was not large enough. Fallback to a heap
+                 * allocd one. RegEnumValueA was kind enough to set 'lpcbData' to the
+                 * required length before return. */
+                lpData = (lpData == lpDataOnStack) ? NULL : lpData;
+                /* MS doc is unclear to me if returned size includes the required
+                 * zero-term. So to stay safe, we provide one byte more. */
+                if(lpcbData < UINT_MAX) lpcbData += 1;
+                byte *tmp = (byte*)realloc(lpData, lpcbData*sizeof*tmp);
+                if(tmp == NULL){
+                    jclass exClz = env->FindClass("java/lang/OutOfMemoryError");
+                    if(exClz != NULL) env->ThrowNew(exClz, NULL);
+                    returnArray = NULL;
+                    goto Finally;
+                }
+                /* install new buffer and reset 'i' so we try the same element again. */
+                lpData_capacity = lpcbData;
+                lpData = tmp;
+                i -= 1;
+            }else{
+                char exMsg[128];
+                snprintf(exMsg, sizeof exMsg, "RegEnumValueA(): Code %ld: "
+                    "https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes#system-error-codes",
+                    result);
+                jclass exClz = env->FindClass("java/lang/RuntimeException");
+                if(exClz != NULL) env->ThrowNew(exClz, exMsg);
+                returnArray = NULL;
+                goto Finally;
+            }
+        }
+    }
+Finally:
+    if(lpData != NULL && lpData != lpDataOnStack) free(lpData);
+    if(phkResult != NULL) CloseHandle(phkResult);
     return returnArray;
 }
 
