@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <new> // std::bad_alloc
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
