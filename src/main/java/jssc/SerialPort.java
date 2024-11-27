@@ -75,6 +75,12 @@ public class SerialPort {
     public static final int BAUDRATE_128000 = 128000;
     /** Baud rate 256000 symbols/second **/
     public static final int BAUDRATE_256000 = 256000;
+    /** Baud rate 921600 symbols/second.
+     * WARN: Only some hosts support non-standard baud rates! Use this
+     * baud rate only if you can ensure your host and device properly
+     * supports it. Have a look at return value of
+     * {@link SerialNativeInterface#setParams(long,int,int,int,int,boolean,boolean,int)}. */
+    public static final int BAUDRATE_921600 = 921600;
 
     /** Five (5) data bits per byte **/
     public static final int DATABITS_5 = 5;
