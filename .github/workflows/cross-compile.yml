@@ -117,7 +117,7 @@ jobs:
                 --env MAVEN_OPTS=${MAVEN_OPTS} \
                 ${{ matrix.image }} \
                 bash -c \
-                  'apt-get update && apt-get install --yes maven openjdk-11-jdk-headless && \
+                  'apt-get update && apt-get install --yes maven openjdk-17-jdk-headless && \
                    mvn -B clean install -P dockcross,update-resources-precompiled \
                     -Dos.target.name=${{ matrix.os_target_name }} \
                     -Dos.target.arch=${{ matrix.os_target_arch }} \
@@ -134,7 +134,7 @@ jobs:
           while  git pull --rebase && ! git push; do sleep 5; done
 
   macos:
-    runs-on: macos-11
+    runs-on: macos-latest
     needs: create-branch
     strategy:
       matrix:
@@ -159,17 +159,21 @@ jobs:
           java-version: 11
           distribution: temurin
 
+      - run: brew install socat
+
       - name: Get oldest supported SDK
-        if: ${{ matrix.sdk-version == 'MacOSX10.9.sdk' }}
         run: |
-          wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.9.sdk.tar.xz \
-            | tar -xjv -C $XCODE_12_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs
+          wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/${{ matrix.sdk-version }}.tar.xz \
+            | tar -xjv -C $XCODE_16_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs
 
       - name: Set SDK version
         run: |
           export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos-deployment-target }}
-          export SDKROOT=$XCODE_12_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
+          export SDKROOT=$XCODE_16_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
           export CMAKE_OSX_SYSROOT=$SDKROOT
+          echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET" >> $GITHUB_ENV
+          echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
+          echo "CMAKE_OSX_SYSROOT=$CMAKE_OSX_SYSROOT" >> $GITHUB_ENV
       - name: Build with Maven
         run: mvn -B clean install -P ${{ matrix.profile }},update-resources-precompiled
 
