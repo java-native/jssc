@@ -58,7 +58,11 @@ jobs:
       matrix:
         include:
           - profile: aarch64
+            macos-deployment-target: 11.0
+            sdk-version: MacOSX11.0.sdk
           - profile: x86_64
+            macos-deployment-target: 10.8
+            sdk-version: MacOSX10.9.sdk
 
     steps:
       - uses: actions/checkout@v3
@@ -68,6 +72,21 @@ jobs:
           distribution: temurin
 
       - run: brew install socat
+
+      - name: Get oldest supported SDK
+        run: |
+          wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/${{ matrix.sdk-version }}.tar.xz \
+            | tar -xjv -C $XCODE_16_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs
+
+      - name: Set SDK version
+        run: |
+          export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos-deployment-target }}
+          export SDKROOT=$XCODE_16_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
+          export CMAKE_OSX_SYSROOT=$SDKROOT
+          echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET" >> $GITHUB_ENV
+          echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
+          echo "CMAKE_OSX_SYSROOT=$CMAKE_OSX_SYSROOT" >> $GITHUB_ENV
+
       - run: mvn -P "${{ matrix.profile }}" --batch-mode
 
   windows:

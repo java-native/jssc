@@ -159,6 +159,8 @@ jobs:
           java-version: 11
           distribution: temurin
 
+      - run: brew install socat
+
       - name: Get oldest supported SDK
         run: |
           wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/${{ matrix.sdk-version }}.tar.xz \
