@@ -1152,7 +1152,7 @@ public class SerialPort {
      * 
      * @throws SerialPortException if exception occurred
      */
-    private synchronized boolean removeEventListener() throws SerialPortException {
+    public synchronized boolean removeEventListener() throws SerialPortException {
         if(eventThread == null || !eventThread.isAlive()){
             return false;
         }
