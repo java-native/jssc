@@ -1161,8 +1161,10 @@ public class SerialPort {
         //Guard against currentThread().join deadlock
         if(Thread.currentThread().getId() != eventThread.getId()){
             try {
-                Thread.currentThread().join(6);
                 eventThread.join(5000);
+                if (eventThread.isAlive()) {
+                    throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_CANT_REMOVE_LISTENER);
+                }
             }
             catch (InterruptedException ex) {
                 throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
@@ -1180,13 +1182,18 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean closePort() throws SerialPortException {
-        removeEventListener();
-        boolean returnValue = serialInterface.closePort(portHandle);
-        if(returnValue){
-            maskAssigned = false;
-            portOpened = false;
+        //removeEventListener calls setEventsMask, and must occur before calling closePort
+        try {
+            removeEventListener();
         }
-        return returnValue;
+        finally {
+            boolean returnValue = serialInterface.closePort(portHandle);
+            if (returnValue) {
+                maskAssigned = false;
+                portOpened = false;
+            }
+            return returnValue;
+        }
     }
 
     private EventThread eventThread;
