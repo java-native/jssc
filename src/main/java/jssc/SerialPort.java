@@ -1160,14 +1160,14 @@ public class SerialPort {
             return false;
         }
         setEventsMask(0);
+        //Guard against currentThread().join deadlock
         if(Thread.currentThread().getId() != eventThread.getId()){
-            if(eventThread.isAlive()){
-                try {
-                    eventThread.join(5000);
-                }
-                catch (InterruptedException ex) {
-                    throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
-                }
+            try {
+                Thread.currentThread().join(6);
+                eventThread.join(5000);
+            }
+            catch (InterruptedException ex) {
+                throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
             }
         }
         methodErrorOccurred = null;
