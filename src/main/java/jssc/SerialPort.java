@@ -1182,18 +1182,19 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean closePort() throws SerialPortException {
+        boolean returnValue;
         //removeEventListener calls setEventsMask, and must occur before calling closePort
         try {
             removeEventListener();
         }
         finally {
-            boolean returnValue = serialInterface.closePort(portHandle);
+            returnValue = serialInterface.closePort(portHandle);
             if (returnValue) {
                 maskAssigned = false;
                 portOpened = false;
             }
-            return returnValue;
         }
+        return returnValue;
     }
 
     private EventThread eventThread;
