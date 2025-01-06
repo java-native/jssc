@@ -1101,7 +1101,7 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public synchronized void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
+    private synchronized void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
         checkPortOpened("addEventListener()");
         if(eventThread == null || !eventThread.isAlive()){
             if((maskAssigned && overwriteMask) || !maskAssigned) {
