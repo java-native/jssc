@@ -1155,11 +1155,10 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean removeEventListener() throws SerialPortException {
-        checkPortOpened("removeEventListener()");
-        if(!eventListenerAdded){
-            throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_CANT_REMOVE_LISTENER);
-        }
         eventThread.terminateThread();
+        if(!eventListenerAdded){
+            return false;
+        }
         setEventsMask(0);
         if(Thread.currentThread().getId() != eventThread.getId()){
             if(eventThread.isAlive()){
@@ -1184,7 +1183,6 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean closePort() throws SerialPortException {
-        checkPortOpened("closePort()");
         if(eventListenerAdded){
             removeEventListener();
         }
