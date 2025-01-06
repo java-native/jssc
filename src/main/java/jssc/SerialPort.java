@@ -41,7 +41,6 @@ public class SerialPort {
     private final String portName;
     private volatile boolean portOpened = false;
     private boolean maskAssigned = false;
-    private boolean eventListenerAdded = false;
 
     //since 2.2.0 ->
     private volatile Method methodErrorOccurred = null;
@@ -1063,9 +1062,9 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
-        addEventListener(listener, MASK_RXCHAR, false);
-    }
+//    public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
+//        addEventListener(listener, MASK_RXCHAR, false);
+//    }
 
     /**
      * Add event listener. Object of <b>"SerialPortEventListener"</b> type shall be sent
@@ -1080,9 +1079,9 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    public void addEventListener(SerialPortEventListener listener, int mask) throws SerialPortException {
-        addEventListener(listener, mask, true);
-    }
+//    public void addEventListener(SerialPortEventListener listener, int mask) throws SerialPortException {
+//        addEventListener(listener, mask, true);
+//    }
 
     /**
      * Internal method. Add event listener. Object of <b>"SerialPortEventListener"</b> type shall be sent
@@ -1102,9 +1101,9 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-    private synchronized void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
+    public synchronized void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
         checkPortOpened("addEventListener()");
-        if(!eventListenerAdded){
+        if(eventThread == null || !eventThread.isAlive()){
             if((maskAssigned && overwriteMask) || !maskAssigned) {
                 setEventsMask(mask);
             }
@@ -1125,7 +1124,6 @@ public class SerialPort {
             }
             //<- since 2.2.0
             eventThread.start();
-            eventListenerAdded = true;
         }
         else {
             throw new SerialPortException(this, "addEventListener()", SerialPortException.TYPE_LISTENER_ALREADY_ADDED);
@@ -1155,10 +1153,10 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean removeEventListener() throws SerialPortException {
-        eventThread.terminateThread();
-        if(!eventListenerAdded){
+        if(eventThread == null || !eventThread.isAlive()){
             return false;
         }
+        eventThread.terminateThread();
         setEventsMask(0);
         //Guard against currentThread().join deadlock
         if(Thread.currentThread().getId() != eventThread.getId()){
@@ -1171,7 +1169,6 @@ public class SerialPort {
             }
         }
         methodErrorOccurred = null;
-        eventListenerAdded = false;
         return true;
     }
 
@@ -1183,9 +1180,7 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean closePort() throws SerialPortException {
-        if(eventListenerAdded){
-            removeEventListener();
-        }
+        removeEventListener();
         boolean returnValue = serialInterface.closePort(portHandle);
         if(returnValue){
             maskAssigned = false;
