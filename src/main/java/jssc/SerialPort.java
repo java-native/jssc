@@ -1062,9 +1062,9 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-//    public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
-//        addEventListener(listener, MASK_RXCHAR, false);
-//    }
+    public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
+        addEventListener(listener, MASK_RXCHAR, false);
+    }
 
     /**
      * Add event listener. Object of <b>"SerialPortEventListener"</b> type shall be sent
@@ -1079,9 +1079,9 @@ public class SerialPort {
      *
      * @throws SerialPortException if exception occurred
      */
-//    public void addEventListener(SerialPortEventListener listener, int mask) throws SerialPortException {
-//        addEventListener(listener, mask, true);
-//    }
+    public void addEventListener(SerialPortEventListener listener, int mask) throws SerialPortException {
+        addEventListener(listener, mask, true);
+    }
 
     /**
      * Internal method. Add event listener. Object of <b>"SerialPortEventListener"</b> type shall be sent
