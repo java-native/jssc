@@ -41,7 +41,6 @@ public class SerialPort {
     private final String portName;
     private volatile boolean portOpened = false;
     private boolean maskAssigned = false;
-    private boolean eventListenerAdded = false;
 
     //since 2.2.0 ->
     private volatile Method methodErrorOccurred = null;
@@ -1104,7 +1103,7 @@ public class SerialPort {
      */
     private synchronized void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
         checkPortOpened("addEventListener()");
-        if(!eventListenerAdded){
+        if(eventThread == null || !eventThread.isAlive()){
             if((maskAssigned && overwriteMask) || !maskAssigned) {
                 setEventsMask(mask);
             }
@@ -1125,7 +1124,6 @@ public class SerialPort {
             }
             //<- since 2.2.0
             eventThread.start();
-            eventListenerAdded = true;
         }
         else {
             throw new SerialPortException(this, "addEventListener()", SerialPortException.TYPE_LISTENER_ALREADY_ADDED);
@@ -1155,24 +1153,24 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean removeEventListener() throws SerialPortException {
-        checkPortOpened("removeEventListener()");
-        if(!eventListenerAdded){
-            throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_CANT_REMOVE_LISTENER);
+        if(eventThread == null || !eventThread.isAlive()){
+            return false;
         }
         eventThread.terminateThread();
         setEventsMask(0);
+        //Guard against currentThread().join deadlock
         if(Thread.currentThread().getId() != eventThread.getId()){
-            if(eventThread.isAlive()){
-                try {
-                    eventThread.join(5000);
+            try {
+                eventThread.join(5000);
+                if (eventThread.isAlive()) {
+                    throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_CANT_REMOVE_LISTENER);
                 }
-                catch (InterruptedException ex) {
-                    throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
-                }
+            }
+            catch (InterruptedException ex) {
+                throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
             }
         }
         methodErrorOccurred = null;
-        eventListenerAdded = false;
         return true;
     }
 
@@ -1184,14 +1182,17 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean closePort() throws SerialPortException {
-        checkPortOpened("closePort()");
-        if(eventListenerAdded){
+        boolean returnValue;
+        //removeEventListener calls setEventsMask, and must occur before calling closePort
+        try {
             removeEventListener();
         }
-        boolean returnValue = serialInterface.closePort(portHandle);
-        if(returnValue){
-            maskAssigned = false;
-            portOpened = false;
+        finally {
+            returnValue = serialInterface.closePort(portHandle);
+            if (returnValue) {
+                maskAssigned = false;
+                portOpened = false;
+            }
         }
         return returnValue;
     }

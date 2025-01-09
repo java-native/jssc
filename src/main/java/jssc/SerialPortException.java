@@ -41,7 +41,7 @@ public class SerialPortException extends Exception {
     /** Event listener thread interrupted **/
     final public static String TYPE_LISTENER_THREAD_INTERRUPTED = "Event listener thread interrupted";
     /** Can't remove event listener **/
-    final public static String TYPE_CANT_REMOVE_LISTENER = "Can't remove event listener, because listener not added";
+    final public static String TYPE_CANT_REMOVE_LISTENER = "Can't remove event listener";
     /**
      * @since 0.8
      */
