@@ -24,11 +24,13 @@
  */
 package jssc;
 
+import java.io.IOException;
+
 /**
  *
  * @author scream3r
  */
-public class SerialPortTimeoutException extends Exception {
+public class SerialPortTimeoutException extends IOException {
     final private static long serialVersionUID = 1L;
 
     /** Serial port object **/
