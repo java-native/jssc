@@ -100,6 +100,25 @@ public class SerialNativeInterface {
      */
     public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
 
+    /**
+     * Allow set exotic port name(s)
+     *
+     * Usage:
+     * <code>System.setProperty("JSSC_ALLOW_EXOTIC_NAMES", "true");</code>
+     *
+     * @since 2.9.7
+     */
+    public static final String PROPERTY_JSSC_ALLOW_EXOTIC_NAMES = "JSSC_ALLOW_EXOTIC_NAMES";
+    /**
+     * Exotic port name(s)
+     *
+     * Usage:
+     * <code>System.setProperty("JSSC_EXOTIC_NAMES", "ttyU,com");</code>
+     *
+     * @since 2.9.7
+     */
+    public static final String PROPERTY_JSSC_EXOTIC_NAMES = "JSSC_EXOTIC_NAMES";
+
     private static int osType;
     static {
         String osName = System.getProperty("os.name");

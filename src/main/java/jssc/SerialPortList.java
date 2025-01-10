@@ -36,8 +36,8 @@ import java.util.regex.Pattern;
 public class SerialPortList {
 
     private static SerialNativeInterface serialInterface;
-    private static final Pattern PORTNAMES_REGEXP;
-    private static final String PORTNAMES_PATH;
+    private static Pattern PORTNAMES_REGEXP;
+    private static String PORTNAMES_PATH;
 
     /**
      * Default constructor
@@ -47,9 +47,16 @@ public class SerialPortList {
 
     static {
         serialInterface = new SerialNativeInterface();
+        initSearchParameters();
+    }
+
+    /**
+     * For unit testing purposes
+     */
+    public static void initSearchParameters() {
         switch (SerialNativeInterface.getOsType()) {
             case SerialNativeInterface.OS_LINUX: {
-                PORTNAMES_REGEXP = Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO|ttyM|ttyMXUSB|ttyMUE)[0-9]{1,3}");
+                PORTNAMES_REGEXP = Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO|ttyM|ttyMXUSB|ttyMUE" + getExoticPortsNames() + ")[0-9]{1,3}");
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
@@ -59,7 +66,7 @@ public class SerialPortList {
                 break;
             }
             case SerialNativeInterface.OS_MAC_OS_X: {
-                PORTNAMES_REGEXP = Pattern.compile("(tty|cu)\\..*");
+                PORTNAMES_REGEXP = Pattern.compile("(tty|cu" + getExoticPortsNames() + ")\\..*");
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
@@ -74,6 +81,36 @@ public class SerialPortList {
                 break;
             }
         }
+    }
+
+    /**
+     * For unit testing purposes
+     */
+    public static Pattern getPortnamesRegexp() {
+        return PORTNAMES_REGEXP;
+    }
+
+    private static String getExoticPortsNames() {
+        String result = "";
+        String readExoticNamesValue = System.getProperty(SerialNativeInterface.PROPERTY_JSSC_ALLOW_EXOTIC_NAMES, "false"),
+                exoticPortNamesValue = System.getProperty(SerialNativeInterface.PROPERTY_JSSC_EXOTIC_NAMES, "");
+        boolean decodeExoticNames = false;
+
+        try {
+            decodeExoticNames = Boolean.parseBoolean(readExoticNamesValue) && !exoticPortNamesValue.isEmpty();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if(decodeExoticNames) {
+            String[] portsNamesCandidate = exoticPortNamesValue.split("[^a-zA-Z]");
+            for(String singlePortName : portsNamesCandidate) {
+                if(!singlePortName.isEmpty()) {
+                    result += "|" + singlePortName;
+                }
+            }
+        }
+        return result;
     }
 
     //since 2.1.0 -> Fully rewritten port name comparator
