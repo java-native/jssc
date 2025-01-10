@@ -54,6 +54,9 @@ if(APPLE)
 	endif()
 endif()
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Statically link gcc/c++
 if(MSVC)
 	# /MT = Multithread, static version of the run-time library
