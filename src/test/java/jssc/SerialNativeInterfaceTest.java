@@ -94,4 +94,34 @@ public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
         new SerialNativeInterface().writeBytes(1, null);
     }
 
+    @Test
+    public void throwsIaeIfCountNegative() throws Exception {
+        SerialNativeInterface testTarget = new SerialNativeInterface();
+        byte[] ret;
+        try{
+            ret = testTarget.readBytes(0, -42);
+            fail("Where's the exception?");
+        }catch( IllegalArgumentException ex ){
+            assertTrue(ex.getMessage().contains("-42"));
+        }
+    }
+
+    @Test
+    @org.junit.Ignore("This test only makes sense if it is run in a situation"
+        +" where large memory allocations WILL fail (for example you could use"
+        +" a virtual machine with low memory available). Because on regular"
+        +" machines allocating 2GiB of RAM is not a problem at all and so the"
+        +" test run will just happily wait infinitely for those 2GiB to arrive"
+        +" at the stdin fd. Feel free to remove this test if you think it"
+        +" doesn't make sense to have it here.")
+    public void throwsOOMExIfRequestTooLarge() throws Exception {
+        SerialNativeInterface testTarget = new SerialNativeInterface();
+        try{
+            byte[] ret = testTarget.readBytes(0, Integer.MAX_VALUE);
+            fail("Where's the exception?");
+        }catch( OutOfMemoryError ex ){
+            assertTrue(ex.getMessage().contains(String.valueOf(Integer.MAX_VALUE)));
+        }
+    }
+
 }

@@ -276,17 +276,33 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpNumberOfBytesTransferred;
     DWORD lpNumberOfBytesRead;
+    jbyteArray returnArray = NULL;
     jbyte *lpBuffer = NULL;
+    OVERLAPPED *overlapped = NULL;
 
-    jbyteArray returnArray = env->NewByteArray(byteCount);
+    if( byteCount < 0 ){
+        /* Negative byteCount makes no sense -> Report to caller by exception. */
+        char exMsg[48]; exMsg[0] = '\0';
+        snprintf(exMsg, sizeof exMsg, "byteCount %d", byteCount);
+        jclass exClz = env->FindClass("java/lang/IllegalArgumentException");
+        if( exClz != NULL ) env->ThrowNew(exClz, exMsg);
+        goto Finally;
+    }
+
+    returnArray = env->NewByteArray(byteCount);
+    if( returnArray == NULL ) goto Finally;
 
     lpBuffer = (jbyte *)malloc(byteCount * sizeof(jbyte));
     if(lpBuffer == NULL){
-        // return an empty array
-        return returnArray;
+        /* Whops. Not enough memory. Let caller know through exception. */
+        char exMsg[32]; exMsg[0] = '\0';
+        snprintf(exMsg, sizeof exMsg, "malloc(%d)", byteCount);
+        jclass exClz = env->FindClass("java/lang/OutOfMemoryError");
+        if( exClz != NULL ) env->ThrowNew(exClz, exMsg);
+        goto Finally;
     }
 
-    OVERLAPPED *overlapped = new OVERLAPPED();
+    overlapped = new OVERLAPPED();
     overlapped->hEvent = CreateEventA(NULL, true, false, NULL);
     if(ReadFile(hComm, lpBuffer, (DWORD)byteCount, &lpNumberOfBytesRead, overlapped)){
         env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
@@ -302,9 +318,12 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
         jclass exClz = env->FindClass("java/lang/IllegalArgumentException");
         if( exClz != NULL ) env->ThrowNew(exClz, "EBADF");
     }
-    CloseHandle(overlapped->hEvent);
-    delete overlapped;
-    free(lpBuffer);
+Finally:
+    if( overlapped != NULL ){
+        CloseHandle(overlapped->hEvent);
+        delete overlapped;
+    }
+    if( lpBuffer != NULL ) free(lpBuffer);
     return returnArray;
 }
 
