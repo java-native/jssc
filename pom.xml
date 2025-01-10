@@ -75,7 +75,7 @@
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.source.version>3.0.1</plugin.source.version>
     <plugin.surfire.version>3.0.0-M4</plugin.surfire.version>
-   <update-resources-precompiled.skip>true</update-resources-precompiled.skip>
+    <update-resources-precompiled.skip>true</update-resources-precompiled.skip>
   </properties>
 
   <dependencies>
