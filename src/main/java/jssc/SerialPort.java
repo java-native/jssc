@@ -1157,7 +1157,9 @@ public class SerialPort {
             return false;
         }
         eventThread.terminateThread();
-        setEventsMask(0);
+        if (portOpened) {
+            setEventsMask(0);
+        }
         //Guard against currentThread().join deadlock
         if(Thread.currentThread().getId() != eventThread.getId()){
             try {
@@ -1182,17 +1184,20 @@ public class SerialPort {
      * @throws SerialPortException if exception occurred
      */
     public synchronized boolean closePort() throws SerialPortException {
-        if (!portOpened) return false;
         boolean returnValue;
         //removeEventListener calls setEventsMask, and must occur before calling closePort
         try {
             removeEventListener();
         }
         finally {
-            returnValue = serialInterface.closePort(portHandle);
-            if (returnValue) {
-                maskAssigned = false;
-                portOpened = false;
+            if (portOpened) {
+                returnValue = serialInterface.closePort(portHandle);
+                if (returnValue) {
+                    maskAssigned = false;
+                    portOpened = false;
+                }
+            } else {
+                returnValue = false;
             }
         }
         return returnValue;
