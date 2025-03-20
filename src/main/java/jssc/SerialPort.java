@@ -166,8 +166,12 @@ public class SerialPort {
      * Construct a serial port object with the specified <code>portName</code>
      *
      * @param portName Name of the port, e.g. <code>COM1</code>, <code>/dev/tty.FOO</code>, etc.
+     * @throws NullPointerException if <code>portName</code> is null.
      */
     public SerialPort(String portName) {
+        if (portName == null) {
+            throw new NullPointerException();
+        }
         this.portName = portName;
         serialInterface = new SerialNativeInterface();
     }
@@ -204,14 +208,9 @@ public class SerialPort {
         if(portOpened){
             throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
         }
-        if(portName != null){
-            boolean useTIOCEXCL = (System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL) == null &&
-                                   System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL.toLowerCase()) == null);
-            portHandle = serialInterface.openPort(portName, useTIOCEXCL);//since 2.3.0 -> (if JSSC_NO_TIOCEXCL defined, exclusive lock for serial port will be disabled)
-        }
-        else {
-            throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
-        }
+        boolean useTIOCEXCL = (System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL) == null &&
+                               System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL.toLowerCase()) == null);
+        portHandle = serialInterface.openPort(portName, useTIOCEXCL);//since 2.3.0 -> (if JSSC_NO_TIOCEXCL defined, exclusive lock for serial port will be disabled)
         if(portHandle == SerialNativeInterface.ERR_PORT_BUSY){
             throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_PORT_BUSY);
         }

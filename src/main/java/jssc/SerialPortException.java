@@ -24,11 +24,13 @@
  */
 package jssc;
 
+import java.io.IOException;
+
 /**
  *
  * @author scream3r
  */
-public class SerialPortException extends Exception {
+public class SerialPortException extends IOException {
     final private static long serialVersionUID = 1L;
     /** Port already opened **/
     final public static String TYPE_PORT_ALREADY_OPENED = "Port already opened";
@@ -42,14 +44,6 @@ public class SerialPortException extends Exception {
     final public static String TYPE_LISTENER_THREAD_INTERRUPTED = "Event listener thread interrupted";
     /** Can't remove event listener **/
     final public static String TYPE_CANT_REMOVE_LISTENER = "Can't remove event listener";
-    /**
-     * @since 0.8
-     */
-    final public static String TYPE_PARAMETER_IS_NOT_CORRECT = "Parameter is not correct";
-    /**
-     * @since 0.8
-     */
-    final public static String TYPE_NULL_NOT_PERMITTED = "Null not permitted";
     /**
      * @since 0.9.0
      */
