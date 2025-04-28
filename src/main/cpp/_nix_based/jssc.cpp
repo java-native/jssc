@@ -26,7 +26,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <new> // std::bad_alloc
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
@@ -670,11 +670,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
         returnArray = NULL; goto Finally;
     }
 
-    try{
-        lpBuffer = new jbyte[byteCount];
-    }catch( const std::bad_alloc& ex ){
-        lpBuffer = NULL;
-    }
+    lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
     if( lpBuffer == NULL ){
         char emsg[32]; emsg[0] = '\0';
         snprintf(emsg, sizeof emsg, "new byte[%d]", byteCount);
@@ -729,7 +725,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     assert(env->ExceptionCheck() == JNI_FALSE);
 
 Finally:
-    if( lpBuffer != NULL ) delete[] lpBuffer;
+    if( lpBuffer != NULL ) free(lpBuffer);
     return returnArray;
 }
 
