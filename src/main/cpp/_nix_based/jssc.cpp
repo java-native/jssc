@@ -910,30 +910,10 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
     /*Lines status*/
     int statusLines = getLinesStatus(portHandle);
 
-    jint statusCTS = 0;
-    jint statusDSR = 0;
-    jint statusRING = 0;
-    jint statusRLSD = 0;
-    
-    /*CTS status*/
-    if(statusLines & TIOCM_CTS){
-        statusCTS = 1;
-    }
-
-    /*DSR status*/
-    if(statusLines & TIOCM_DSR){
-        statusDSR = 1;
-    }
-
-    /*RING status*/
-    if(statusLines & TIOCM_RNG){
-        statusRING = 1;
-    }
-
-    /*RLSD(DCD) status*/
-    if(statusLines & TIOCM_CAR){
-        statusRLSD = 1;
-    }
+    jint statusCTS = !!(statusLines & TIOCM_CTS);
+    jint statusDSR = !!(statusLines & TIOCM_DSR);
+    jint statusRING = !!(statusLines & TIOCM_RNG);
+    jint statusRLSD = !!(statusLines & TIOCM_CAR);
 
     /*Interrupts*/
     int interrupts[] = {-1, -1, -1, -1, -1};
@@ -1022,34 +1002,17 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getSerialPortName
 JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getLinesStatus
   (JNIEnv *env, jobject, jlong portHandle){
     jint returnValues[4];
-    for(jint i = 0; i < 4; i++){
-        returnValues[i] = 0;
-    }
-    jintArray returnArray = env->NewIntArray(4);
 
     /*Lines status*/
     int statusLines = getLinesStatus(portHandle);
+    returnValues[0] = !!(statusLines & TIOCM_CTS);
+    returnValues[1] = !!(statusLines & TIOCM_DSR);
+    returnValues[2] = !!(statusLines & TIOCM_RNG);
+    returnValues[3] = !!(statusLines & TIOCM_CAR);
 
-    /*CTS status*/
-    if(statusLines & TIOCM_CTS){
-        returnValues[0] = 1;
-    }
-
-    /*DSR status*/
-    if(statusLines & TIOCM_DSR){
-        returnValues[1] = 1;
-    }
-
-    /*RING status*/
-    if(statusLines & TIOCM_RNG){
-        returnValues[2] = 1;
-    }
-
-    /*RLSD(DCD) status*/
-    if(statusLines & TIOCM_CAR){
-        returnValues[3] = 1;
-    }
-    
+    jintArray returnArray = env->NewIntArray(4);
+    if( returnArray == NULL ) return NULL;
     env->SetIntArrayRegion(returnArray, 0, 4, returnValues);
     return returnArray;
 }
+
