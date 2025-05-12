@@ -663,19 +663,19 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     int byteRemains = byteCount;
 
     if( byteCount < 0 ){
-        char emsg[32]; emsg[0] = '\0';
-        snprintf(emsg, sizeof emsg, "new byte[%d]", byteCount);
+        char emsg[64]; emsg[0] = '\0';
+        snprintf(emsg, sizeof emsg, "byteCount %d. Expected range: 1..2147483647", byteCount);
         jclass exClz = env->FindClass("java/lang/IllegalArgumentException");
         if( exClz != NULL ) env->ThrowNew(exClz, emsg);
         returnArray = NULL; goto Finally;
     }
 
     lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
-    if( lpBuffer == NULL ){
+    if( !lpBuffer && byteCount ){
         char emsg[32]; emsg[0] = '\0';
-        snprintf(emsg, sizeof emsg, "new byte[%d]", byteCount);
-        jclass exClz = env->FindClass("java/lang/OutOfMemoryError");
-        if( exClz != NULL ) env->ThrowNew(exClz, emsg);
+        snprintf(emsg, sizeof emsg, "malloc(%d) failed", byteCount*sizeof*lpBuffer);
+        jclass exClz = env->FindClass("java/lang/RuntimeException");
+        if( exClz ) env->ThrowNew(exClz, emsg);
         returnArray = NULL; goto Finally;
     }
 

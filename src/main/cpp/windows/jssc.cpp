@@ -292,14 +292,13 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     returnArray = env->NewByteArray(byteCount);
     if( returnArray == NULL ) goto Finally;
 
-    lpBuffer = (jbyte *)malloc(byteCount * sizeof(jbyte));
-    if(lpBuffer == NULL){
-        /* Whops. Not enough memory. Let caller know through exception. */
-        char exMsg[32]; exMsg[0] = '\0';
-        snprintf(exMsg, sizeof exMsg, "malloc(%d)", byteCount);
-        jclass exClz = env->FindClass("java/lang/OutOfMemoryError");
-        if( exClz != NULL ) env->ThrowNew(exClz, exMsg);
-        goto Finally;
+    lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
+    if( !lpBuffer && byteCount ){
+        char emsg[32]; emsg[0] = '\0';
+        snprintf(emsg, sizeof emsg, "malloc(%d) failed", byteCount*sizeof*lpBuffer);
+        jclass exClz = env->FindClass("java/lang/RuntimeException");
+        if( exClz ) env->ThrowNew(exClz, emsg);
+        returnArray = NULL; goto Finally;
     }
 
     overlapped = new OVERLAPPED();

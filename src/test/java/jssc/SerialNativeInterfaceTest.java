@@ -4,6 +4,7 @@ import jssc.junit.rules.DisplayMethodNameRule;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -13,8 +14,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
+import static org.slf4j.LoggerFactory.getLogger;;
 
 public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
+
+    private static final Logger log = getLogger(SerialNativeInterfaceTest.class);
 
     @Test
     public void testInitNativeInterface() {
@@ -114,13 +118,15 @@ public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
         +" test run will just happily wait infinitely for those 2GiB to arrive"
         +" at the stdin fd. Feel free to remove this test if you think it"
         +" doesn't make sense to have it here.")
-    public void throwsOOMExIfRequestTooLarge() throws Exception {
+    public void throwsIfRequestTooLarge() throws Exception {
         SerialNativeInterface testTarget = new SerialNativeInterface();
+        int tooLargeSize = Integer.MAX_VALUE;
         try{
-            byte[] ret = testTarget.readBytes(0, Integer.MAX_VALUE);
+            byte[] ret = testTarget.readBytes(0, tooLargeSize);
             fail("Where's the exception?");
-        }catch( OutOfMemoryError ex ){
-            assertTrue(ex.getMessage().contains(String.valueOf(Integer.MAX_VALUE)));
+        }catch( RuntimeException ex ){
+            log.debug("Thrown, as expected :)", ex);
+            assertTrue(ex.getMessage().contains(String.valueOf(tooLargeSize)));
         }
     }
 
