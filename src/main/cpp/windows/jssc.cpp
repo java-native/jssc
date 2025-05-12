@@ -280,20 +280,19 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     jbyte *lpBuffer = NULL;
     OVERLAPPED *overlapped = NULL;
 
-    if( byteCount < 0 ){
-        /* Negative byteCount makes no sense -> Report to caller by exception. */
-        char exMsg[48]; exMsg[0] = '\0';
-        snprintf(exMsg, sizeof exMsg, "byteCount %d", byteCount);
+    if( byteCount <= 0 ){
+        char emsg[64]; emsg[0] = '\0';
+        snprintf(emsg, sizeof emsg, "byteCount %d. Expected range: 1..2147483647", byteCount);
         jclass exClz = env->FindClass("java/lang/IllegalArgumentException");
-        if( exClz != NULL ) env->ThrowNew(exClz, exMsg);
-        goto Finally;
+        if( exClz ) env->ThrowNew(exClz, emsg);
+        returnArray = NULL; goto Finally;
     }
 
     returnArray = env->NewByteArray(byteCount);
     if( returnArray == NULL ) goto Finally;
 
     lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
-    if( !lpBuffer && byteCount ){
+    if( !lpBuffer ){
         char emsg[32]; emsg[0] = '\0';
         snprintf(emsg, sizeof emsg, "malloc(%d) failed", byteCount*sizeof*lpBuffer);
         jclass exClz = env->FindClass("java/lang/RuntimeException");
@@ -318,11 +317,11 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
         if( exClz != NULL ) env->ThrowNew(exClz, "EBADF");
     }
 Finally:
-    if( overlapped != NULL ){
+    if( overlapped ){
         CloseHandle(overlapped->hEvent);
         delete overlapped;
     }
-    if( lpBuffer != NULL ) free(lpBuffer);
+    if( lpBuffer ) free(lpBuffer);
     return returnArray;
 }
 

@@ -99,7 +99,7 @@ public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
     }
 
     @Test
-    public void throwsIaeIfCountNegative() throws Exception {
+    public void throwsIfCountNegative() throws Exception {
         SerialNativeInterface testTarget = new SerialNativeInterface();
         byte[] ret;
         try{
@@ -107,6 +107,18 @@ public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
             fail("Where's the exception?");
         }catch( IllegalArgumentException ex ){
             assertTrue(ex.getMessage().contains("-42"));
+        }
+    }
+
+    @Test
+    public void throwsIfCountZero() throws Exception {
+        SerialNativeInterface testTarget = new SerialNativeInterface();
+        byte[] ret;
+        try{
+            ret = testTarget.readBytes(0, 0);
+            fail("Where's the exception?");
+        }catch( IllegalArgumentException ex ){
+            assertTrue(ex.getMessage().contains("0"));
         }
     }
 

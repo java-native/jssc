@@ -662,16 +662,16 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     jbyteArray returnArray = NULL;
     int byteRemains = byteCount;
 
-    if( byteCount < 0 ){
+    if( byteCount <= 0 ){
         char emsg[64]; emsg[0] = '\0';
         snprintf(emsg, sizeof emsg, "byteCount %d. Expected range: 1..2147483647", byteCount);
         jclass exClz = env->FindClass("java/lang/IllegalArgumentException");
-        if( exClz != NULL ) env->ThrowNew(exClz, emsg);
+        if( exClz ) env->ThrowNew(exClz, emsg);
         returnArray = NULL; goto Finally;
     }
 
     lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
-    if( !lpBuffer && byteCount ){
+    if( !lpBuffer ){
         char emsg[32]; emsg[0] = '\0';
         snprintf(emsg, sizeof emsg, "malloc(%d) failed", byteCount*sizeof*lpBuffer);
         jclass exClz = env->FindClass("java/lang/RuntimeException");
@@ -725,7 +725,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     assert(env->ExceptionCheck() == JNI_FALSE);
 
 Finally:
-    if( lpBuffer != NULL ) free(lpBuffer);
+    if( lpBuffer ) free(lpBuffer);
     return returnArray;
 }
 
