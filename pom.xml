@@ -49,6 +49,7 @@
     <cmake.generate.skip>false</cmake.generate.skip>
     <javah.skip>false</javah.skip>
     <jar.dependencies.skip>true</jar.dependencies.skip>
+    <update-resources-precompiled.skip>true</update-resources-precompiled.skip>
 
     <!-- dependency versions a-z -->
     <dependency.junit.version>4.13.2</dependency.junit.version>
@@ -57,23 +58,22 @@
     <dependency.nativelibloader.version>2.5.0</dependency.nativelibloader.version>
 
     <!-- plugin versions a-z -->
-    <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
-    <plugin.antrun.version>1.8</plugin.antrun.version>
-    <plugin.assembly.version>3.1.1</plugin.assembly.version>
-    <plugin.build-helper-maven-version>3.2.0</plugin.build-helper-maven-version>
-    <plugin.compiler.version>3.8.0</plugin.compiler.version>
-    <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
-    <plugin.gpg.version>3.0.1</plugin.gpg.version>
-    <plugin.jar.version>3.1.1</plugin.jar.version>
-    <plugin.javadoc.version>3.1.1</plugin.javadoc.version>
+    <plugin.animalsniffer.version>1.24</plugin.animalsniffer.version>
+    <plugin.build-helper-maven-version>3.6.0</plugin.build-helper-maven-version>
+    <plugin.central-publishing.version>0.7.0</plugin.central-publishing.version>
+    <plugin.maven-antrun.version>3.1.0</plugin.maven-antrun.version>
+    <plugin.maven-assembly.version>3.7.1</plugin.maven-assembly.version>
+    <plugin.maven-compiler.version>3.14.0</plugin.maven-compiler.version>
+    <plugin.maven-enforcer.version>3.5.0</plugin.maven-enforcer.version>
+    <plugin.maven-gpg.version>3.2.7</plugin.maven-gpg.version>
+    <plugin.maven-jar.version>3.4.2</plugin.maven-jar.version>
+    <plugin.maven-javadoc.version>3.11.2</plugin.maven-javadoc.version>
+    <plugin.maven-release.version>3.1.1</plugin.maven-release.version>
+    <plugin.maven-source.version>3.3.1</plugin.maven-source.version>
+    <plugin.maven-surfire.version>3.5.3</plugin.maven-surfire.version>
     <plugin.nar.version>3.6.0</plugin.nar.version>
-    <plugin.nexus-staging.version>1.6.7</plugin.nexus-staging.version>
-    <plugin.osmaven.version>1.7.0</plugin.osmaven.version>
-    <plugin.release.version>3.0.0-M4</plugin.release.version>
+    <plugin.osmaven.version>1.7.1</plugin.osmaven.version>
     <plugin.signature.version>1.1</plugin.signature.version>
-    <plugin.source.version>3.0.1</plugin.source.version>
-    <plugin.surfire.version>3.0.0-M4</plugin.surfire.version>
-    <update-resources-precompiled.skip>true</update-resources-precompiled.skip>
   </properties>
 
   <dependencies>
@@ -123,18 +123,18 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>${plugin.compiler.version}</version>
+          <version>${plugin.maven-compiler.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${plugin.javadoc.version}</version>
+          <version>${plugin.maven-javadoc.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>${plugin.source.version}</version>
+          <version>${plugin.maven-source.version}</version>
         </plugin>
 
       </plugins>
@@ -168,7 +168,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>${plugin.enforcer.version}</version>
+        <version>${plugin.maven-enforcer.version}</version>
         <executions>
           <execution>
             <id>recommended-jdk</id>
@@ -215,7 +215,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>${plugin.antrun.version}</version>
+        <version>${plugin.maven-antrun.version}</version>
         <executions>
 
           <execution>
@@ -297,7 +297,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${plugin.surfire.version}</version>
+        <version>${plugin.maven-surfire.version}</version>
         <configuration>
           <!-- Separate JVMs between classes; Needed for "jssc.boot.library.path" test to be effective -->
           <reuseForks>false</reuseForks>
@@ -311,7 +311,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>${plugin.jar.version}</version>
+        <version>${plugin.maven-jar.version}</version>
       </plugin>
 
       <plugin>
@@ -332,7 +332,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>${plugin.assembly.version}</version>
+        <version>${plugin.maven-assembly.version}</version>
 
         <executions>
           <execution>
@@ -647,7 +647,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>${plugin.gpg.version}</version>
+            <version>${plugin.maven-gpg.version}</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -659,7 +659,6 @@
             </executions>
             <configuration>
               <keyname>java-native</keyname>
-              <passphraseServerId>gpg.passphrase</passphraseServerId>
               <gpgArguments>
                 <arg>--pinentry-mode</arg>
                 <arg>loopback</arg>
@@ -669,7 +668,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-release-plugin</artifactId>
-            <version>${plugin.release.version}</version>
+            <version>${plugin.maven-release.version}</version>
             <configuration>
               <tagNameFormat>v@{project.version}</tagNameFormat>
               <pushChanges>false</pushChanges>
@@ -678,13 +677,12 @@
             </configuration>
           </plugin>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>${plugin.nexus-staging.version}</version>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${plugin.central-publishing.version}</version>
             <extensions>true</extensions>
             <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <publishingServerId>central</publishingServerId>
             </configuration>
           </plugin>
         </plugins>
