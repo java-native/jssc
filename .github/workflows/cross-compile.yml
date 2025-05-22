@@ -141,7 +141,7 @@ jobs:
         include:
           - target: osx_64
             profile: 'x86_64'
-            macos-deployment-target: 10.8
+            macos-deployment-target: 10.9
             sdk-version: MacOSX10.9.sdk
 
           - target: osx_arm64

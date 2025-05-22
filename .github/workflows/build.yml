@@ -61,7 +61,7 @@ jobs:
             macos-deployment-target: 11.0
             sdk-version: MacOSX11.0.sdk
           - profile: x86_64
-            macos-deployment-target: 10.8
+            macos-deployment-target: 10.9
             sdk-version: MacOSX10.9.sdk
 
     steps:
