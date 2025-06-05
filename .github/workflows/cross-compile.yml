@@ -5,6 +5,7 @@ env:
   MAVEN_OPTS: -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   GITHUB_BOT_NAME: github-actions
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+  DOCK_CROSS_TAG: 20231208-4e4d3ad
 
 jobs:
   create-branch:
@@ -40,61 +41,61 @@ jobs:
             os_target_name: linux
             os_target_arch: x86_32
             os_target_bitness: 32
-            image: docker.io/dockcross/linux-x86
+            image: docker.io/dockcross/linux-x86:${DOCK_CROSS_TAG}
 
           - target: linux_64
             os_target_name: linux
             os_target_arch: x86_64
             os_target_bitness: 64
-            image: docker.io/dockcross/linux-x64
+            image: docker.io/dockcross/linux-x64:${DOCK_CROSS_TAG}
 
           - target: linux_arm
             os_target_name: linux
             os_target_arch: arm_32
             os_target_bitness: 32
-            image: docker.io/dockcross/linux-armv6-lts
+            image: docker.io/dockcross/linux-armv6-lts:${DOCK_CROSS_TAG}
 
           - target: linux_arm64
             os_target_name: linux
             os_target_arch: aarch_64
             os_target_bitness: 64
-            image: docker.io/dockcross/linux-arm64-lts
+            image: docker.io/dockcross/linux-arm64-lts:${DOCK_CROSS_TAG}
 
           - target: linux_riscv32
             os_target_name: linux
             os_target_arch: riscv32
             os_target_bitness: 32
-            image: docker.io/dockcross/linux-riscv32
+            image: docker.io/dockcross/linux-riscv32:${DOCK_CROSS_TAG}
 
           - target: linux_riscv64
             os_target_name: linux
             os_target_arch: riscv64
             os_target_bitness: 64
-            image: docker.io/dockcross/linux-riscv64
+            image: docker.io/dockcross/linux-riscv64:${DOCK_CROSS_TAG}
 
           - target: linux_ppc
             os_target_name: linux
             os_target_arch: ppc_64
             os_target_bitness: 64
-            image: docker.io/dockcross/linux-ppc64le
+            image: docker.io/dockcross/linux-ppc64le:${DOCK_CROSS_TAG}
 
           - target: windows_32
             os_target_name: windows
             os_target_arch: x86_32
             os_target_bitness: 32
-            image: docker.io/dockcross/windows-static-x86
+            image: docker.io/dockcross/windows-static-x86:${DOCK_CROSS_TAG}
 
           - target: windows_64
             os_target_name: windows
             os_target_arch: x86_64
             os_target_bitness: 64
-            image: docker.io/dockcross/windows-static-x64
+            image: docker.io/dockcross/windows-static-x64:${DOCK_CROSS_TAG}
 
           - target: windows_arm64
             os_target_name: windows
             os_target_arch: aarch_64
             os_target_bitness: 64
-            image: docker.io/dockcross/windows-arm64
+            image: docker.io/dockcross/windows-arm64:${DOCK_CROSS_TAG}
 
     steps:
       - name: Checkout
