@@ -116,7 +116,14 @@ public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
      * bytes doesn't make much sense to me. But it seems we need to accept a
      * "read of zero bytes" as a legal case. So jssc will respond with an empty
      * array, exactly as caller did request.
-     * See also "https://github.com/java-native/jssc/issues/192". */
+     * See also "https://github.com/java-native/jssc/issues/192".
+     * 
+     * Update: According to
+     * https://github.com/java-native/jssc/issues/192#issuecomment-2960137775
+     * there seems to exist some other issue related to events, which occasionly
+     * provocates zero-length reads. So as long this other issue exists, jssc
+     * probably should handle zero-length reads, as it seems to cause them
+     * itself. */
     @Test
     public void returnsAnEmptyArrayIfCountIsZero() throws Exception {
         SerialNativeInterface testTarget = new SerialNativeInterface();
