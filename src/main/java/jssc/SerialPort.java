@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 
+import static jssc.SerialPortException.wrapNativeException;
+
 /**
  *
  * @author scream3r
@@ -404,8 +406,27 @@ public class SerialPort {
      * @return If the operation is successfully completed, the method returns true, otherwise false
      * 
      * @throws SerialPortException if exception occurred
+     *
+     * @deprecated use {@link #writeBytes(byte[])}.
      */
-    public boolean writeBytes(byte[] buffer) throws SerialPortException {
+    @Deprecated
+    public boolean writeBytes1(byte[] buffer) throws SerialPortException {
+        /* Delegate to new method and translate result to what original method
+         * did return. */
+        int numWrittenBytes = writeBytes(buffer);
+        return numWrittenBytes == buffer.length;
+    }
+
+    /**
+     * Write byte array to port.
+     *
+     * @param buffer <code>byte[]</code> array to write.
+     *
+     * @return number of bytes written.
+     *
+     * @throws SerialPortException
+     */
+    public int writeBytes(byte[] buffer) throws SerialPortException {
         checkPortOpened("writeBytes()");
         try {
             return serialInterface.writeBytes(portHandle, buffer);
@@ -427,7 +448,7 @@ public class SerialPort {
      */
     public boolean writeByte(byte singleByte) throws SerialPortException {
         checkPortOpened("writeByte()");
-        return writeBytes(new byte[]{singleByte});
+        return writeBytes(new byte[]{singleByte}) == 1;
     }
 
     /**
@@ -443,7 +464,8 @@ public class SerialPort {
      */
     public boolean writeString(String string) throws SerialPortException {
         checkPortOpened("writeString()");
-        return writeBytes(string.getBytes());
+        byte[] bytes = string.getBytes();
+        return writeBytes(bytes) == bytes.length;
     }
 
     /**
@@ -460,7 +482,8 @@ public class SerialPort {
      */
     public boolean writeString(String string, String charsetName) throws SerialPortException, UnsupportedEncodingException {
         checkPortOpened("writeString()");
-        return writeBytes(string.getBytes(charsetName));
+        byte[] bytes = string.getBytes(charsetName);
+        return writeBytes(bytes) == bytes.length;
     }
 
     /**
@@ -476,7 +499,7 @@ public class SerialPort {
      */
     public boolean writeInt(int singleInt) throws SerialPortException {
         checkPortOpened("writeInt()");
-        return writeBytes(new byte[]{(byte)singleInt});
+        return writeBytes(new byte[]{(byte)singleInt}) == 1;
     }
 
     /**
@@ -496,7 +519,7 @@ public class SerialPort {
         for(int i = 0; i < buffer.length; i++){
             byteArray[i] = (byte)buffer[i];
         }
-        return writeBytes(byteArray);
+        return writeBytes(byteArray) == byteArray.length;
     }
 
     /**
@@ -1415,4 +1438,5 @@ public class SerialPort {
             }
         }
     }
+
 }
