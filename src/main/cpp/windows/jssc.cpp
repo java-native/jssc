@@ -29,6 +29,7 @@
 #include <jssc_SerialNativeInterface.h>
 #include "version.h"
 
+// For snprintf formatting
 #if defined(_MSC_VER) && _MSC_VER < 1800
 #   define PRIsz "Iu"
 #   define PRIssz "Id"

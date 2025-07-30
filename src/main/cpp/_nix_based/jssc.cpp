@@ -60,17 +60,6 @@
 #include <jssc_SerialNativeInterface.h>
 #include "version.h"
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
-#   define PRIsz "Iu"
-#   define PRIssz "Id"
-#elif defined(__MINGW32__) && !defined(__MINGW64__)
-#   define PRIsz "u"
-#   define PRIssz "d"
-#else
-#   define PRIsz "zu"
-#   define PRIssz "zd"
-#endif
-
 /*
  * Get native library version
  */
@@ -681,7 +670,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
     if( !lpBuffer ){
         char emsg[32]; emsg[0] = '\0';
-        snprintf(emsg, sizeof emsg, "malloc(%" PRIsz ") failed", byteCount*sizeof*lpBuffer);
+        snprintf(emsg, sizeof emsg, "malloc(%zu) failed", byteCount*sizeof*lpBuffer);
         jclass exClz = env->FindClass("java/lang/RuntimeException");
         if( exClz ) env->ThrowNew(exClz, emsg);
         returnArray = NULL; goto Finally;
