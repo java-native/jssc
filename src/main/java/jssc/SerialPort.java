@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 
+import static jssc.SerialPortException.wrapNativeException;
+
 /**
  *
  * @author scream3r
@@ -397,15 +399,15 @@ public class SerialPort {
     }
 
     /**
-     * Write byte array to port
+     * Write byte array to port.
      *
-     * @param buffer <code>byte[]</code> array to write
+     * @param buffer <code>byte[]</code> array to write.
      *
-     * @return If the operation is successfully completed, the method returns true, otherwise false
-     * 
-     * @throws SerialPortException if exception occurred
+     * @return number of bytes written.
+     *
+     * @throws SerialPortException
      */
-    public boolean writeBytes(byte[] buffer) throws SerialPortException {
+    public int writeBytes(byte[] buffer) throws SerialPortException {
         checkPortOpened("writeBytes()");
         try {
             return serialInterface.writeBytes(portHandle, buffer);
@@ -419,13 +421,13 @@ public class SerialPort {
      *
      * @param singleByte single <code>byte</code> value to write
      *
-     * @return If the operation is successfully completed, the method returns true, otherwise false
+     * @return Number of bytes written.
      *
      * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
-    public boolean writeByte(byte singleByte) throws SerialPortException {
+    public int writeByte(byte singleByte) throws SerialPortException {
         checkPortOpened("writeByte()");
         return writeBytes(new byte[]{singleByte});
     }
@@ -435,15 +437,25 @@ public class SerialPort {
      *
      * @param string <code>String</code> value to write
      *
-     * @return If the operation is successfully completed, the method returns true, otherwise false
+     * @return
+     *      Number of bytes written. WARN: Number of BYTES, NOT number of CHARS!
+     *      This may differ from <code>string.length()</code> if passed in string
+     *      contains chars outside the english alphabet. If you need reliable
+     *      return lengths, consider calling
+     *      {@link java.lang.String#getBytes(java.nio.charset.Charset)}
+     *      yourself and then passing result to
+     *      {@link #writeBytes(byte[])}
+     *      instead. This gives you the chance to verify the expected return
+     *      value correctly.
      *
      * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
-    public boolean writeString(String string) throws SerialPortException {
+    public int writeString(String string) throws SerialPortException {
         checkPortOpened("writeString()");
-        return writeBytes(string.getBytes());
+        byte[] bytes = string.getBytes();
+        return writeBytes(bytes);
     }
 
     /**
@@ -451,16 +463,27 @@ public class SerialPort {
      *
      * @param string <code>String</code> value to write
      * @param charsetName valid <code>Charset</code> name, e.g. <code>"UTF-8"</code>
-     * @return If the operation is successfully completed, the method returns true, otherwise false
+     *
+     * @return
+     *      Number of bytes written. WARN: Number of BYTES, NOT number of CHARS!
+     *      This may differ from <code>string.length()</code> if passed in string
+     *      contains chars outside the english alphabet. If you need reliable
+     *      return lengths, consider calling
+     *      {@link java.lang.String#getBytes(java.nio.charset.Charset)}
+     *      yourself and then passing result to
+     *      {@link #writeBytes(byte[])}
+     *      instead. This gives you the chance to verify the expected return
+     *      value correctly.
      *
      * @throws SerialPortException if exception occurred
      * @throws UnsupportedEncodingException if encoding exception occurred
      *
      * @since 2.8.0
      */
-    public boolean writeString(String string, String charsetName) throws SerialPortException, UnsupportedEncodingException {
+    public int writeString(String string, String charsetName) throws SerialPortException, UnsupportedEncodingException {
         checkPortOpened("writeString()");
-        return writeBytes(string.getBytes(charsetName));
+        byte[] bytes = string.getBytes(charsetName);
+        return writeBytes(bytes);
     }
 
     /**
@@ -468,13 +491,13 @@ public class SerialPort {
      *
      * @param singleInt single <code>int</code> value to write
      *
-     * @return If the operation is successfully completed, the method returns true, otherwise false
+     * @return Number of bytes written.
      *
      * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
-    public boolean writeInt(int singleInt) throws SerialPortException {
+    public int writeInt(int singleInt) throws SerialPortException {
         checkPortOpened("writeInt()");
         return writeBytes(new byte[]{(byte)singleInt});
     }
@@ -484,13 +507,13 @@ public class SerialPort {
      *
      * @param buffer <code>int[]</code> array to write
      *
-     * @return If the operation is successfully completed, the method returns true, otherwise false
+     * @return Number of bytes written.
      *
      * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
-    public boolean writeIntArray(int[] buffer) throws SerialPortException {
+    public int writeIntArray(int[] buffer) throws SerialPortException {
         checkPortOpened("writeIntArray()");
         byte[] byteArray = new byte[buffer.length];
         for(int i = 0; i < buffer.length; i++){
@@ -1415,4 +1438,5 @@ public class SerialPort {
             }
         }
     }
+
 }

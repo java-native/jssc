@@ -29,7 +29,17 @@
 #include <jssc_SerialNativeInterface.h>
 #include "version.h"
 
-//#include <iostream>
+// For snprintf formatting
+#if defined(_MSC_VER) && _MSC_VER < 1800
+#   define PRIsz "Iu"
+#   define PRIssz "Id"
+#elif defined(__MINGW32__) && !defined(__MINGW64__)
+#   define PRIsz "u"
+#   define PRIssz "d"
+#else
+#   define PRIsz "zu"
+#   define PRIssz "zd"
+#endif
 
 #define MAX_PORT_NAME_STR_LEN 32
 
@@ -232,38 +242,61 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setDTR
  * portHandle - port handle
  * buffer - byte array for sending
  */
-JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
+JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_writeBytes
   (JNIEnv *env, jobject, jlong portHandle, jbyteArray buffer){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpNumberOfBytesTransferred;
     DWORD lpNumberOfBytesWritten;
-    jboolean returnValue = JNI_FALSE;
-    if( buffer == NULL ){
+    jint returnValue = -1;
+    if( !buffer ){
         jclass exClz = env->FindClass("java/lang/NullPointerException");
-        if( exClz != NULL ) env->ThrowNew(exClz, "buffer");
+        if( exClz ) env->ThrowNew(exClz, "buffer");
         return 0;
     }
-    jbyte* jBuffer = env->GetByteArrayElements(buffer, JNI_FALSE);
-    if( jBuffer == NULL ){
-        jclass exClz = env->FindClass("java/lang/RuntimeException");
-        if( exClz != NULL ) env->ThrowNew(exClz, "jni->GetByteArrayElements() failed");
+    jbyte *jBuffer = env->GetByteArrayElements(buffer, NULL);
+    if( !jBuffer ){
+        jclass exClz = env->ExceptionCheck() ? NULL : env->FindClass("java/lang/RuntimeException");
+        if( exClz ) env->ThrowNew(exClz, "jni->GetByteArrayElements() failed");
         return 0;
     }
     OVERLAPPED *overlapped = new OVERLAPPED();
     overlapped->hEvent = CreateEventA(NULL, true, false, NULL);
-    if(WriteFile(hComm, jBuffer, (DWORD)env->GetArrayLength(buffer), &lpNumberOfBytesWritten, overlapped)){
-        returnValue = JNI_TRUE;
-    }
-    else if(GetLastError() == ERROR_IO_PENDING){
-        if(WaitForSingleObject(overlapped->hEvent, INFINITE) == WAIT_OBJECT_0){
-            if(GetOverlappedResult(hComm, overlapped, &lpNumberOfBytesTransferred, false)){
-                returnValue = JNI_TRUE;
-            }
+    DWORD err = 0;
+    do{
+        err = !WriteFile(hComm, jBuffer, (DWORD)env->GetArrayLength(buffer), &lpNumberOfBytesWritten, overlapped);
+        if( !err ){ /* successfully written. we're already done. */
+            returnValue = lpNumberOfBytesWritten;
+            break;
         }
-    }
+        err = GetLastError();
+        if( err != ERROR_IO_PENDING ){
+            break; /* some unknown error occurred. Go reporting it. */
+        }
+        /* our write above was async (IO_PENDING). So it was only fired off, but
+         * we do not know the result yet. Therefore we've to wait for the result. */
+        if( WaitForSingleObject(overlapped->hEvent, INFINITE) != WAIT_OBJECT_0 ){
+            /* too bad :( wait failed. */
+            err = GetLastError();
+            break;
+        }
+        /* waited successfully. Time to get the result. */
+        if( GetOverlappedResult(hComm, overlapped, &lpNumberOfBytesTransferred, false) ){
+            /* we know the result now */
+            returnValue = lpNumberOfBytesTransferred;
+            err = 0;
+        }else{ /* GetOverlappedResult has failed :( */
+            err = GetLastError();
+        }
+    }while(0);
     env->ReleaseByteArrayElements(buffer, jBuffer, 0);
     CloseHandle(overlapped->hEvent);
     delete overlapped;
+    if( err ){
+        char emsg[128];
+        snprintf(emsg, sizeof emsg, "Error %lu: https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes#system-error-codes", (long unsigned)err);
+        jclass exClz = env->FindClass("java/io/IOException");
+        if( exClz ) env->ThrowNew(exClz, emsg);
+    }
     return returnValue;
 }
 
@@ -298,7 +331,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
     if( !lpBuffer ){
         char emsg[32]; emsg[0] = '\0';
-        snprintf(emsg, sizeof emsg, "malloc(%d) failed", byteCount*sizeof*lpBuffer);
+        snprintf(emsg, sizeof emsg, "malloc(%" PRIsz ") failed", byteCount*sizeof*lpBuffer);
         jclass exClz = env->FindClass("java/lang/RuntimeException");
         if( exClz ) env->ThrowNew(exClz, emsg);
         returnArray = NULL; goto Finally;

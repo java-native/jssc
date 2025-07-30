@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <time.h>
@@ -40,7 +39,6 @@
 #endif
 #ifdef __sun
     #include <sys/filio.h>//Needed for FIONREAD in Solaris
-    #include <string.h>//Needed for select() function
 #endif
 #ifdef __APPLE__
     #include <serial/ioss.h>//Needed for IOSSIOSPEED in Mac OS X (Non standard baudrate)
@@ -61,8 +59,6 @@
 #include <jni.h>
 #include <jssc_SerialNativeInterface.h>
 #include "version.h"
-
-//#include <iostream> //-lCstd use for Solaris linker
 
 /*
  * Get native library version
@@ -529,33 +525,31 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setDTR
 /*
  * Writing data to the port
  */
-JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
+JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_writeBytes
   (JNIEnv *env, jobject, jlong portHandle, jbyteArray buffer){
-    if( buffer == NULL ){
+    ssize_t ret = 0;
+    jbyte *jBuffer = NULL;
+    if( !buffer ){
         jclass exClz = env->FindClass("java/lang/NullPointerException");
-        if( exClz != NULL ) env->ThrowNew(exClz, "buffer");
-        return 0;
-    }
-    jboolean ret = JNI_FALSE;
-    jbyte* jBuffer = env->GetByteArrayElements(buffer, JNI_FALSE);
-    if( jBuffer == NULL ){
-        jclass exClz = env->FindClass("java/lang/RuntimeException");
-        if( exClz != NULL ) env->ThrowNew(exClz, "jni->GetByteArrayElements() failed");
-        return 0;
-    }
-    jint bufferSize = env->GetArrayLength(buffer);
-    jint result = write(portHandle, jBuffer, (size_t)bufferSize);
-    if( result == -1 ){
-        int err = errno; /*bakup errno*/
-        jclass exClz = env->FindClass("java/io/IOException");
-        assert(exClz != NULL);
-        env->ThrowNew(exClz, strerror(err));
+        if( exClz ) env->ThrowNew(exClz, "buffer");
         goto Finally;
     }
-    ret = (result == bufferSize) ? JNI_TRUE : JNI_FALSE;
+    jBuffer = env->GetByteArrayElements(buffer, NULL);
+    if( !jBuffer ){
+        jclass exClz = env->ExceptionCheck() ? NULL : env->FindClass("java/lang/RuntimeException");
+        if( exClz ) env->ThrowNew(exClz, "jni->GetByteArrayElements() failed");
+        goto Finally;
+    }
+    ret = write(portHandle, jBuffer, env->GetArrayLength(buffer));
+    if( ret == -1 ){
+        int err = errno;
+        jclass exClz = env->FindClass("java/io/IOException");
+        if( exClz ) env->ThrowNew(exClz, strerror(err));
+        goto Finally;
+    }
 Finally:
-    env->ReleaseByteArrayElements(buffer, jBuffer, 0);
-    return ret;
+    if( jBuffer ) env->ReleaseByteArrayElements(buffer, jBuffer, 0);
+    return (jint)ret;
 }
 
 /**
@@ -676,7 +670,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
     if( !lpBuffer ){
         char emsg[32]; emsg[0] = '\0';
-        snprintf(emsg, sizeof emsg, "malloc(%d) failed", byteCount*sizeof*lpBuffer);
+        snprintf(emsg, sizeof emsg, "malloc(%zu) failed", byteCount*sizeof*lpBuffer);
         jclass exClz = env->FindClass("java/lang/RuntimeException");
         if( exClz ) env->ThrowNew(exClz, emsg);
         returnArray = NULL; goto Finally;
