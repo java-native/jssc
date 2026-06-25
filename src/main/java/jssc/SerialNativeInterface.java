@@ -234,10 +234,12 @@ public class SerialNativeInterface {
      *
      * @param handle handle of opened port
      *
+     * @param waitEventsTimeoutMs See {@link SerialPort#setWaitEventsTimeoutMs(int)}.
+     *
      * @return Method returns two-dimensional array containing event types and their values
      * (<b>events[i][0] - event type</b>, <b>events[i][1] - event value</b>).
      */
-    public native int[][] waitEvents(long handle);
+    public native int[][] waitEvents(long handle, int waitEventsTimeoutMs);
 
     /**
      * Change RTS line state

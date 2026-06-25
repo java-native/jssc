@@ -52,7 +52,7 @@ jobs:
       - run: mvn -P "${{ matrix.profile }}" --batch-mode
 
   macos:
-    runs-on: [macos-latest]
+    runs-on: [macos-14]
     strategy:
       fail-fast: false
       matrix:

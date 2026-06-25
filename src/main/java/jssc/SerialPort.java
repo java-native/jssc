@@ -41,6 +41,7 @@ public class SerialPort {
     private final String portName;
     private volatile boolean portOpened = false;
     private boolean maskAssigned = false;
+    private volatile int waitEventsTimeoutMs = -1;
 
     //since 2.2.0 ->
     private volatile Method methodErrorOccurred = null;
@@ -921,6 +922,43 @@ public class SerialPort {
     }
 
     /**
+     * Reduce busy-waiting CPU load in {@link #waitEvents()}.
+     *
+     * (This is irrelevant for windows)
+     *
+     * The {@link #waitEvents()} implementation on non-windows systems
+     * usually returns immediately. This is unfortunate for the callers
+     * which want to await events in an infinite-loop. As doing so would
+     * burn lot of CPU time.
+     *
+     * This setting can be used to reduce that load. For regular
+     * incoming data events this does not cause any further delays.
+     * {@link #waitEvents()} still will reports most of the events as
+     * soon they become available, even before the specified timeout got
+     * reached.
+     *
+     * Choosing "good value" solely depends on the callers use-case. I
+     * know of a project which works perfectly fine using 100ms.
+     *
+     * Special values: Pass `-1` to explicitly disable the feature
+     * (You'll likely not need this, as feature is disabled by default
+     * anyway). Passing any other negative values is NOT allowed.
+     * Passing `0` is NOT allowed. Instead, disable the feature if you
+     * need "no timeout".
+     *
+     * BUT BE AWARE: Enabling this might delay delivery of some special
+     * serial-events (like 'DCD line changed' or 'RI line changed') by
+     * the amount of time specified. So you have to decide yourself if
+     * you can/will afford this trade.
+     */
+    public void setWaitEventsTimeoutMs(int waitEventsTimeoutMs) {
+        if (waitEventsTimeoutMs <= 0 && waitEventsTimeoutMs != -1) {
+            throw new IllegalArgumentException(String.valueOf(waitEventsTimeoutMs));
+        }
+        this.waitEventsTimeoutMs = waitEventsTimeoutMs;
+    }
+
+    /**
      * Get flow control mode
      *
      * @return Mask of set flow control mode
@@ -951,7 +989,7 @@ public class SerialPort {
     }
 
     private int[][] waitEvents() {
-        return serialInterface.waitEvents(portHandle);
+        return serialInterface.waitEvents(portHandle, waitEventsTimeoutMs);
     }
 
     /**
@@ -1263,7 +1301,7 @@ public class SerialPort {
 
         //Need to get initial states
         public LinuxEventThread(){
-            int[][] eventArray = waitEvents();
+            int[][] eventArray = serialInterface.waitEvents(portHandle, -1);
             for(int[] event : eventArray){
                 int eventType = event[0];
                 int eventValue = event[1];

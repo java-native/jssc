@@ -82,10 +82,10 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getEventsMask
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    waitEvents
- * Signature: (J)[[I
+ * Signature: (JI)[[I
  */
 JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
-  (JNIEnv *, jobject, jlong);
+  (JNIEnv *, jobject, jlong, jint);
 
 /*
  * Class:     jssc_SerialNativeInterface

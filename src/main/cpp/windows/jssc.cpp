@@ -447,12 +447,13 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
 	return returnValue;
 }
 
+
 /*
  * Wait event
  * portHandle - port handle
  */
 JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
-  (JNIEnv *env, jobject, jlong portHandle) {
+  ( JNIEnv*env, jobject, jlong portHandle, jint/*unused on windows*/ ){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpEvtMask = 0;
     DWORD lpNumberOfBytesTransferred = 0;

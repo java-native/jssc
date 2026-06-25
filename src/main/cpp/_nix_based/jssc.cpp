@@ -907,13 +907,52 @@ const jint events[] = {INTERRUPT_BREAK,
                        //EV_RXFLAG, //Not supported
                        EV_TXEMPTY};
 
+
 /* OK */
 /*
  * Collecting data for EventListener class (Linux have no implementation of "WaitCommEvent" function from Windows)
  * 
  */
 JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
-  (JNIEnv *env, jobject, jlong portHandle) {
+  ( JNIEnv*env, jobject, jlong portHandle, jint waitEventsTimeoutMs) {
+    int err;
+
+    /* Code in `LinuxEventThread.run()` (in `SerialPort.java`) calls us
+     * in an infinite-loop. As a work-around, it uses a (very) small
+     * sleep, to not utilize a full CPU all the time. But still, this
+     * permanently wastes a lot of CPU cycles (that many, that it is a
+     * problem in our production use-case). The win32 code uses
+     * `OVERLAPPED` structs and `WaitSingleObject()` which already
+     * provide that kind of "wait" mechanism. But we do not have a
+     * win32-API here. As this impl here returns immediately, we'll
+     * first ask `poll()` (if available and enabled). This way we can
+     * "emulate" to actually wait if nothing is ready.
+     * See also JavaDoc of `SerialPort.setWaitEventsTimeoutMs(int)`. */
+    int const isFeatureEnabled = (waitEventsTimeoutMs >= 1);
+    if( isFeatureEnabled ){
+#if !HAVE_POLL
+        static unsigned cnt = 0;
+        if( ((cnt++) & 0xFFFF) == 0 ){
+            fprintf(stderr, "WARN: waitEventsTimeoutMs not available on your platform, as `poll()` not available.\n");
+        }
+#else
+        struct pollfd pfd = {0};
+        pfd.fd = portHandle;
+        pfd.events = POLLIN | POLLPRI | POLLRDHUP;
+        err = poll(&pfd, 1, waitEventsTimeoutMs);
+        if( err == -1 ) switch( errno ){
+        case EINTR:
+            /* Got interrupted by signal. Go report events we have so far. */
+            break;
+        default:
+            /* some error occurred. */
+            err = errno; /* bkup `errno` before calling into `FindClass()` */
+            jclass exClz = env->FindClass("java/lang/RuntimeException");
+            if( exClz ) env->ThrowNew(exClz, strerror(err));
+            return NULL;
+        }
+#endif
+    }
 
     jclass intClass = env->FindClass("[I");
     if( intClass == NULL ) return NULL;
