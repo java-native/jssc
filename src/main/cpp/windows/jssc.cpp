@@ -47,27 +47,39 @@ JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersio
  */
 JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject, jstring portName, jboolean){
     char prefix[] = "\\\\.\\";
-    const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
+    const char* port = NULL;
+    HANDLE hComm = NULL;
+    jlong retval = 0;
+
+    port = env->GetStringUTFChars(portName, NULL);
+    if( !port ){
+        if( !env->ExceptionCheck() ){
+            /* Can happen if the given input is `NULL`. So let our caller know. */
+            jclass exClz = env->FindClass("java/lang/IllegalArgumentException");
+            if( exClz ) env->ThrowNew(exClz, "portName");
+        }
+        goto resolveWithRetval;
+    }
 
     //since 2.1.0 -> string concat fix
     char portFullName[MAX_PORT_NAME_STR_LEN];
 
     if(strlen(prefix) + strlen(port) + 1 > sizeof(portFullName)){
-        return (jlong)((HANDLE)jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND);
+        retval = (jlong)((HANDLE)jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND);
+        goto resolveWithRetval;
     }
 
     strcpy_s(portFullName, prefix);
     strcat_s(portFullName, port);
     //<- since 2.1.0
 
-    HANDLE hComm = CreateFile(portFullName,
+    hComm = CreateFile(portFullName,
                        	   	  GENERIC_READ | GENERIC_WRITE,
                        	   	  0,
                        	   	  0,
                        	   	  OPEN_EXISTING,
                        	   	  FILE_FLAG_OVERLAPPED,
                        	   	  0);
-    env->ReleaseStringUTFChars(portName, port);
 
     //since 2.3.0 ->
     if(hComm != INVALID_HANDLE_VALUE){
@@ -88,7 +100,12 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
     	}
     }
     //<- since 2.3.0
-    return (jlong)hComm;//since 2.4.0 changed to jlong
+    retval = (jlong)hComm;//since 2.4.0 changed to jlong
+resolveWithRetval:
+    if( port ){
+        env->ReleaseStringUTFChars(portName, port);
+    }
+    return retval;
 }
 
 /*
@@ -298,7 +315,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     lpBuffer = (jbyte*)malloc(byteCount*sizeof*lpBuffer);
     if( !lpBuffer ){
         char emsg[32]; emsg[0] = '\0';
-        snprintf(emsg, sizeof emsg, "malloc(%d) failed", byteCount*sizeof*lpBuffer);
+        snprintf(emsg, sizeof emsg, "malloc(%llu) failed", (long long unsigned)byteCount*sizeof*lpBuffer);
         jclass exClz = env->FindClass("java/lang/RuntimeException");
         if( exClz ) env->ThrowNew(exClz, emsg);
         returnArray = NULL; goto Finally;
