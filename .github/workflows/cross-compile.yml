@@ -135,7 +135,7 @@ jobs:
           while  git pull --rebase && ! git push; do sleep 5; done
 
   macos:
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: create-branch
     strategy:
       matrix:
