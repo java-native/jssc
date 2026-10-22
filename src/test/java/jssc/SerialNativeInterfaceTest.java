@@ -49,6 +49,14 @@ public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
 
     }
 
+    @Test
+    public void libraryVersionIsFilteredFromPom() {
+        // Set by surefire in pom.xml; absent when run outside maven, e.g. from an IDE
+        final String expectedVersion = System.getProperty("jssc.expected.version");
+        Assume.assumeNotNull(expectedVersion);
+        assertThat(SerialNativeInterface.getLibraryVersion(), is(expectedVersion));
+    }
+
     @Test(expected = java.io.IOException.class)
     public void reportsWriteErrorsAsIOException() throws Exception {
         Assume.assumeFalse(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS);

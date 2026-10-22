@@ -259,13 +259,23 @@
     </target>
 
     <target name="cmake-generate">
+        <!-- Build ident: blank lets CMake take the revision from git and say "local" (cross-compile.yml sets both) -->
+        <property description="fallback value" name="jssc.build.rev" value=""/>
+        <property description="fallback value" name="jssc.build.origin" value=""/>
+        <!-- Native version defaults to the pom version as is, unless jssc.native.version is given
+             or jssc.native.release=true is set which drops the qualifier (used in cross-compilation ahead of release) -->
+        <condition property="jssc.native.version" value="${release.version}" else="${project.version}">
+            <istrue value="${jssc.native.release}"/>
+        </condition>
         <mkdir dir="${cmake.generated.directory}"/>
         <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
             <arg line="${ant.project.basedir}"/>
             <!-- Set the native lib output directory or leave blank to let CMake calculate -->
             <arg line="${cmake.generator.nativelibdir}"/>
             <!-- Set the JSSC version to parameter -->
-            <arg line="-DJSSC_VERSION=&quot;${release.version}&quot;" />
+            <arg line="-DJSSC_VERSION=&quot;${jssc.native.version}&quot;" />
+            <arg line="-DJSSC_BUILD_REV=&quot;${jssc.build.rev}&quot;" />
+            <arg line="-DJSSC_BUILD_ORIGIN=&quot;${jssc.build.origin}&quot;" />
             <!-- Pass-in maven's JAVA_HOME, helps resolve jni.h -->
             <arg line="-DJAVA_HOME=&quot;${java.home}&quot;"/>
             <!-- Final generator argument should be blank or one of:

@@ -13,6 +13,11 @@
   </description>
   <url>https://github.com/java-native/jssc</url>
 
+  <organization>
+    <name>java-native</name>
+    <url>https://github.com/java-native</url>
+  </organization>
+
   <licenses>
     <license>
       <name>GNU LGPL 3</name>
@@ -27,6 +32,16 @@
       <url>https://github.com/tresf</url>
     </developer>
   </developers>
+
+  <contributors>
+    <contributor>
+      <name>Alexey Sokolov (scream3r)</name>
+      <url>https://github.com/scream3r</url>
+      <roles>
+        <role>original author</role>
+      </roles>
+    </contributor>
+  </contributors>
 
   <scm>
     <connection>scm:git:https://github.com/java-native/jssc.git</connection>
@@ -43,6 +58,9 @@
     <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
     <ant.properties.file>${project.build.directory}/props.properties</ant.properties.file>
     <ant.project.basedir>${project.basedir}</ant.project.basedir>
+
+    <!-- copyright stamped into the javadoc footer; CMakeLists.txt reads it for the Windows VERSIONINFO -->
+    <jssc.copyright>Alexey Sokolov (scream3r) 2010-2014 and jSSC contributors</jssc.copyright>
 
     <!-- profile-dependant flags a-z -->
     <cmake.build.skip>false</cmake.build.skip>
@@ -107,6 +125,11 @@
     <resources>
         <resource>
           <directory>${project.basedir}/src/main/resources-precompiled</directory>
+        </resource>
+        <!-- Filtered: jssc/jssc-version.properties gets the pom version for LibraryVersion -->
+        <resource>
+          <directory>${project.basedir}/src/main/resources</directory>
+          <filtering>true</filtering>
         </resource>
     </resources>
 
@@ -301,6 +324,10 @@
         <configuration>
           <!-- Separate JVMs between classes; Needed for "jssc.boot.library.path" test to be effective -->
           <reuseForks>false</reuseForks>
+          <!-- Checked against LibraryVersion in SerialNativeInterfaceTest -->
+          <systemPropertyVariables>
+            <jssc.expected.version>${project.version}</jssc.expected.version>
+          </systemPropertyVariables>
           <excludes>
             <!--suppress UnresolvedMavenProperty -->
             <exclude>${maven.exclude.tests}</exclude>
@@ -318,6 +345,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
+          <!-- the default footer names <organization> as copyright holder and stamps the build year -->
+          <bottom>Copyright &#169; ${jssc.copyright}. LGPL-3.0-or-later</bottom>
           <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
           <javaApiLinks>
             <property>

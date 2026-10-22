@@ -34,7 +34,7 @@ import java.io.IOException;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.10.4";
+    private static final String libVersion = LibraryVersion.get();
 
     /** Linux **/
     public static final int OS_LINUX = 0;
@@ -148,7 +148,7 @@ public class SerialNativeInterface {
     /**
      * Get library version
      *
-     * @return Full library version in "major.minor.patch" format.
+     * @return Full library version as in the jar's pom.
      *
      * @since 0.8
      */

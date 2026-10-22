@@ -89,6 +89,8 @@ endif()
 
 if(WIN32)
 	set(CPP_SOURCE "windows")
+	# Version resource (jssc.rc.in)
+	enable_language(RC)
 	# Remove "lib" prefix from windows binaries
 	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 	# Disable optimization for Release builds (XP/Server 2003)
@@ -177,11 +179,57 @@ if(NOT JSSC_VERSION)
         endif()
     endforeach()
 else()
-    message(STATUS "Release JSSC version based on pom.xml: \"${JSSC_VERSION}\"")
+    message(STATUS "JSSC version passed in: \"${JSSC_VERSION}\"")
 endif()
+# Build ident (src/main/cpp/ident.cpp). ant/build.xml passes the revision and origin; when blank,
+# the revision is taken from git ("-dirty" if native sources have uncommitted changes) and origin=local.
+if(NOT JSSC_BUILD_REV)
+    set(JSSC_BUILD_REV "unknown")
+    find_package(Git QUIET)
+    if(GIT_FOUND)
+        execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            RESULT_VARIABLE GIT_RESULT OUTPUT_VARIABLE GIT_REV
+            OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+        if(GIT_RESULT EQUAL 0)
+            set(JSSC_BUILD_REV "${GIT_REV}")
+            execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain -- src/main/cpp toolchain CMakeLists.txt
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_DIRTY OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+            if(GIT_DIRTY)
+                set(JSSC_BUILD_REV "${JSSC_BUILD_REV}-dirty")
+            endif()
+        endif()
+    endif()
+endif()
+if(NOT JSSC_BUILD_ORIGIN)
+    set(JSSC_BUILD_ORIGIN "local")
+endif()
+set(JSSC_BUILD_INFO "version=${JSSC_VERSION} rev=${JSSC_BUILD_REV} target=${NATIVE_LIB_DIR} origin=${JSSC_BUILD_ORIGIN}")
+set(JSSC_IDENT "@(#)JSSC-IDENT ${JSSC_BUILD_INFO}")
+message(STATUS "Native library ident: ${JSSC_IDENT}")
 configure_file(src/main/cpp/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 
-add_library(jssc SHARED src/main/cpp/${CPP_SOURCE}/jssc.cpp)
+add_library(jssc SHARED src/main/cpp/${CPP_SOURCE}/jssc.cpp src/main/cpp/ident.cpp)
+
+if(WIN32)
+	# VERSIONINFO wants numbers: 2.10.5-SNAPSHOT becomes 2,10,5,0
+	string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" JSSC_VERSION_NUMERIC "${JSSC_VERSION}")
+	set(JSSC_VERSION_MAJOR ${CMAKE_MATCH_1})
+	set(JSSC_VERSION_MINOR ${CMAKE_MATCH_2})
+	set(JSSC_VERSION_PATCH ${CMAKE_MATCH_3})
+	# Vendor and copyright are fixed in pom.xml, so read them from there for maven and plain cmake builds alike
+	file(READ ${CMAKE_CURRENT_SOURCE_DIR}/pom.xml POM_CONTENT)
+	string(REGEX MATCH "<organization>[ \t\r\n]*<name>([^<]*)</name>" POM_MATCH "${POM_CONTENT}")
+	set(JSSC_VENDOR "${CMAKE_MATCH_1}")
+	string(REGEX MATCH "<jssc.copyright>([^<]*)</jssc.copyright>" POM_MATCH "${POM_CONTENT}")
+	set(JSSC_COPYRIGHT "${CMAKE_MATCH_1}")
+	if(NOT JSSC_VENDOR OR NOT JSSC_COPYRIGHT)
+		message(WARNING "Could not read vendor or copyright from pom.xml, VERSIONINFO will be incomplete")
+	endif()
+	configure_file(src/main/cpp/windows/jssc.rc.in ${CMAKE_CURRENT_BINARY_DIR}/jssc.rc @ONLY)
+	target_sources(jssc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/jssc.rc)
+endif()
 
 # Fall-back header for when maven is not available
 list(APPEND JSSC_ADDITIONAL_INCLUDES src/main/cpp/)

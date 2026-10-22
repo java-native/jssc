@@ -1,0 +1,33 @@
+// Windows version resource, filled by CMake. Shown by Explorer (Properties > Details) and
+// PowerShell: (Get-Item jssc.dll).VersionInfo
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    @JSSC_VERSION_MAJOR@,@JSSC_VERSION_MINOR@,@JSSC_VERSION_PATCH@,0
+ PRODUCTVERSION @JSSC_VERSION_MAJOR@,@JSSC_VERSION_MINOR@,@JSSC_VERSION_PATCH@,0
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+ FILEFLAGS      0x0L
+ FILEOS         VOS_NT_WINDOWS32
+ FILETYPE       VFT_DLL
+ FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      "@JSSC_VENDOR@"
+            VALUE "FileDescription",  "Java Simple Serial Connector native library (@NATIVE_LIB_DIR@)"
+            VALUE "FileVersion",      "@JSSC_VERSION@"
+            VALUE "InternalName",     "jssc"
+            VALUE "LegalCopyright",   "Copyright (C) @JSSC_COPYRIGHT@. LGPL-3.0-or-later"
+            VALUE "OriginalFilename", "jssc.dll"
+            VALUE "ProductName",      "jSSC"
+            VALUE "ProductVersion",   "@JSSC_VERSION@"
+            VALUE "Comments",         "@JSSC_BUILD_INFO@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

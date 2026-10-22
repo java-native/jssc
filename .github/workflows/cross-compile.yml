@@ -1,5 +1,11 @@
 name: Cross-compile native libraries
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release natives: version them without the -SNAPSHOT qualifier (2.10.5-SNAPSHOT -> 2.10.5)'
+        type: boolean
+        default: false
 
 env:
   MAVEN_OPTS: -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
@@ -15,16 +21,6 @@ jobs:
       - run: echo "precompiled_branch=$(git branch --show-current)-precompiled-natives" >> $GITHUB_ENV
       - name: Create branch for precompiled natives
         run: git checkout -b ${{ env.precompiled_branch }}
-      - name: Sync SerialNativeInterface version with the project pom version
-        run: |
-          FILE=src/main/java/jssc/SerialNativeInterface.java
-          RELEASE_VERSION=$(mvn validate help:evaluate -Dexpression=release.version -q -DforceStdout)
-          sed -i "s/private static final String libVersion =.*/private static final String libVersion = \"${RELEASE_VERSION}\";/" ${FILE}
-          if [ $(git ls-files --modified) ]; then
-            git config --global user.email "${GITHUB_BOT_EMAIL}"
-            git config --global user.name "${GITHUB_BOT_NAME}"
-            git commit ${FILE} --message "Update version in source files before building native libraries"
-          fi
       - run: echo "rev=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - run: git push --force origin HEAD
     outputs:
@@ -124,6 +120,9 @@ jobs:
                     -Dos.target.name=${{ matrix.os_target_name }} \
                     -Dos.target.arch=${{ matrix.os_target_arch }} \
                     -Dos.target.bitness=${{ matrix.os_target_bitness }} \
+                    -Djssc.build.rev=${{ needs.create-branch.outputs.base_rev }} \
+                    -Djssc.build.origin=${{ github.repository }} \
+                    -Djssc.native.release=${{ inputs.release }} \
                   '
 
       - name: Push recompiled binaries
@@ -177,7 +176,11 @@ jobs:
           echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
           echo "CMAKE_OSX_SYSROOT=$CMAKE_OSX_SYSROOT" >> $GITHUB_ENV
       - name: Build with Maven
-        run: mvn -B clean install -P ${{ matrix.profile }},update-resources-precompiled
+        run: |
+          mvn -B clean install -P ${{ matrix.profile }},update-resources-precompiled \
+            -Djssc.build.rev=${{ needs.create-branch.outputs.base_rev }} \
+            -Djssc.build.origin=${{ github.repository }} \
+            -Djssc.native.release=${{ inputs.release }}
 
       - name: Push recompiled binaries
         run: |
