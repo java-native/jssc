@@ -68,6 +68,11 @@
     <javah.skip>false</javah.skip>
     <jar.dependencies.skip>true</jar.dependencies.skip>
     <update-resources-precompiled.skip>true</update-resources-precompiled.skip>
+    <jssc.verify.natives.skip>true</jssc.verify.natives.skip>
+    <!-- The targets verify-natives checks, comma separated; the caller names them -->
+    <jssc.native.targets></jssc.native.targets>
+    <!-- Extra arguments for the builds forked by release:prepare and release:perform -->
+    <jssc.release.arguments></jssc.release.arguments>
 
     <!-- dependency versions a-z -->
     <dependency.junit.version>4.13.2</dependency.junit.version>
@@ -327,7 +332,7 @@
           <!-- Checked against LibraryVersion in SerialNativeInterfaceTest -->
           <systemPropertyVariables>
             <jssc.expected.version>${project.version}</jssc.expected.version>
-            <!-- Checked against the JSSC-IDENT of the native built in this run (NativeIdentTest), as computed by ant/build.xml -->
+            <!-- Expected JSSC-IDENT values, from ant/build.xml (NativeIdentTest, PrecompiledNativesTest) -->
             <!--suppress UnresolvedMavenProperty -->
             <jssc.expected.native.dir>${maven.nativelibdir.path}</jssc.expected.native.dir>
             <!--suppress UnresolvedMavenProperty -->
@@ -336,6 +341,7 @@
             <jssc.expected.build.rev>${jssc.build.rev}</jssc.expected.build.rev>
             <!--suppress UnresolvedMavenProperty -->
             <jssc.expected.build.origin>${jssc.build.origin}</jssc.expected.build.origin>
+            <jssc.expected.native.targets>${jssc.native.targets}</jssc.expected.native.targets>
             <jssc.native.build.skip>${cmake.build.skip}</jssc.native.build.skip>
           </systemPropertyVariables>
           <!-- Only NativeIdentTest when cross-compiling, see test-props in ant/build.xml -->
@@ -346,8 +352,22 @@
           <excludes>
             <!--suppress UnresolvedMavenProperty -->
             <exclude>${maven.exclude.tests}</exclude>
+            <!-- Runs on request only, in verify-natives -->
+            <exclude>**/PrecompiledNativesTest.java</exclude>
           </excludes>
         </configuration>
+        <executions>
+          <!-- Checks the precompiled natives a release ships: -Djssc.native.targets=... (or -Djssc.verify.natives.skip=false, as release:prepare does, which fails without the targets) -->
+          <execution>
+            <id>verify-natives</id>
+            <goals><goal>test</goal></goals>
+            <configuration>
+              <skipTests>${jssc.verify.natives.skip}</skipTests>
+              <!-- overrides includes and excludes -->
+              <test>PrecompiledNativesTest</test>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -515,12 +535,26 @@
       </properties>
     </profile>
 
+    <!-- Naming the targets requests verify-natives: -Djssc.native.targets=linux_64,osx_arm64 -->
+    <profile>
+      <id>verify-natives</id>
+      <activation>
+        <property>
+          <name>jssc.native.targets</name>
+        </property>
+      </activation>
+      <properties>
+        <jssc.verify.natives.skip>false</jssc.verify.natives.skip>
+      </properties>
+    </profile>
+
     <!-- collect existing native libraries for a distribution; skips native compilation -->
     <profile>
       <id>package</id>
       <properties>
         <javah.skip>true</javah.skip>
-        <maven.test.skip>true</maven.test.skip>
+        <!-- not maven.test.skip: the tests are compiled for verify-natives -->
+        <skipTests>true</skipTests>
         <cmake.build.skip>true</cmake.build.skip>
         <cmake.generate.skip>true</cmake.generate.skip>
       </properties>
@@ -729,6 +763,10 @@
               <pushChanges>false</pushChanges>
               <localCheckout>true</localCheckout>
               <goals>deploy</goals>
+              <!-- Refuse precompiled natives not built for this version from these sources (PrecompiledNativesTest) -->
+              <arguments>-Djssc.verify.natives.skip=false ${jssc.release.arguments}</arguments>
+              <!-- release:perform runs it again in its checkout, which needs the history back to the natives' rev -->
+              <scmShallowClone>false</scmShallowClone>
             </configuration>
           </plugin>
           <plugin>

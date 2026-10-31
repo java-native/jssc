@@ -12,6 +12,8 @@ env:
   GITHUB_BOT_NAME: github-actions
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   DOCK_CROSS_TAG: 20231208-4e4d3ad
+  # The targets the matrices below build, checked by PrecompiledNativesTest
+  NATIVE_TARGETS: linux_32,linux_64,linux_arm,linux_arm64,linux_ppc,linux_riscv32,linux_riscv64,osx_64,osx_arm64,windows_32,windows_64,windows_arm64
 
 jobs:
   create-branch:
@@ -202,4 +204,16 @@ jobs:
           git reset --soft ${{ needs.create-branch.outputs.base_rev }}
           git add src/main/resources-precompiled/**
           git commit -m "Precompiled natives @${{ needs.create-branch.outputs.base_rev }}"
-          git push -f
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+      # Same check as release:prepare (PrecompiledNativesTest): a missing or stale native fails here, before the squashed branch is pushed
+      - name: Verify the natives
+        run: |
+          mvn -B -P package test -Djssc.native.targets=${NATIVE_TARGETS} \
+            -Djssc.build.rev=${{ needs.create-branch.outputs.base_rev }} \
+            -Djssc.build.origin=${{ github.repository }} \
+            -Djssc.native.release=${{ inputs.release }}
+      - run: git push -f

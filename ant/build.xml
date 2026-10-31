@@ -215,7 +215,7 @@
     </target>
 
     <target name="test-props">
-        <!-- Tests run unless skipped explicitly, e.g. by the "package" profile (an existing flag is honored) -->
+        <!-- Tests run unless maven.test.skip or skipTests is set -->
         <property name="maven.test.skip" value="false"/>
         <!-- All tests if host matches target; otherwise only NativeIdentTest, which reads the library without loading it -->
         <condition property="maven.include.tests" value="**/*Test.java" else="**/NativeIdentTest.java">
@@ -235,7 +235,10 @@
 
         <!-- Negate result for human readability -->
         <condition property="maven.test.message" value="Tests will NOT run">
-            <equals arg1="${maven.test.skip}" arg2="true"/>
+            <or>
+                <istrue value="${maven.test.skip}"/>
+                <istrue value="${skipTests}"/>
+            </or>
         </condition>
         <condition property="maven.test.message" value="Tests WILL run" else="Only NativeIdentTest will run">
             <equals arg1="${maven.include.tests}" arg2="**/*Test.java"/>
