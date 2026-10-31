@@ -1,6 +1,6 @@
-<project default="gather-props">
+<project default="gather-props" xmlns:if="ant:if">
     <!-- Properties for export to maven -->
-    <target name="gather-props" depends="main-props,msvc-props,xcode-props,gcc-props,unset-props,test-props">
+    <target name="gather-props" depends="main-props,msvc-props,xcode-props,gcc-props,unset-props,ident-props,test-props">
         <propertyfile file="${ant.properties.file}">
             <entry key="cmake.generator.nativelibdir" value="${cmake.generator.nativelibdir}"/>
             <entry key="cmake.generator.arg" value="${cmake.generator.arg}"/>
@@ -8,7 +8,11 @@
             <entry key="maven.nativelibdir.path" value="${maven.nativelibdir.path}"/>
             <entry key="maven.assembly.id" value="${maven.assembly.id}"/>
             <entry key="maven.test.skip" value="${maven.test.skip}"/>
+            <entry key="maven.include.tests" value="${maven.include.tests}"/>
             <entry key="maven.exclude.tests" value="${maven.exclude.tests}"/>
+            <entry key="jssc.native.version" value="${jssc.native.version}"/>
+            <entry key="jssc.build.rev" value="${jssc.build.rev}"/>
+            <entry key="jssc.build.origin" value="${jssc.build.origin}"/>
         </propertyfile>
     </target>
 
@@ -199,17 +203,23 @@
         <property description="fallback value" name="cmake.generator.nativelibdir" value=""/>
     </target>
 
+    <target name="ident-props">
+        <!-- Build ident: blank lets CMake take the revision from git and set origin "local" -->
+        <property description="fallback value" name="jssc.build.rev" value=""/>
+        <property description="fallback value" name="jssc.build.origin" value=""/>
+        <!-- Native version: jssc.native.version if given, else project.version,
+             without its qualifier if jssc.native.release=true -->
+        <condition property="jssc.native.version" value="${release.version}" else="${project.version}">
+            <istrue value="${jssc.native.release}"/>
+        </condition>
+    </target>
+
     <target name="test-props">
-        <!-- Calculate if tests will run -->
-        <condition property="maven.test.skip" value="false" else="true">
-            <!-- Honor existing flag if set -->
-            <and>
-                <not>
-                    <isset property="maven.test.skip"/>
-                </not>
-                <!-- Run tests if detected system matches target system -->
-                <equals arg1="${os.target.classifier}" arg2="${os.detected.classifier}"/>
-            </and>
+        <!-- Tests run unless skipped explicitly, e.g. by the "package" profile (an existing flag is honored) -->
+        <property name="maven.test.skip" value="false"/>
+        <!-- All tests if host matches target; otherwise only NativeIdentTest, which reads the library without loading it -->
+        <condition property="maven.include.tests" value="**/*Test.java" else="**/NativeIdentTest.java">
+            <equals arg1="${os.target.classifier}" arg2="${os.detected.classifier}"/>
         </condition>
 
         <!-- Skip ManualBootLibraryPathTest test if we're not building a native lib -->
@@ -218,14 +228,17 @@
         </condition>
 
         <!-- Summarize host/target -->
-        <echo level="info">Tests will run only if the TARGET and HOST match:${line.separator}${line.separator}</echo>
+        <echo level="info">All tests will run only if the TARGET and HOST match:${line.separator}${line.separator}</echo>
         <echo level="info">TARGET:   ${os.target.classifier}</echo>
         <echo level="info">DETECTED: ${os.detected.classifier}</echo>
         <echo level="info"/>
 
         <!-- Negate result for human readability -->
-        <condition property="maven.test.message" value="Tests will NOT run" else="Tests WILL run">
+        <condition property="maven.test.message" value="Tests will NOT run">
             <equals arg1="${maven.test.skip}" arg2="true"/>
+        </condition>
+        <condition property="maven.test.message" value="Tests WILL run" else="Only NativeIdentTest will run">
+            <equals arg1="${maven.include.tests}" arg2="**/*Test.java"/>
         </condition>
         <echo level="info">===== ${maven.test.message} =====</echo>
         <echo level="info"/>
@@ -265,15 +278,7 @@
         <echo level="info"></echo>
     </target>
 
-    <target name="cmake-generate">
-        <!-- Build ident: blank lets CMake take the revision from git and say "local" (cross-compile.yml sets both) -->
-        <property description="fallback value" name="jssc.build.rev" value=""/>
-        <property description="fallback value" name="jssc.build.origin" value=""/>
-        <!-- Native version defaults to the pom version as is, unless jssc.native.version is given
-             or jssc.native.release=true is set which drops the qualifier (used in cross-compilation ahead of release) -->
-        <condition property="jssc.native.version" value="${release.version}" else="${project.version}">
-            <istrue value="${jssc.native.release}"/>
-        </condition>
+    <target name="cmake-generate" depends="ident-props">
         <mkdir dir="${cmake.generated.directory}"/>
         <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
             <arg line="${ant.project.basedir}"/>
@@ -299,6 +304,32 @@
         <copy todir="${cmake.generated.directory}" flatten="true" overwrite="true" verbose="true" failonerror="false" quiet="true">
             <fileset dir="${cmake.generated.directory}/../nar/" includes="**/*.h"/>
         </copy>
+        <!-- The committed JNI header follows the generated one, so a JNI change is a change in src/main/cpp.
+             Unlike the natives, the build writes it to the source tree: it is a source, and CI fails when a build
+             changed it (build.yml), so an updated header can't be left out of a commit -->
+        <property name="jni.header.generated" location="${cmake.generated.directory}/jssc_SerialNativeInterface.h"/>
+        <property name="jni.header.committed" location="${ant.project.basedir}/src/main/cpp/jssc_SerialNativeInterface.h"/>
+        <fail message="No JNI header was generated at ${jni.header.generated}">
+            <condition>
+                <not><available file="${jni.header.generated}"/></not>
+            </condition>
+        </fail>
+        <!-- The header as it is committed, the same on every OS and JDK: javac on Windows writes long constants
+             with MSVC's i64 suffix, which GCC and Clang reject, so they get LL as elsewhere.  Can be removed when JDK-8305955, JDK-8308990 land upstream. -->
+        <property name="jni.header.expected" location="${cmake.generated.directory}/committed/jssc_SerialNativeInterface.h"/>
+        <copy file="${jni.header.generated}" tofile="${jni.header.expected}" overwrite="true">
+            <filterchain>
+                <fixcrlf eol="lf"/>
+                <tokenfilter><replaceregex pattern="^(#define \S+ -?[0-9]+)i64$" replace="\1LL"/></tokenfilter>
+            </filterchain>
+        </copy>
+        <!-- Line endings don't count, so a checkout with CRLF is left alone -->
+        <condition property="jni.header.outdated">
+            <not><filesmatch file1="${jni.header.expected}" file2="${jni.header.committed}" textfile="true"/></not>
+        </condition>
+        <copy if:set="jni.header.outdated" file="${jni.header.expected}" tofile="${jni.header.committed}" overwrite="true"/>
+        <echo if:set="jni.header.outdated" level="warning"
+              message="The JNI surface of SerialNativeInterface.java changed: updated ${jni.header.committed}, commit it"/>
         <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
             <arg line="--build"/>
             <arg line="."/>

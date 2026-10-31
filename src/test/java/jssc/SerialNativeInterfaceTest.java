@@ -57,6 +57,15 @@ public class SerialNativeInterfaceTest extends DisplayMethodNameRule {
         assertThat(SerialNativeInterface.getLibraryVersion(), is(expectedVersion));
     }
 
+    @Test
+    public void loadsTheNativeLibraryBuiltInThisRun() {
+        final String expectedVersion = System.getProperty("jssc.expected.native.version");
+        Assume.assumeNotNull(expectedVersion);
+        assumeFalse("jssc.native.build.skip is set; skipping", Boolean.getBoolean("jssc.native.build.skip"));
+        assertThat("Loaded a native library other than the one built in this run (stale build output?)",
+                SerialNativeInterface.getNativeLibraryVersion(), is(expectedVersion));
+    }
+
     @Test(expected = java.io.IOException.class)
     public void reportsWriteErrorsAsIOException() throws Exception {
         Assume.assumeFalse(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS);

@@ -50,6 +50,9 @@ jobs:
 
       - run: sudo apt-get update && sudo apt-get install socat ${{ matrix.packages }}
       - run: mvn -P "${{ matrix.profile }}" --batch-mode
+      # The build rewrites the committed JNI header when SerialNativeInterface.java changed it (ant/build.xml)
+      - name: Check the JNI header is committed
+        run: git diff --exit-code -- src/main/cpp/jssc_SerialNativeInterface.h
 
   macos:
     runs-on: [macos-15]
@@ -86,6 +89,9 @@ jobs:
           echo "CMAKE_OSX_SYSROOT=$CMAKE_OSX_SYSROOT" >> $GITHUB_ENV
 
       - run: mvn -P "${{ matrix.profile }}" --batch-mode
+      # The build rewrites the committed JNI header when SerialNativeInterface.java changed it (ant/build.xml)
+      - name: Check the JNI header is committed
+        run: git diff --exit-code -- src/main/cpp/jssc_SerialNativeInterface.h
 
   windows:
     runs-on: [windows-latest]
@@ -105,3 +111,6 @@ jobs:
           distribution: temurin
 
       - run: mvn -P "${{ matrix.profile }}" --batch-mode
+      # The build rewrites the committed JNI header when SerialNativeInterface.java changed it (ant/build.xml)
+      - name: Check the JNI header is committed
+        run: git diff --exit-code -- src/main/cpp/jssc_SerialNativeInterface.h

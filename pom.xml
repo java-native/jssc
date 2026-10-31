@@ -327,7 +327,22 @@
           <!-- Checked against LibraryVersion in SerialNativeInterfaceTest -->
           <systemPropertyVariables>
             <jssc.expected.version>${project.version}</jssc.expected.version>
+            <!-- Checked against the JSSC-IDENT of the native built in this run (NativeIdentTest), as computed by ant/build.xml -->
+            <!--suppress UnresolvedMavenProperty -->
+            <jssc.expected.native.dir>${maven.nativelibdir.path}</jssc.expected.native.dir>
+            <!--suppress UnresolvedMavenProperty -->
+            <jssc.expected.native.version>${jssc.native.version}</jssc.expected.native.version>
+            <!--suppress UnresolvedMavenProperty -->
+            <jssc.expected.build.rev>${jssc.build.rev}</jssc.expected.build.rev>
+            <!--suppress UnresolvedMavenProperty -->
+            <jssc.expected.build.origin>${jssc.build.origin}</jssc.expected.build.origin>
+            <jssc.native.build.skip>${cmake.build.skip}</jssc.native.build.skip>
           </systemPropertyVariables>
+          <!-- Only NativeIdentTest when cross-compiling, see test-props in ant/build.xml -->
+          <includes>
+            <!--suppress UnresolvedMavenProperty -->
+            <include>${maven.include.tests}</include>
+          </includes>
           <excludes>
             <!--suppress UnresolvedMavenProperty -->
             <exclude>${maven.exclude.tests}</exclude>
