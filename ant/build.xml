@@ -159,8 +159,15 @@
             <equals arg1="${os.target.arch}" arg2="arm_32"/>
         </condition>
 
+        <!-- SDK from env CMAKE_OSX_SYSROOT, if set. Not SDKROOT: the xcrun shims (make, c++) read it too,
+             and newer Xcodes cannot resolve old SDKs -->
+        <property environment="env"/>
+        <condition property="xcode.sysroot.arg" value="-DCMAKE_OSX_SYSROOT=&quot;${env.CMAKE_OSX_SYSROOT}&quot;" else="">
+            <isset property="env.CMAKE_OSX_SYSROOT"/>
+        </condition>
+
         <!-- Set cmake property "CMAKE_OSX_ARCHITECTURES" -->
-        <property name="cmake.generator.arg" value="-DCMAKE_OSX_ARCHITECTURES=${xcode.arch}"/>
+        <property name="cmake.generator.arg" value="-DCMAKE_OSX_ARCHITECTURES=${xcode.arch} ${xcode.sysroot.arg}"/>
     </target>
 
     <target name="gcc-props" if="use.gcc">

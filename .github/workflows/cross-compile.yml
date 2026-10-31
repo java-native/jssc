@@ -135,7 +135,7 @@ jobs:
           while  git pull --rebase && ! git push; do sleep 5; done
 
   macos:
-    runs-on: macos-14
+    runs-on: macos-15
     needs: create-branch
     strategy:
       matrix:
@@ -170,10 +170,8 @@ jobs:
       - name: Set SDK version
         run: |
           export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos-deployment-target }}
-          export SDKROOT=$XCODE_16_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
-          export CMAKE_OSX_SYSROOT=$SDKROOT
+          export CMAKE_OSX_SYSROOT=$XCODE_16_DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
           echo "MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET" >> $GITHUB_ENV
-          echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
           echo "CMAKE_OSX_SYSROOT=$CMAKE_OSX_SYSROOT" >> $GITHUB_ENV
       - name: Build with Maven
         run: |
